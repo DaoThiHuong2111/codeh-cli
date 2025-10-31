@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__serena__list_dir",
+      "mcp__serena__activate_project",
+      "mcp__serena__check_onboarding_performed",
+      "mcp__serena__onboarding",
+      "mcp__serena__write_memory",
+      "Bash(npm install:*)",
+      "Bash(npm run build)",
+      "Bash(npm test)",
+      "Bash(npx prettier:*)",
+      "Bash(node:*)",
+      "Bash(env:*)",
+      "Bash(export:*)",
+      "Bash(npm run dev)",
+      "Read(//Users/admin/.codeh/**)",
+      "Bash(script:*)",
+      "Bash(./test_real_interaction.exp:*)",
+      "Bash(chmod:*)",
+      "Bash(timeout:*)",
+      "Bash(gtimeout:*)",
+      "Bash(./test_real_simple.exp:*)"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "serena",
+    "Context7"
+  ]
+}
