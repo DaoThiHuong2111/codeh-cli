@@ -110,11 +110,8 @@ export default function Navigation() {
 				);
 			}
 			case SCREENS.CONFIG:
-				return (
-					<Box marginTop={1}>
-						<Text color="gray">Ctrl+C: Exit |ESC: Back previous</Text>
-					</Box>
-				);
+				// Config screen manages its own footer text
+				return null;
 			default:
 				return null;
 		}

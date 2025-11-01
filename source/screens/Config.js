@@ -6,6 +6,7 @@ const CONFIG_SCREENS = {
 	PROVIDER: 'provider',
 	MODEL: 'model',
 	BASE_URL: 'base_url',
+	MAX_TOKEN: 'max_token',
 	API_KEY: 'api_key',
 };
 
@@ -42,6 +43,7 @@ export default function Config({onConfigComplete}) {
 		provider: '',
 		model: '',
 		baseUrl: '',
+		maxToken: 4096,
 		apiKey: '',
 	});
 	const [validationError, setValidationError] = useState('');
@@ -90,6 +92,25 @@ export default function Config({onConfigComplete}) {
 			}
 			setValidationError('');
 			setTempConfig(prev => ({...prev, baseUrl: inputValue.trim()}));
+			setCurrentScreen(CONFIG_SCREENS.MAX_TOKEN);
+			setInputValue('4096');
+		} else {
+			handleTextInputChange(input, key, inputValue, setInputValue);
+		}
+	};
+
+	const handleMaxTokenInput = (input, key) => {
+		if (key.escape) {
+			// Go back to base URL screen
+			setCurrentScreen(CONFIG_SCREENS.BASE_URL);
+			setInputValue(tempConfig.baseUrl || '');
+			setValidationError('');
+		} else if (key.return) {
+			const maxTokenValue = inputValue.trim()
+				? parseInt(inputValue.trim(), 10)
+				: 4096;
+			setValidationError('');
+			setTempConfig(prev => ({...prev, maxToken: maxTokenValue}));
 			setCurrentScreen(CONFIG_SCREENS.API_KEY);
 			setInputValue('');
 		} else {
@@ -103,11 +124,11 @@ export default function Config({onConfigComplete}) {
 			setCurrentScreen(CONFIG_SCREENS.BASE_URL);
 			setInputValue(tempConfig.baseUrl || '');
 			setValidationError('');
-		} else if (key.return && inputValue.trim()) {
-			// Save configuration
+		} else if (key.return) {
+			// Allow empty API key (null) for APIs that don't require authentication
 			const finalConfig = {
 				...tempConfig,
-				apiKey: inputValue.trim(),
+				apiKey: inputValue.trim() || null,
 			};
 
 			// Save to config file
@@ -116,13 +137,17 @@ export default function Config({onConfigComplete}) {
 				model: finalConfig.model,
 				base_url: finalConfig.baseUrl,
 				api_key: finalConfig.apiKey,
+				max_token: finalConfig.maxToken,
 			});
 
 			// Also set as environment variables for immediate use
 			envManager.set('CODEH_PROVIDER', finalConfig.provider);
 			envManager.set('CODEH_MODEL', finalConfig.model);
 			envManager.set('CODEH_BASE_URL', finalConfig.baseUrl);
-			envManager.set('CODEH_API_KEY', finalConfig.apiKey);
+			if (finalConfig.apiKey) {
+				envManager.set('CODEH_MAX_TOKEN', String(finalConfig.maxToken));
+				envManager.set('CODEH_API_KEY', finalConfig.apiKey);
+			}
 
 			// Reset state for potential future use
 			setCurrentScreen(CONFIG_SCREENS.PROVIDER);
@@ -155,6 +180,9 @@ export default function Config({onConfigComplete}) {
 				break;
 			case CONFIG_SCREENS.BASE_URL:
 				handleBaseUrlInput(input, key);
+				break;
+			case CONFIG_SCREENS.MAX_TOKEN:
+				handleMaxTokenInput(input, key);
 				break;
 			case CONFIG_SCREENS.API_KEY:
 				handleApiKeyInput(input, key);
@@ -251,6 +279,42 @@ export default function Config({onConfigComplete}) {
 		</Box>
 	);
 
+	const renderMaxTokenScreen = () => (
+		<Box flexDirection="column" paddingY={1}>
+			<Box marginBottom={1}>
+				<Text color="blue" bold>
+					Enter max tokens (default: 4096):
+				</Text>
+			</Box>
+
+			<Box marginBottom={1}>
+				<Text color="yellow">
+					{inputValue || ' '}
+					<Text backgroundColor="yellow">█</Text>
+				</Text>
+			</Box>
+
+			{inputValue === '' && (
+				<Box marginBottom={1}>
+					<Text color="gray">Enter max tokens...</Text>
+				</Box>
+			)}
+
+			{validationError && (
+				<Box marginBottom={1}>
+					<Text color="red">{validationError}</Text>
+				</Box>
+			)}
+
+			<Box marginBottom={1}>
+				<Text color="green">Press Enter to use default (4096)</Text>
+			</Box>
+
+			<Box marginTop={1}>
+				<Text color="gray">esc back ⚈ ctrl + c to exit</Text>
+			</Box>
+		</Box>
+	);
 	const renderApiKeyScreen = () => (
 		<Box flexDirection="column" paddingY={1}>
 			<Box marginBottom={1}>
@@ -279,6 +343,10 @@ export default function Config({onConfigComplete}) {
 				</Text>
 			</Box>
 
+			<Box marginBottom={1}>
+				<Text color="green">Press Enter to not set api key (optional)</Text>
+			</Box>
+
 			<Box marginTop={1}>
 				<Text color="gray">esc back ⚈ ctrl + c to exit</Text>
 			</Box>
@@ -293,6 +361,8 @@ export default function Config({onConfigComplete}) {
 				return renderModelScreen();
 			case CONFIG_SCREENS.BASE_URL:
 				return renderBaseUrlScreen();
+			case CONFIG_SCREENS.MAX_TOKEN:
+				return renderMaxTokenScreen();
 			case CONFIG_SCREENS.API_KEY:
 				return renderApiKeyScreen();
 			default:

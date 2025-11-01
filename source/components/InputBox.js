@@ -45,7 +45,8 @@ export default function InputBox({
 	);
 
 	const displayText = input || placeholder;
-	const textColor = input ? 'white' : 'blackBright';
+	const textColor = input ? 'white' : 'gray';
+	const isPlaceholder = !input;
 
 	const borderChar = '─';
 	const border = borderChar.repeat(width);
@@ -60,7 +61,9 @@ export default function InputBox({
 			{/* Input area */}
 			<Box paddingLeft={1}>
 				<Text color={prefixColor}>{prefix}</Text>
-				<Text color={textColor}>{displayText}</Text>
+				<Text color={textColor} dimColor={isPlaceholder}>
+					{displayText}
+				</Text>
 				{isFocused && enabled && <Text color={prefixColor}>▊</Text>}
 			</Box>
 
