@@ -12,33 +12,34 @@
 	"scripts": {
 		"build": "babel --out-dir=dist source",
 		"dev": "babel --out-dir=dist --watch source",
-		"test": "prettier --check . && xo && ava"
+		"test": "prettier --check . && ava",
+		"lint": "xo"
 	},
 	"files": [
 		"dist"
 	],
 	"dependencies": {
 		"dotenv": "^17.2.3",
-		"ink": "^4.1.0",
+		"ink": "^6.4.0",
 		"ink-big-text": "^2.0.0",
 		"ink-gradient": "^3.0.0",
-		"meow": "^11.0.0",
-		"node-fetch": "^2.7.0",
-		"react": "^18.2.0"
+		"meow": "^14.0.0",
+		"node-fetch": "^3.3.2",
+		"react": "^19.2.0"
 	},
 	"devDependencies": {
 		"@babel/cli": "^7.21.0",
 		"@babel/preset-react": "^7.18.6",
 		"@vdemedes/prettier-config": "^2.0.1",
-		"ava": "^5.2.0",
+		"ava": "^6.4.1",
 		"chalk": "^5.2.0",
-		"eslint-config-xo-react": "^0.27.0",
-		"eslint-plugin-react": "^7.32.2",
-		"eslint-plugin-react-hooks": "^4.6.0",
+		"eslint-config-xo-react": "^0.29.0",
+		"eslint-plugin-react": "^7.37.5",
+		"eslint-plugin-react-hooks": "^7.0.1",
 		"import-jsx": "^5.0.0",
-		"ink-testing-library": "^3.0.0",
-		"prettier": "^2.8.7",
-		"xo": "^0.53.1"
+		"ink-testing-library": "^4.0.0",
+		"prettier": "^3.6.2",
+		"xo": "^1.2.3"
 	},
 	"ava": {
 		"environmentVariables": {
@@ -49,11 +50,8 @@
 		]
 	},
 	"xo": {
-		"extends": "xo-react",
 		"prettier": true,
-		"rules": {
-			"react/prop-types": "off"
-		}
+		"semicolon": true
 	},
 	"prettier": "@vdemedes/prettier-config",
 	"babel": {

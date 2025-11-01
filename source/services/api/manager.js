@@ -526,7 +526,7 @@ class ApiManager {
 		const averageDuration =
 			totalRequests > 0
 				? this.requestHistory.reduce((sum, req) => sum + req.duration, 0) /
-				  totalRequests
+					totalRequests
 				: 0;
 
 		const providerStats = {};
