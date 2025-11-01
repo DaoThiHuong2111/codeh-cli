@@ -47,19 +47,16 @@
 ### Design Principles
 
 1. **HOME is Input-Safe Zone**
-
    - No key interception at Navigation level
    - User can type freely without accidental navigation
    - InputBox component controls all input
 
 2. **CONFIG Access Points**
-
    - Primary: From WELCOME screen (press 'c')
    - Secondary: From HOME screen (press Ctrl+H)
    - Ensures user always has config access
 
 3. **Escape Routes**
-
    - WELCOME: Ctrl+C to exit
    - HOME: ESC to exit (InputBox), Ctrl+C global
    - CONFIG: Ctrl+H to return HOME, Ctrl+C global

@@ -35,7 +35,16 @@
       "Bash(npx eslint:*)",
       "Bash(npx xo:*)",
       "Bash(cat:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git log:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nrefactor: Restructure services folder with domain-based organization\n\n- Reorganize services into clear domain subfolders (config, api, input, output, system)\n- Move config-related files to config/ (getters, manager, env)\n- Move API communication to api/\n- Move input processing to input/\n- Move output classification to output/\n- Move system information to system/\n- Add centralized index.js for each domain\n- Update all imports across screens, components, and utils\n- Fix Welcome.js to import getModel from config instead of system\n- Fix Navigation.js to show current directory, branch, and model in footer\n- Fix Home.js to use new import paths and update placeholder text\n- Fix dotenv loading: move to cli.js entry point to avoid duplicate loading\n- Fix InputBox placeholder color from ''gray'' to ''blackBright'' for better readability\n- Delete old service files from root directory\n- Add config fallback logic documentation in .serena/memories/\n\nThis restructure improves code maintainability and makes it easier to understand\nthe separation of concerns between different service domains.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git push:*)",
+      "mcp__serena__list_memories",
+      "Bash(npm outdated:*)",
+      "Bash(find:*)",
+      "mcp__serena__think_about_collected_information",
+      "Bash(git checkout:*)",
+      "Bash(git commit:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

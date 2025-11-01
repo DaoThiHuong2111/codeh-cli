@@ -77,13 +77,11 @@ const provider =
 ### Key Design Decisions
 
 1. **No Circular Imports**
-
    - config.js imports configManager
    - configManager does NOT import config
    - configManager uses inline fallback logic
 
 2. **Graceful Degradation**
-
    - All getters wrapped in try-catch
    - Return empty strings/0 on errors
    - App doesn't crash on missing config
