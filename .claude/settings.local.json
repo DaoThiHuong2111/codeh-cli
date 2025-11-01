@@ -44,7 +44,10 @@
       "Bash(find:*)",
       "mcp__serena__think_about_collected_information",
       "Bash(git checkout:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "mcp__serena__initial_instructions",
+      "mcp__serena__find_referencing_symbols",
+      "Bash(ESC: Back previous\"\n3. Placeholder text was too prominent, now displays dimmer\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ]
   },
   "enableAllProjectMcpServers": true,
