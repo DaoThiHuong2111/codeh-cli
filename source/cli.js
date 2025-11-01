@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import 'dotenv/config.js';
 import React from 'react';
 import {render} from 'ink';
 import meow from 'meow';

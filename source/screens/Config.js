@@ -1,7 +1,6 @@
 import React, {useState} from 'react';
 import {Box, Text, useInput} from 'ink';
-import {configManager} from '../services/configManager.js';
-import {envManager} from '../services/envManager.js';
+import {configManager, envManager} from '../services/config/index.js';
 
 const CONFIG_SCREENS = {
 	PROVIDER: 'provider',
@@ -16,6 +15,25 @@ const PROVIDERS = [
 	{key: 'generic-chat-completion-api', label: 'generic-chat-completion-api'},
 ];
 
+// Helper function to validate URL format
+const isValidUrl = urlString => {
+	try {
+		const url = new URL(urlString);
+		return url.protocol === 'http:' || url.protocol === 'https:';
+	} catch {
+		return false;
+	}
+};
+
+// Helper function to handle text input (character and backspace/delete)
+const handleTextInputChange = (input, key, currentValue, setInputValue) => {
+	if (input && !key.ctrl && !key.meta) {
+		setInputValue(prev => prev + input);
+	} else if (key.backspace || key.delete) {
+		setInputValue(prev => prev.slice(0, -1));
+	}
+};
+
 export default function Config({onConfigComplete}) {
 	const [currentScreen, setCurrentScreen] = useState(CONFIG_SCREENS.PROVIDER);
 	const [selectedIndex, setSelectedIndex] = useState(0);
@@ -26,13 +44,7 @@ export default function Config({onConfigComplete}) {
 		baseUrl: '',
 		apiKey: '',
 	});
-
-	// Handle Ctrl+C to exit
-	useInput((input, key) => {
-		if (key.ctrl && input === 'c') {
-			process.exit(0);
-		}
-	});
+	const [validationError, setValidationError] = useState('');
 
 	const handleProviderScreenInput = (_, key) => {
 		if (key.upArrow) {
@@ -45,6 +57,7 @@ export default function Config({onConfigComplete}) {
 			setCurrentScreen(CONFIG_SCREENS.MODEL);
 			setSelectedIndex(0);
 			setInputValue('');
+			setValidationError('');
 		}
 	};
 
@@ -53,38 +66,43 @@ export default function Config({onConfigComplete}) {
 			// Go back to provider screen
 			setCurrentScreen(CONFIG_SCREENS.PROVIDER);
 			setInputValue('');
+			setValidationError('');
 		} else if (key.return && inputValue.trim()) {
+			setValidationError('');
 			setTempConfig(prev => ({...prev, model: inputValue.trim()}));
 			setCurrentScreen(CONFIG_SCREENS.BASE_URL);
 			setInputValue('');
-		} else if (input && !key.ctrl && !key.meta) {
-			setInputValue(prev => prev + input);
-		} else if (key.backspace || key.delete) {
-			setInputValue(prev => prev.slice(0, -1));
+		} else {
+			handleTextInputChange(input, key, inputValue, setInputValue);
 		}
 	};
 
 	const handleBaseUrlInput = (input, key) => {
 		if (key.escape) {
-			// Go back to model screen
+			// Go back to model screen and restore previously saved model
 			setCurrentScreen(CONFIG_SCREENS.MODEL);
-			setInputValue(tempConfig.model);
+			setInputValue(tempConfig.model || '');
+			setValidationError('');
 		} else if (key.return && inputValue.trim()) {
+			if (!isValidUrl(inputValue.trim())) {
+				setValidationError('Invalid URL format. Use http:// or https://');
+				return;
+			}
+			setValidationError('');
 			setTempConfig(prev => ({...prev, baseUrl: inputValue.trim()}));
 			setCurrentScreen(CONFIG_SCREENS.API_KEY);
 			setInputValue('');
-		} else if (input && !key.ctrl && !key.meta) {
-			setInputValue(prev => prev + input);
-		} else if (key.backspace || key.delete) {
-			setInputValue(prev => prev.slice(0, -1));
+		} else {
+			handleTextInputChange(input, key, inputValue, setInputValue);
 		}
 	};
 
 	const handleApiKeyInput = (input, key) => {
 		if (key.escape) {
-			// Go back to base URL screen
+			// Go back to base URL screen and restore previously saved base URL
 			setCurrentScreen(CONFIG_SCREENS.BASE_URL);
-			setInputValue(tempConfig.baseUrl);
+			setInputValue(tempConfig.baseUrl || '');
+			setValidationError('');
 		} else if (key.return && inputValue.trim()) {
 			// Save configuration
 			const finalConfig = {
@@ -106,24 +124,28 @@ export default function Config({onConfigComplete}) {
 			envManager.set('CODEH_BASE_URL', finalConfig.baseUrl);
 			envManager.set('CODEH_API_KEY', finalConfig.apiKey);
 
-			// Reset and exit config
+			// Reset state for potential future use
 			setCurrentScreen(CONFIG_SCREENS.PROVIDER);
 			setSelectedIndex(0);
 			setInputValue('');
 			setTempConfig({provider: '', model: '', baseUrl: '', apiKey: ''});
+			setValidationError('');
 
 			// Notify parent component that config is complete
 			if (onConfigComplete) {
 				onConfigComplete();
 			}
-		} else if (input && !key.ctrl && !key.meta) {
-			setInputValue(prev => prev + input);
-		} else if (key.backspace || key.delete) {
-			setInputValue(prev => prev.slice(0, -1));
+		} else {
+			handleTextInputChange(input, key, inputValue, setInputValue);
 		}
 	};
 
 	useInput((input, key) => {
+		// Handle Ctrl+C globally to exit
+		if (key.ctrl && input === 'c') {
+			process.exit(0);
+		}
+
 		switch (currentScreen) {
 			case CONFIG_SCREENS.PROVIDER:
 				handleProviderScreenInput(input, key);
@@ -211,7 +233,13 @@ export default function Config({onConfigComplete}) {
 				</Text>
 			</Box>
 
-			{inputValue === '' && (
+			{validationError && (
+				<Box marginBottom={1}>
+					<Text color="red">{validationError}</Text>
+				</Box>
+			)}
+
+			{inputValue === '' && !validationError && (
 				<Box marginBottom={1}>
 					<Text color="gray">Enter your base url...</Text>
 				</Box>

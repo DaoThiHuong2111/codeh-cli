@@ -3,7 +3,8 @@ import {Box} from 'ink';
 import Logo from '../components/Logo.js';
 import InfoSection from '../components/InfoSection.js';
 import TipsSection from '../components/TipsSection.js';
-import {getVersion, getModel, getCurrentDirectory} from '../services/config.js';
+import {getVersion, getCurrentDirectory} from '../services/system/index.js';
+import {getModel} from '../services/config/index.js';
 
 export default function Welcome() {
 	const version = getVersion();

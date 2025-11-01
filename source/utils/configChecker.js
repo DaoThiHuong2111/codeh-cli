@@ -1,5 +1,4 @@
-import {envManager} from '../services/envManager.js';
-import {configManager} from '../services/configManager.js';
+import {envManager, configManager} from '../services/config/index.js';
 
 /**
  * Check configuration status according to config.md flow logic
@@ -22,9 +21,7 @@ export function checkConfiguration() {
 	// Check if all required environment variables are present
 	// Note: API key can be null for some providers (like local ollama)
 	const hasCompleteEnvConfig =
-		envConfig.provider &&
-		envConfig.model &&
-		envConfig.baseUrl;
+		envConfig.provider && envConfig.model && envConfig.baseUrl;
 
 	// Step 2: Check file config if env not complete
 	let fileConfig = null;

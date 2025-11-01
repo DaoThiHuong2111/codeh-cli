@@ -1,5 +1,12 @@
-import {envManager} from './envManager.js';
-import {outputClassifier} from './outputClassifier.js';
+import {envManager} from '../config/env.js';
+import {outputClassifier} from '../output/classifier.js';
+import {
+	getModel,
+	getApiKey,
+	getBaseUrl,
+	getProvider,
+	getMaxToken,
+} from '../config/getters.js';
 
 class ApiManager {
 	constructor() {
@@ -15,6 +22,18 @@ class ApiManager {
 			requests: [],
 			maxRequests: 60,
 			timeWindow: 60000, // 1 minute
+		};
+	}
+
+	// Get config through centralized config service
+	// Fallback logic: env -> config file -> empty string
+	getConfig() {
+		return {
+			provider: getProvider(),
+			model: getModel(),
+			apiKey: getApiKey(),
+			baseUrl: getBaseUrl(),
+			maxTokens: getMaxToken(),
 		};
 	}
 
@@ -81,7 +100,7 @@ class ApiManager {
 			messages,
 			options,
 			timestamp: new Date().toISOString(),
-			provider: envManager.modelConfig.provider,
+			provider: this.getConfig().provider,
 		};
 
 		try {
@@ -95,7 +114,7 @@ class ApiManager {
 			this.checkRateLimit();
 
 			// Get provider config
-			const config = envManager.modelConfig;
+			const config = this.getConfig();
 
 			// Make API call based on provider
 			let response;
@@ -388,7 +407,7 @@ class ApiManager {
 			metadata: {
 				...metadata,
 				provider: requestData.provider,
-				model: envManager.modelConfig.model,
+				model: this.getConfig().model,
 				timestamp: new Date().toISOString(),
 				outputClassification: classification,
 			},
@@ -535,7 +554,7 @@ class ApiManager {
 	// Health check for all configured APIs
 	async healthCheck() {
 		const results = {};
-		const config = envManager.modelConfig;
+		const config = this.getConfig();
 
 		if (config.provider === 'anthropic' && config.apiKey) {
 			try {

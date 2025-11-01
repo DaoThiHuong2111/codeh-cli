@@ -1,13 +1,3 @@
-import {config} from 'dotenv';
-import {fileURLToPath} from 'url';
-import {dirname, join} from 'path';
-
-// Load environment variables
-config();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
 class EnvManager {
 	constructor() {
 		// New unified environment variables according to config.md
@@ -83,7 +73,6 @@ class EnvManager {
 		};
 	}
 
-	
 	// Helper method to get legacy base URL
 	getLegacyBaseUrl(provider) {
 		switch (provider) {

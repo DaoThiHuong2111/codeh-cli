@@ -1,4 +1,4 @@
-import {envManager} from './envManager.js';
+import {envManager} from './env.js';
 import {writeFileSync, readFileSync, existsSync, mkdirSync} from 'fs';
 import {homedir} from 'os';
 import {join, dirname} from 'path';
@@ -73,6 +73,7 @@ class ConfigManager {
 			if (!(k in target) || typeof target[k] !== 'object') {
 				target[k] = {};
 			}
+
 			target = target[k];
 		}
 
@@ -116,27 +117,41 @@ class ConfigManager {
 	// Validate configuration
 	validate() {
 		const issues = [];
-		const modelConfig = envManager.modelConfig;
+
+		// Get values from file or env
+		const customModels = this.getCustomModels();
+		const firstModel = customModels[0];
 
 		// Check required unified environment variables
 		const requiredVars = ['CODEH_PROVIDER', 'CODEH_MODEL', 'CODEH_BASE_URL'];
 		for (const varName of requiredVars) {
-			if (!envManager.get(varName)) {
-				issues.push(`Missing required environment variable: ${varName}`);
+			const envVal = envManager.get(varName);
+			const fileVal = firstModel
+				? firstModel[varName.replace('CODEH_', '').toLowerCase()]
+				: null;
+			if (!envVal && !fileVal) {
+				issues.push(`Missing required configuration: ${varName}`);
 			}
 		}
 
 		// Check API key for providers that require it
-		if (!modelConfig.apiKey && modelConfig.provider !== 'ollama') {
-			issues.push(`API key missing for ${modelConfig.provider} provider`);
+		const provider =
+			envManager.get('CODEH_PROVIDER') ||
+			(firstModel ? firstModel.provider : null);
+		const apiKey =
+			envManager.get('CODEH_API_KEY') ||
+			(firstModel ? firstModel.api_key : null);
+		if (!apiKey && provider !== 'ollama') {
+			issues.push(`API key missing for ${provider} provider`);
 		}
 
 		// Validate custom models format
-		const customModels = this.getCustomModels();
 		for (let i = 0; i < customModels.length; i++) {
 			const model = customModels[i];
 			if (!model.provider || !model.model) {
-				issues.push(`Custom model at index ${i} missing required fields (provider, model)`);
+				issues.push(
+					`Custom model at index ${i} missing required fields (provider, model)`,
+				);
 			}
 		}
 
@@ -193,17 +208,27 @@ class ConfigManager {
 	// Get configuration summary
 	getSummary() {
 		const validation = this.validate();
-		const modelConfig = envManager.modelConfig;
+		const customModels = this.getCustomModels();
+		const firstModel = customModels[0];
+
+		// Get values from env or file
+		const provider =
+			envManager.get('CODEH_PROVIDER') ||
+			(firstModel ? firstModel.provider : '');
+		const model =
+			envManager.get('CODEH_MODEL') || (firstModel ? firstModel.model : '');
+		const apiKey =
+			envManager.get('CODEH_API_KEY') || (firstModel ? firstModel.api_key : '');
 
 		return {
 			models: {
-				customModels: this.getCustomModels(),
-				count: this.getCustomModels().length,
+				customModels,
+				count: customModels.length,
 			},
 			ai: {
-				provider: modelConfig.provider,
-				model: modelConfig.model,
-				hasApiKey: !!modelConfig.apiKey,
+				provider,
+				model,
+				hasApiKey: !!apiKey,
 			},
 			validation: {
 				isValid: validation.valid,

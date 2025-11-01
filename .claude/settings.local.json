@@ -20,9 +20,25 @@
       "Bash(chmod:*)",
       "Bash(timeout:*)",
       "Bash(gtimeout:*)",
-      "Bash(./test_real_simple.exp:*)"
+      "Bash(./test_real_simple.exp:*)",
+      "mcp__serena__find_file",
+      "mcp__serena__search_for_pattern",
+      "mcp__serena__get_current_config",
+      "mcp__serena__read_memory",
+      "mcp__serena__get_symbols_overview",
+      "mcp__serena__find_symbol",
+      "mcp__serena__replace_symbol_body",
+      "Bash(npx ava)",
+      "Bash(for file in source/services/*.js)",
+      "Bash(head:*)",
+      "Bash(done)",
+      "Bash(npx eslint:*)",
+      "Bash(npx xo:*)",
+      "Bash(cat:*)",
+      "Bash(git add:*)"
     ]
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "serena",
     "Context7"

@@ -1,6 +1,6 @@
-import {inputValidator} from './inputValidator.js';
-import {outputClassifier} from './outputClassifier.js';
-import {apiManager} from './apiManager.js';
+import {inputValidator} from './validator.js';
+import {outputClassifier} from '../output/classifier.js';
+import {apiManager} from '../api/manager.js';
 
 class InputHandler {
 	constructor() {

@@ -4,6 +4,12 @@ import Welcome from '../screens/Welcome.js';
 import Home from '../screens/Home.js';
 import Config from '../screens/Config.js';
 import {checkConfiguration} from '../utils/configChecker.js';
+import {
+	getCurrentDirectory,
+	getCurrentBranch,
+} from '../services/system/index.js';
+import {getModel} from '../services/config/index.js';
+import path from 'path';
 
 const SCREENS = {
 	WELCOME: 'welcome',
@@ -14,7 +20,9 @@ const SCREENS = {
 export default function Navigation() {
 	// Check initial configuration immediately
 	const initialConfigStatus = checkConfiguration();
-	const initialScreen = !initialConfigStatus.isConfigured ? SCREENS.CONFIG : SCREENS.HOME;
+	const initialScreen = !initialConfigStatus.isConfigured
+		? SCREENS.CONFIG
+		: SCREENS.HOME;
 
 	const [currentScreen, setCurrentScreen] = useState(initialScreen);
 	const [configChecked, setConfigChecked] = useState(true);
@@ -45,12 +53,6 @@ export default function Navigation() {
 			} else if (input === 'c') {
 				setCurrentScreen(SCREENS.CONFIG);
 			}
-		} else if (currentScreen === SCREENS.HOME) {
-			if (key.ctrl && input === 'h') {
-				setCurrentScreen(SCREENS.WELCOME);
-			} else if (input === 'c') {
-				setCurrentScreen(SCREENS.CONFIG);
-			}
 		} else if (currentScreen === SCREENS.CONFIG) {
 			if (key.ctrl && input === 'h') {
 				setCurrentScreen(SCREENS.HOME);
@@ -72,12 +74,16 @@ export default function Navigation() {
 			case SCREENS.HOME:
 				return <Home />;
 			case SCREENS.CONFIG:
-				return <Config onConfigComplete={() => {
-					const configStatus = checkConfiguration();
-					if (configStatus.isConfigured) {
-						setCurrentScreen(SCREENS.HOME);
-					}
-				}} />;
+				return (
+					<Config
+						onConfigComplete={() => {
+							const configStatus = checkConfiguration();
+							if (configStatus.isConfigured) {
+								setCurrentScreen(SCREENS.HOME);
+							}
+						}}
+					/>
+				);
 			default:
 				return <Welcome />;
 		}
@@ -88,19 +94,25 @@ export default function Navigation() {
 			case SCREENS.WELCOME:
 				return (
 					<Box marginTop={1}>
-						<Text color="gray">Enter: Home | C: Config | Ctrl+C: Thoát</Text>
+						<Text color="gray">Ctrl+C: Exit</Text>
 					</Box>
 				);
-			case SCREENS.HOME:
+			case SCREENS.HOME: {
+				const currentDir = path.basename(getCurrentDirectory());
+				const branch = getCurrentBranch();
+				const model = getModel();
 				return (
 					<Box marginTop={1}>
-						<Text color="gray">Ctrl+H: Welcome | C: Config | ESC: Thoát</Text>
+						<Text color="gray">
+							{currentDir} {branch ?? ''} | {model}
+						</Text>
 					</Box>
 				);
+			}
 			case SCREENS.CONFIG:
 				return (
 					<Box marginTop={1}>
-						<Text color="gray">Ctrl+H: Home | Enter: Welcome | ESC: Thoát</Text>
+						<Text color="gray">Ctrl+C: Exit |ESC: Back previous</Text>
 					</Box>
 				);
 			default:

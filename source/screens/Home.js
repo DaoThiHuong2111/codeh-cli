@@ -1,18 +1,21 @@
 import React, {useState} from 'react';
 import {Box, Text, useInput} from 'ink';
 import InputBox from '../components/InputBox.js';
-import {processUserInput} from '../services/inputHandler.js';
+import {processUserInput} from '../services/input/index.js';
+import Logo from '../components/Logo.js';
+import InfoSection from '../components/InfoSection.js';
+import TipsSection from '../components/TipsSection.js';
+import {getVersion, getCurrentDirectory} from '../services/system/index.js';
+import {getModel} from '../services/config/index.js';
 
 export default function Home() {
+	const version = getVersion();
+	const model = getModel();
+	const directory = getCurrentDirectory();
+
 	const [input, setInput] = useState('');
 	const [history, setHistory] = useState([]);
 	const [isLoading, setIsLoading] = useState(false);
-
-	useInput((input, key) => {
-		if (key.escape) {
-			process.exit(0);
-		}
-	});
 
 	const handleSubmit = async userInput => {
 		if (!userInput.trim()) return;
@@ -33,45 +36,16 @@ export default function Home() {
 
 	return (
 		<Box flexDirection="column" paddingY={1}>
-			<Box marginBottom={1}>
-				<Text color="blue" bold>
-					CodeH CLI - Home
-				</Text>
-			</Box>
+			<Logo />
 
-			<Box flexDirection="column" marginBottom={1}>
-				{history.map((item, index) => (
-					<Box key={index} marginBottom={1}>
-						<Text
-							color={
-								item.type === 'user'
-									? 'green'
-									: item.type === 'error'
-									? 'red'
-									: 'white'
-							}
-						>
-							{item.type === 'user'
-								? '> '
-								: item.type === 'assistant'
-								? '🤖 '
-								: '❌ '}
-							{item.content}
-						</Text>
-					</Box>
-				))}
-				{isLoading && (
-					<Box>
-						<Text color="yellow">Đang xử lý...</Text>
-					</Box>
-				)}
-			</Box>
+			<InfoSection version={version} model={model} directory={directory} />
+			<TipsSection />
 
 			<InputBox
 				value={input}
 				onChange={setInput}
 				onSubmit={handleSubmit}
-				placeholder="Nhập lệnh hoặc câu hỏi của bạn (ESC để thoát)..."
+				placeholder="Prompt here (Ctrl+C để thoát)..."
 			/>
 		</Box>
 	);

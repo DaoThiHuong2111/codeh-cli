@@ -45,7 +45,7 @@ export default function InputBox({
 	);
 
 	const displayText = input || placeholder;
-	const textColor = input ? 'white' : 'gray';
+	const textColor = input ? 'white' : 'blackBright';
 
 	const borderChar = '─';
 	const border = borderChar.repeat(width);
