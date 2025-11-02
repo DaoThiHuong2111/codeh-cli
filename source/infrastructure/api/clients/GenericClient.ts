@@ -26,8 +26,12 @@ export class GenericClient implements IApiClient {
   }
 
   async chat(request: ApiRequest): Promise<ApiResponse> {
+    if (!request.model) {
+      throw new Error('Model is required and should be provided by user configuration');
+    }
+
     const requestBody = {
-      model: request.model || 'default',
+      model: request.model,
       messages: request.messages.map((m) => ({
         role: m.role,
         content: m.content,
@@ -84,7 +88,9 @@ export class GenericClient implements IApiClient {
   }
 
   async getAvailableModels(): Promise<string[]> {
-    return ['default'];
+    // Models should be configured by user, not hardcoded
+    // Return empty array - actual models come from user configuration
+    return [];
   }
 
   private normalizeResponse(
@@ -95,7 +101,7 @@ export class GenericClient implements IApiClient {
     if (response.choices && response.choices[0]?.message?.content) {
       return {
         content: response.choices[0].message.content,
-        model: response.model || request.model || 'default',
+        model: response.model || request.model,
         usage: {
           promptTokens: response.usage?.prompt_tokens || 0,
           completionTokens: response.usage?.completion_tokens || 0,
@@ -113,7 +119,7 @@ export class GenericClient implements IApiClient {
           typeof response.content === 'string'
             ? response.content
             : response.content[0]?.text || '',
-        model: response.model || request.model || 'default',
+        model: response.model || request.model,
         usage: {
           promptTokens: response.usage?.input_tokens || 0,
           completionTokens: response.usage?.output_tokens || 0,
@@ -127,9 +133,13 @@ export class GenericClient implements IApiClient {
     }
 
     // Fallback: return raw response as content
+    if (!request.model) {
+      throw new Error('Model is required and should be provided by user configuration');
+    }
+
     return {
       content: JSON.stringify(response),
-      model: request.model || 'default',
+      model: request.model,
       usage: {
         promptTokens: 0,
         completionTokens: 0,

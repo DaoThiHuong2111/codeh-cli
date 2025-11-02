@@ -20,8 +20,12 @@ export class OllamaClient implements IApiClient {
   }
 
   async chat(request: ApiRequest): Promise<ApiResponse> {
+    if (!request.model) {
+      throw new Error('Model is required and should be provided by user configuration');
+    }
+
     const requestBody = {
-      model: request.model || 'llama3.1',
+      model: request.model,
       messages: request.messages.map((m) => ({
         role: m.role,
         content: m.content,
@@ -79,16 +83,11 @@ export class OllamaClient implements IApiClient {
     try {
       const url = this.baseUrl.replace(/\/$/, '') + '/api/tags';
       const response = await this.httpClient.get<any>(url);
-      return (
-        response.data.models?.map((m: any) => m.name) || [
-          'llama3.1',
-          'llama3',
-          'mistral',
-        ]
-      );
+      return response.data.models?.map((m: any) => m.name) || [];
     } catch (error) {
-      // Return default models if API call fails
-      return ['llama3.1', 'llama3', 'mistral'];
+      // Models should be configured by user, not hardcoded
+      // Return empty array if API call fails
+      return [];
     }
   }
 
@@ -98,7 +97,7 @@ export class OllamaClient implements IApiClient {
   ): ApiResponse {
     return {
       content: response.message?.content || '',
-      model: response.model || request.model || 'llama3.1',
+      model: response.model || request.model,
       usage: {
         promptTokens: response.prompt_eval_count || 0,
         completionTokens: response.eval_count || 0,

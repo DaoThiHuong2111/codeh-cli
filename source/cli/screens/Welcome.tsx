@@ -1,29 +1,39 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Box, Text } from 'ink';
-import { WelcomePresenter } from '../presenters/WelcomePresenter';
+import { useNavigation } from '../contexts/NavigationContext';
+import { useWelcomeLogic } from '../hooks/useWelcomeLogic';
 import Logo from '../components/atoms/Logo';
 
 export default function Welcome() {
-	const presenter = new WelcomePresenter();
-	const [version, setVersion] = useState('');
-	const [hasUpdate, setHasUpdate] = useState(false);
-	const [latestVersion, setLatestVersion] = useState('');
+	const { navigateTo } = useNavigation();
 
-	useEffect(() => {
-		const checkUpdates = async () => {
-			const result = await presenter.checkForUpdates();
-			setVersion(result.currentVersion);
-			setHasUpdate(result.hasUpdate);
-			if (result.latestVersion) {
-				setLatestVersion(result.latestVersion);
-			}
-		};
+	// Business logic hook
+	const {
+		loading,
+		shouldShowWelcome,
+		displayMessage,
+		displayVersion,
+	} = useWelcomeLogic({
+		onNavigateHome: () => navigateTo('home'),
+		onNavigateConfig: () => navigateTo('config'),
+	});
 
-		checkUpdates();
-	}, []);
+	// Show loading state
+	if (loading) {
+		return (
+			<Box flexDirection="column" padding={2}>
+				<Logo />
+				<Box marginTop={2}>
+					<Text>Loading...</Text>
+				</Box>
+			</Box>
+		);
+	}
 
-	const message = presenter.getWelcomeMessage();
-	const tips = presenter.getQuickTips();
+	// If we shouldn't show welcome, don't render anything (navigation will happen)
+	if (!shouldShowWelcome) {
+		return null;
+	}
 
 	return (
 		<Box flexDirection="column" padding={2}>
@@ -31,31 +41,20 @@ export default function Welcome() {
 
 			<Box marginTop={2}>
 				<Text bold color="cyan">
-					{message}
+					{displayMessage}
 				</Text>
 			</Box>
 
-			<Box marginTop={1}>
-				<Text>Version: {version}</Text>
-			</Box>
-
-			{hasUpdate && (
+			{displayVersion && (
 				<Box marginTop={1}>
-					<Text color="yellow">
-						⚠️  New version available: {latestVersion}
+					<Text>
+						Version: <Text bold color="green">{displayVersion}</Text>
 					</Text>
 				</Box>
 			)}
 
-			<Box marginTop={2} flexDirection="column">
-				<Text bold>Quick Tips:</Text>
-				{tips.map((tip, index) => (
-					<Text key={index}>  • {tip}</Text>
-				))}
-			</Box>
-
 			<Box marginTop={2}>
-				<Text dimColor>Press Enter to continue...</Text>
+				<Text dimColor>Press Enter to start or 'c' to configure</Text>
 			</Box>
 		</Box>
 	);

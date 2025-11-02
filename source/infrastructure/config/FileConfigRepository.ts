@@ -43,9 +43,8 @@ export class FileConfigRepository implements IConfigRepository {
         const fileContent = readFileSync(this.configFile, 'utf8');
         return JSON.parse(fileContent);
       } else {
-        const defaultConfig: FileConfigData = { custom_models: [] };
-        this.saveConfig(defaultConfig);
-        return defaultConfig;
+        // Don't create empty config file - return empty structure
+        return { custom_models: [] };
       }
     } catch (error: any) {
       console.warn('Error loading config, using defaults:', error.message);
@@ -92,18 +91,11 @@ export class FileConfigRepository implements IConfigRepository {
     this.saveConfig(this.config);
   }
 
-  async getAll(): Promise<ConfigData> {
+  async getAll(): Promise<ConfigData | null> {
     const firstModel = this.config.custom_models?.[0];
 
     if (!firstModel) {
-      return {
-        provider: 'anthropic',
-        model: '',
-        baseUrl: '',
-        apiKey: '',
-        maxTokens: 4096,
-        temperature: 0.7,
-      };
+      return null; // No configuration exists - should trigger Config screen
     }
 
     return {
@@ -117,7 +109,10 @@ export class FileConfigRepository implements IConfigRepository {
   }
 
   async exists(): Promise<boolean> {
-    return existsSync(this.configFile);
+    // File must exist AND have at least one model configured
+    return existsSync(this.configFile) &&
+           this.config.custom_models !== undefined &&
+           this.config.custom_models.length > 0;
   }
 
   async delete(key: string): Promise<void> {

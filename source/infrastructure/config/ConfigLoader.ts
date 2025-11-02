@@ -21,15 +21,13 @@ export class ConfigLoader {
    * Load configuration with priority:
    * 1. Environment variables (highest)
    * 2. File config (~/.codeh/configs.json)
-   * 3. Defaults (lowest)
+   * Returns null if no configuration exists
    */
-  async load(): Promise<Configuration> {
+  async load(): Promise<Configuration | null> {
     const config = await this.mergeConfigs();
 
-    if (!config.provider) {
-      throw new Error(
-        'No configuration found. Please set CODEH_PROVIDER environment variable or run configuration wizard.'
-      );
+    if (!config || !config.provider) {
+      return null; // No configuration exists - should trigger Config screen
     }
 
     return Configuration.create(config);
@@ -46,20 +44,28 @@ export class ConfigLoader {
 
   /**
    * Get merged configuration data
+   * Returns null if no configuration exists (should trigger Config screen)
    */
-  async mergeConfigs(): Promise<ConfigData> {
+  async mergeConfigs(): Promise<ConfigData | null> {
     const fileConfig = await this.fileRepo.getAll();
     const envConfig = await this.envRepo.getAll();
 
-    // Merge with priority: ENV > File > Defaults
+    // If neither env nor file config exists, return null
+    if (!envConfig && !fileConfig) {
+      return null;
+    }
+
+    // Use env config if available, otherwise use file config
+    const baseConfig = envConfig || fileConfig;
+
+    // Merge with priority: ENV > File
     return {
-      provider:
-        envConfig.provider || fileConfig.provider || ('anthropic' as any),
-      model: envConfig.model || fileConfig.model || '',
-      baseUrl: envConfig.baseUrl || fileConfig.baseUrl,
-      apiKey: envConfig.apiKey || fileConfig.apiKey,
-      maxTokens: envConfig.maxTokens || fileConfig.maxTokens || 4096,
-      temperature: envConfig.temperature || fileConfig.temperature || 0.7,
+      provider: envConfig?.provider || fileConfig?.provider || 'anthropic' as any, // This won't be reached because we check null above
+      model: envConfig?.model || fileConfig?.model || '',
+      baseUrl: envConfig?.baseUrl || fileConfig?.baseUrl,
+      apiKey: envConfig?.apiKey || fileConfig?.apiKey,
+      maxTokens: envConfig?.maxTokens || fileConfig?.maxTokens || 4096,
+      temperature: envConfig?.temperature || fileConfig?.temperature || 0.7,
     };
   }
 
@@ -83,6 +89,12 @@ export class ConfigLoader {
   async validate(): Promise<{ valid: boolean; errors: string[] }> {
     try {
       const config = await this.load();
+      if (!config) {
+        return {
+          valid: false,
+          errors: ['No configuration found'],
+        };
+      }
       const errors = config.getValidationErrors();
 
       return {
@@ -105,16 +117,19 @@ export class ConfigLoader {
     hasFileConfig: boolean;
     provider?: string;
     model?: string;
+    hasConfig?: boolean;
   }> {
     const hasEnvConfig = await this.envRepo.exists();
     const hasFileConfig = await this.fileRepo.exists();
     const merged = await this.mergeConfigs();
+    const hasConfig = !!merged;
 
     return {
       hasEnvConfig,
       hasFileConfig,
-      provider: merged.provider,
-      model: merged.model,
+      provider: merged?.provider,
+      model: merged?.model,
+      hasConfig,
     };
   }
 

@@ -1,4 +1,4 @@
-# ✅ HOÀN THÀNH - BỘ TÀI LIỆU KỸ THUẬT GEMINI CLI
+# ✅ HOÀN THÀNH - BỘ TÀI LIỆU KỸ THUẬT codeh CLI
 
 ## 🎉 TẤT CẢ FILES ĐÃ HOÀN THÀNH
 
@@ -44,7 +44,7 @@ Tổng cộng: **12 files** | Tổng dung lượng: **~150KB** (mô tả kỹ th
 
 ### 3. CONVERSATION HISTORY
 - ✅ **KEY INSIGHT**: Gửi TOÀN BỘ HISTORY mỗi request (stateless API)
-- ✅ Content và Part structure (Gemini API format)
+- ✅ Content và Part structure (codeh API format)
 - ✅ Turn management mechanisms
 - ✅ History serialization patterns
 - ✅ Pending/Committed pattern cho streaming
@@ -62,7 +62,7 @@ Tổng cộng: **12 files** | Tổng dung lượng: **~150KB** (mô tả kỹ th
 - ✅ React + Ink architecture patterns
 - ✅ Component hierarchy: AppContainer → MainContent → HistoryItemDisplay
 - ✅ Streaming state machine: Idle → Responding → WaitingForConfirmation
-- ✅ Hooks architecture (useGeminiStream, useHistoryManager)
+- ✅ Hooks architecture (usecodehStream, useHistoryManager)
 - ✅ Real-time UI updates với pending/committed pattern
 - ✅ Spinner animations và status indicators
 
@@ -84,11 +84,11 @@ Tổng cộng: **12 files** | Tổng dung lượng: **~150KB** (mô tả kỹ th
 - ✅ Configuration system
 
 ### 8. DATA STRUCTURES
-- ✅ Gemini API types: Content, Part, GenerateContentRequest
-- ✅ Streaming events: GeminiEventType, GeminiEvent union
+- ✅ codeh API types: Content, Part, GenerateContentRequest
+- ✅ Streaming events: codehEventType, codehEvent union
 - ✅ Tool types: ToolCall, ToolResult, ToolDefinition
 - ✅ History types: HistoryItem, Message, Turn
-- ✅ Config types: GeminiConfig, Settings
+- ✅ Config types: codehConfig, Settings
 - ✅ IDE context types
 - ✅ Complete type hierarchy
 
@@ -337,7 +337,7 @@ Bộ tài liệu này là **mô tả kỹ thuật thuần túy**:
 
 Bộ tài liệu này cung cấp **MÔ TẢ KỸ THUẬT** đầy đủ để:
 
-1. ✅ **Hiểu đầy đủ** cách Gemini CLI hoạt động
+1. ✅ **Hiểu đầy đủ** cách codeh CLI hoạt động
 2. ✅ **Nắm được architecture** và design patterns
 3. ✅ **Hiểu mechanisms** của từng component
 4. ✅ **Biết cách thiết kế** system tương tự
@@ -392,7 +392,7 @@ DOCS_FOR_CODEH/
 **Tạo bởi**: Claude (Anthropic)
 **Ngày tạo**: 2025-11-02
 **Cập nhật**: 2025-11-02 (restructured)
-**Dựa trên**: Gemini CLI codebase analysis
+**Dựa trên**: codeh CLI codebase analysis
 **Mục đích**: Clone features vào CodeH project
 **Loại**: Technical description documents
 **Trạng thái**: ✅ HOÀN THÀNH

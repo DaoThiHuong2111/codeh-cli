@@ -1,35 +1,44 @@
 /**
  * useCodehClient Hook
- * Access CodehClient from DI Container
+ * Lazy loads CodehClient when needed (not during app startup)
  */
 
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Container } from '../../core/di/Container';
 import { CodehClient } from '../../core/application/CodehClient';
+import { createCodehClient } from '../../core/di/setup';
 
 export function useCodehClient(container: Container) {
 	const [client, setClient] = useState<CodehClient | null>(null);
-	const [loading, setLoading] = useState(true);
+	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
-	useEffect(() => {
-		const loadClient = async () => {
-			try {
-				const resolvedClient = await container.resolve<Promise<CodehClient>>(
-					'CodehClient'
-				);
-				const actualClient = await resolvedClient;
-				setClient(actualClient);
-			} catch (err: any) {
-				setError(err.message || 'Failed to load CodehClient');
-				console.error('Failed to load CodehClient:', err);
-			} finally {
-				setLoading(false);
-			}
-		};
+	/**
+	 * Lazy load the client when first needed
+	 * Returns true if successful, false if error
+	 */
+	const initializeClient = useCallback(async (): Promise<boolean> => {
+		// If already loaded, return success
+		if (client) {
+			return true;
+		}
 
-		loadClient();
-	}, [container]);
+		setLoading(true);
+		setError(null);
 
-	return { client, loading, error };
+		try {
+			const newClient = await createCodehClient(container);
+			setClient(newClient);
+			return true;
+		} catch (err: any) {
+			const errorMessage = err.message || 'Failed to load CodehClient';
+			setError(errorMessage);
+			console.error('Failed to load CodehClient:', err);
+			return false;
+		} finally {
+			setLoading(false);
+		}
+	}, [container, client]);
+
+	return { client, loading, error, initializeClient };
 }

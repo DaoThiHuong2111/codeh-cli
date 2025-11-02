@@ -2,7 +2,7 @@
 
 ## 📋 Tổng quan
 
-Tài liệu này mô tả **kiến trúc UI và cơ chế streaming** của Gemini CLI.
+Tài liệu này mô tả **kiến trúc UI và cơ chế streaming** của codeh CLI.
 
 ---
 
@@ -36,7 +36,7 @@ AppContainer (root)
   │   └─ currentInput
   │
   ├─ Hooks
-  │   ├─ useGeminiStream()
+  │   ├─ usecodehStream()
   │   └─ useHistoryManager()
   │
   └─ Render tree
@@ -44,7 +44,7 @@ AppContainer (root)
       ├─ MainContent
       │   └─ HistoryItemDisplay (foreach item)
       │       ├─ UserMessage
-      │       ├─ GeminiMessage
+      │       ├─ codehMessage
       │       ├─ ToolGroupMessage
       │       └─ ToolConfirmationMessage
       ├─ InputArea
@@ -114,7 +114,7 @@ interface HistoryItem {
 **Phase 1: Start streaming**
 ```
 HistoryItem {
-  pending: { type: 'gemini', content: '' },
+  pending: { type: 'codeh', content: '' },
   committed: null
 }
 ```
@@ -122,7 +122,7 @@ HistoryItem {
 **Phase 2: During streaming**
 ```
 HistoryItem {
-  pending: { type: 'gemini', content: 'Xin ch...' },  // Update real-time
+  pending: { type: 'codeh', content: 'Xin ch...' },  // Update real-time
   committed: null
 }
 ```
@@ -131,7 +131,7 @@ HistoryItem {
 ```
 HistoryItem {
   pending: null,
-  committed: { type: 'gemini', content: 'Xin chào!' }  // Final
+  committed: { type: 'codeh', content: 'Xin chào!' }  // Final
 }
 ```
 
@@ -171,7 +171,7 @@ Terminal displays new text
 | Debounced | ~100-200ms | Medium | Good |
 | Batched | ~500ms | Low | Laggy |
 
-**Gemini CLI choice**: Every chunk (smooth UX priority)
+**codeh CLI choice**: Every chunk (smooth UX priority)
 
 **Alternative for performance**:
 - Debounce updates to 100ms
@@ -234,7 +234,7 @@ for await (const event of stream) {
 **Vai trò**: Root component, state management
 
 **Responsibilities**:
-- Initialize hooks (useGeminiStream, useHistoryManager)
+- Initialize hooks (usecodehStream, useHistoryManager)
 - Handle user input
 - Manage keyboard shortcuts
 - Pass state to children
@@ -253,12 +253,12 @@ for await (const event of stream) {
 **Responsibilities**:
 - Determine message type
 - Show pending vs committed
-- Render appropriate component (UserMessage/GeminiMessage/etc.)
+- Render appropriate component (UserMessage/codehMessage/etc.)
 
 ### 7.4. Message Types
 
 **UserMessage**: User's input
-**GeminiMessage**: AI response (with streaming support)
+**codehMessage**: AI response (with streaming support)
 **ToolGroupMessage**: Tool calls và results
 **ToolConfirmationMessage**: Approval dialog
 **ErrorMessage**: Errors
@@ -295,7 +295,7 @@ for await (const event of stream) {
 ### 9.1. Information Displayed
 
 ```
-[●] Ready | Model: gemini-1.5-pro | Tokens: 45.2K / 2M (2.3%)
+[●] Ready | Model: codeh-1.5-pro | Tokens: 45.2K / 2M (2.3%)
 ```
 
 **Components**:
@@ -329,7 +329,7 @@ dots2:   ⣾ ⣽ ⣻ ⢿ ⡿ ⣟ ⣯ ⣷
 arc:     ◜ ◠ ◝ ◞ ◡ ◟
 ```
 
-**Gemini CLI choice**: `dots`
+**codeh CLI choice**: `dots`
 
 ---
 
@@ -398,7 +398,7 @@ TextInput component chỉ hỗ trợ single-line
 - Enter: Submit
 - Display multiple lines in terminal
 
-**Gemini CLI choice**: Single-line (simplicity)
+**codeh CLI choice**: Single-line (simplicity)
 
 ---
 
@@ -426,7 +426,7 @@ Decouple streaming logic và UI updates
 ### Files quan trọng:
 - `AppContainer.tsx:50-250` - Root component
 - `MainContent.tsx:20-150` - History display
-- `useGeminiStream.ts:50-900` - Streaming hook
+- `usecodehStream.ts:50-900` - Streaming hook
 - `useHistoryManager.ts:10-150` - History management
 
 ### Related Docs:

@@ -24,8 +24,12 @@ export class OpenAIClient implements IApiClient {
   }
 
   async chat(request: ApiRequest): Promise<ApiResponse> {
+    if (!request.model) {
+      throw new Error('Model is required and should be provided by user configuration');
+    }
+
     const requestBody = {
-      model: request.model || 'gpt-4o',
+      model: request.model,
       max_tokens: request.maxTokens || 4096,
       messages: request.messages.map((m) => ({
         role: m.role,
@@ -83,13 +87,9 @@ export class OpenAIClient implements IApiClient {
   }
 
   async getAvailableModels(): Promise<string[]> {
-    return [
-      'gpt-4o',
-      'gpt-4o-mini',
-      'gpt-4-turbo',
-      'gpt-4',
-      'gpt-3.5-turbo',
-    ];
+    // Models should be configured by user, not hardcoded
+    // Return empty array - actual models come from user configuration
+    return [];
   }
 
   private normalizeResponse(response: any): ApiResponse {

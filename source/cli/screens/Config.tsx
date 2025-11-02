@@ -1,141 +1,66 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Text, useInput } from 'ink';
+import React from 'react';
+import { Box, Text } from 'ink';
 import { Container } from '../../core/di/Container';
-import { ConfigPresenter } from '../presenters/ConfigPresenter';
+import { useNavigation } from '../contexts/NavigationContext';
+import { useConfigWizard, ConfigStep } from '../hooks/useConfigWizard';
+import { useConfigKeyboard } from '../hooks/useConfigKeyboard';
 import Logo from '../components/atoms/Logo';
-import Menu, { MenuItem } from '../components/molecules/Menu';
+import Menu from '../components/molecules/Menu';
 import InputBox from '../components/molecules/InputBox';
-import { SuccessStatus, ErrorStatus } from '../components/atoms/StatusIndicator';
+import { ErrorStatus } from '../components/atoms/StatusIndicator';
 
 interface ConfigProps {
 	onConfigComplete?: () => void;
 	container: Container;
 }
 
-enum ConfigStep {
-	PROVIDER = 'provider',
-	MODEL = 'model',
-	API_KEY = 'api_key',
-	BASE_URL = 'base_url',
-	CONFIRM = 'confirm',
-}
-
 export default function Config({ onConfigComplete, container }: ConfigProps) {
-	const presenter = new ConfigPresenter();
+	const { navigateTo } = useNavigation();
 
-	const [currentStep, setCurrentStep] = useState<ConfigStep>(ConfigStep.PROVIDER);
-	const [selectedProvider, setSelectedProvider] = useState('');
-	const [selectedModel, setSelectedModel] = useState('');
-	const [apiKey, setApiKey] = useState('');
-	const [baseUrl, setBaseUrl] = useState('');
-	const [error, setError] = useState('');
-	const [saving, setSaving] = useState(false);
+	// Business logic hook
+	const wizard = useConfigWizard();
 
-	// Provider selection
-	const [providerIndex, setProviderIndex] = useState(0);
-	const providers = presenter.getProviders();
-
-	// Model selection
-	const [modelIndex, setModelIndex] = useState(0);
-	const [availableModels, setAvailableModels] = useState<MenuItem[]>([]);
-
-	useEffect(() => {
-		if (selectedProvider) {
-			const models = presenter.getDefaultModels(selectedProvider);
-			setAvailableModels(
-				models.map((m) => ({ label: m, value: m }))
-			);
-		}
-	}, [selectedProvider]);
-
-	useInput((input: string, key: any) => {
-		if (saving) return;
-
-		// Navigation
-		if (key.upArrow) {
-			if (currentStep === ConfigStep.PROVIDER) {
-				setProviderIndex(Math.max(0, providerIndex - 1));
-			} else if (currentStep === ConfigStep.MODEL) {
-				setModelIndex(Math.max(0, modelIndex - 1));
+	// Keyboard navigation hook
+	useConfigKeyboard({
+		currentStep: wizard.currentStep,
+		saving: wizard.saving,
+		providerIndex: wizard.providerIndex,
+		confirmIndex: wizard.confirmIndex,
+		providersLength: wizard.providers.length,
+		confirmOptionsLength: wizard.confirmOptions.length,
+		onNavigateHome: () => navigateTo('home'),
+		onGoBack: wizard.goBack,
+		onProviderIndexChange: wizard.setProviderIndex,
+		onConfirmIndexChange: wizard.setConfirmIndex,
+		onComplete: async () => {
+			if (wizard.currentStep === ConfigStep.CONFIRM) {
+				const selectedOption = wizard.confirmOptions[wizard.confirmIndex].value;
+				if (selectedOption === 'save') {
+					await wizard.save(() => {
+						onConfigComplete?.();
+						navigateTo('home');
+					});
+				} else if (selectedOption === 'edit') {
+					wizard.goBack();
+					wizard.setConfirmIndex(0);
+				}
+			} else {
+				await wizard.completeStep();
 			}
-		} else if (key.downArrow) {
-			if (currentStep === ConfigStep.PROVIDER) {
-				setProviderIndex(Math.min(providers.length - 1, providerIndex + 1));
-			} else if (currentStep === ConfigStep.MODEL) {
-				setModelIndex(Math.min(availableModels.length - 1, modelIndex + 1));
-			}
-		} else if (key.return) {
-			handleStepComplete();
-		}
+		},
 	});
 
-	const handleStepComplete = async () => {
-		setError('');
-
-		switch (currentStep) {
-			case ConfigStep.PROVIDER:
-				setSelectedProvider(providers[providerIndex].value);
-				setCurrentStep(ConfigStep.MODEL);
-				break;
-
-			case ConfigStep.MODEL:
-				if (availableModels.length > 0) {
-					setSelectedModel(availableModels[modelIndex].value);
-					setCurrentStep(ConfigStep.API_KEY);
-				}
-				break;
-
-			case ConfigStep.API_KEY:
-				if (!apiKey && selectedProvider !== 'ollama') {
-					setError('API key is required');
-					return;
-				}
-				setCurrentStep(ConfigStep.BASE_URL);
-				break;
-
-			case ConfigStep.BASE_URL:
-				setCurrentStep(ConfigStep.CONFIRM);
-				break;
-
-			case ConfigStep.CONFIRM:
-				await handleSave();
-				break;
-		}
-	};
-
-	const handleSave = async () => {
-		setSaving(true);
-
-		try {
-			const result = await presenter.saveConfiguration({
-				provider: selectedProvider,
-				model: selectedModel,
-				apiKey: apiKey || undefined,
-				baseUrl: baseUrl || undefined,
-			});
-
-			if (result.success) {
-				onConfigComplete?.();
-			} else {
-				setError(result.error || 'Failed to save configuration');
-				setSaving(false);
-			}
-		} catch (err: any) {
-			setError(err.message);
-			setSaving(false);
-		}
-	};
-
+	// Render methods
 	const renderStep = () => {
-		switch (currentStep) {
+		switch (wizard.currentStep) {
 			case ConfigStep.PROVIDER:
 				return (
 					<Box flexDirection="column">
 						<Text bold>Step 1: Select Provider</Text>
 						<Box marginTop={1}>
 							<Menu
-								items={providers}
-								selectedIndex={providerIndex}
+								items={wizard.providers}
+								selectedIndex={wizard.providerIndex}
 							/>
 						</Box>
 					</Box>
@@ -144,11 +69,18 @@ export default function Config({ onConfigComplete, container }: ConfigProps) {
 			case ConfigStep.MODEL:
 				return (
 					<Box flexDirection="column">
-						<Text bold>Step 2: Select Model</Text>
+						<Text bold>Step 2: Enter Model</Text>
+						{wizard.error && (
+							<Box marginTop={1}>
+								<Text color="red">{wizard.error}</Text>
+							</Box>
+						)}
 						<Box marginTop={1}>
-							<Menu
-								items={availableModels}
-								selectedIndex={modelIndex}
+							<InputBox
+								value={wizard.selectedModel}
+								onChange={wizard.setSelectedModel}
+								onSubmit={() => wizard.completeStep()}
+								placeholder="Enter model name..."
 							/>
 						</Box>
 					</Box>
@@ -158,15 +90,15 @@ export default function Config({ onConfigComplete, container }: ConfigProps) {
 				return (
 					<Box flexDirection="column">
 						<Text bold>Step 3: Enter API Key</Text>
-						{selectedProvider === 'ollama' ? (
+						{wizard.selectedProvider === 'ollama' ? (
 							<Box marginTop={1}>
 								<Text dimColor>Ollama doesn't require an API key. Press Enter to continue.</Text>
 							</Box>
 						) : (
 							<InputBox
-								value={apiKey}
-								onChange={setApiKey}
-								onSubmit={() => handleStepComplete()}
+								value={wizard.apiKey}
+								onChange={wizard.setApiKey}
+								onSubmit={() => wizard.completeStep()}
 								placeholder="Enter your API key..."
 							/>
 						)}
@@ -178,11 +110,34 @@ export default function Config({ onConfigComplete, container }: ConfigProps) {
 					<Box flexDirection="column">
 						<Text bold>Step 4: Base URL (Optional)</Text>
 						<InputBox
-							value={baseUrl}
-							onChange={setBaseUrl}
-							onSubmit={() => handleStepComplete()}
+							value={wizard.baseUrl}
+							onChange={wizard.setBaseUrl}
+							onSubmit={() => wizard.completeStep()}
 							placeholder="Enter base URL or press Enter to skip..."
 						/>
+					</Box>
+				);
+
+			case ConfigStep.MAX_TOKENS:
+				return (
+					<Box flexDirection="column">
+						<Text bold>Step 5: Max Tokens</Text>
+						{wizard.error && (
+							<Box marginTop={1}>
+								<Text color="red">{wizard.error}</Text>
+							</Box>
+						)}
+						<Box marginTop={1}>
+							<InputBox
+								value={wizard.maxTokens}
+								onChange={wizard.setMaxTokens}
+								onSubmit={() => wizard.completeStep()}
+								placeholder="Enter max tokens (default: 4096)..."
+							/>
+						</Box>
+						<Box marginTop={1}>
+							<Text dimColor>Maximum number of tokens for the model's response (1 - 1,000,000)</Text>
+						</Box>
 					</Box>
 				);
 
@@ -191,13 +146,17 @@ export default function Config({ onConfigComplete, container }: ConfigProps) {
 					<Box flexDirection="column">
 						<Text bold>Confirm Configuration</Text>
 						<Box marginTop={1} flexDirection="column">
-							<Text>Provider: <Text color="cyan">{selectedProvider}</Text></Text>
-							<Text>Model: <Text color="cyan">{selectedModel}</Text></Text>
-							{apiKey && <Text>API Key: <Text color="green">***configured***</Text></Text>}
-							{baseUrl && <Text>Base URL: <Text color="cyan">{baseUrl}</Text></Text>}
+							<Text>Provider: <Text color="cyan">{wizard.selectedProvider}</Text></Text>
+							<Text>Model: <Text color="cyan">{wizard.selectedModel}</Text></Text>
+							{wizard.apiKey && <Text>API Key: <Text color="green">***configured***</Text></Text>}
+							{wizard.baseUrl && <Text>Base URL: <Text color="cyan">{wizard.baseUrl}</Text></Text>}
+							<Text>Max Tokens: <Text color="cyan">{wizard.maxTokens}</Text></Text>
 						</Box>
 						<Box marginTop={1}>
-							<Text dimColor>Press Enter to save...</Text>
+							<Menu
+								items={wizard.confirmOptions}
+								selectedIndex={wizard.confirmIndex}
+							/>
 						</Box>
 					</Box>
 				);
@@ -216,20 +175,20 @@ export default function Config({ onConfigComplete, container }: ConfigProps) {
 				{renderStep()}
 			</Box>
 
-			{error && (
+			{wizard.error && (
 				<Box marginTop={1}>
-					<ErrorStatus text={error} />
+					<ErrorStatus text={wizard.error} />
 				</Box>
 			)}
 
-			{saving && (
+			{wizard.saving && (
 				<Box marginTop={1}>
 					<Text>Saving configuration...</Text>
 				</Box>
 			)}
 
 			<Box marginTop={1}>
-				<Text dimColor>Use ↑↓ to navigate • Press Enter to select • Ctrl+C to exit</Text>
+				<Text dimColor>Use ↑↓ to navigate • Press Enter to select • ESC to go back • Ctrl+H to Home</Text>
 			</Box>
 		</Box>
 	);

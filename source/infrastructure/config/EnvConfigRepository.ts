@@ -27,13 +27,18 @@ export class EnvConfigRepository implements IConfigRepository {
     process.env[key] = value;
   }
 
-  async getAll(): Promise<ConfigData> {
+  async getAll(): Promise<ConfigData | null> {
     const provider = await this.get('CODEH_PROVIDER');
     const model = await this.get('CODEH_MODEL');
     const baseUrl = await this.get('CODEH_BASE_URL');
     const apiKey = await this.get('CODEH_API_KEY');
     const maxTokens = await this.getMaxTokens();
     const temperature = await this.getTemperature();
+
+    // If no provider is set, consider env config as not existing
+    if (!provider) {
+      return null;
+    }
 
     return {
       provider: provider as any,

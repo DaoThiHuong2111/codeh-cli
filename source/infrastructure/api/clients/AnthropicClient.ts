@@ -26,7 +26,7 @@ export class AnthropicClient implements IApiClient {
 
   async chat(request: ApiRequest): Promise<ApiResponse> {
     const requestBody = {
-      model: request.model || 'claude-3-5-sonnet-20241022',
+      model: request.model ,
       max_tokens: request.maxTokens || 4096,
       messages: request.messages.map((m) => ({
         role: m.role,
@@ -84,12 +84,9 @@ export class AnthropicClient implements IApiClient {
   }
 
   async getAvailableModels(): Promise<string[]> {
-    return [
-      'claude-3-5-sonnet-20241022',
-      'claude-3-opus-20240229',
-      'claude-3-sonnet-20240229',
-      'claude-3-haiku-20240307',
-    ];
+    // Models should be configured by user, not hardcoded
+    // Return empty array - actual models come from user configuration
+    return [];
   }
 
   private normalizeResponse(

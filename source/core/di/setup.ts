@@ -34,24 +34,7 @@ export async function setupContainer(): Promise<Container> {
 
   // Config
   container.register('ConfigLoader', () => new ConfigLoader(), true);
-
-  // API Client (async resolution)
-  container.register(
-    'ApiClient',
-    () => {
-      const configLoader = container.resolve<ConfigLoader>('ConfigLoader');
-      const factory = new ApiClientFactory();
-
-      // Load config synchronously for DI setup
-      // In production, this should be handled differently
-      const config = configLoader.mergeConfigs();
-      return config.then((cfg) => {
-        const configuration = Configuration.create(cfg);
-        return factory.create(configuration);
-      });
-    },
-    true
-  );
+  container.register('ApiClientFactory', () => new ApiClientFactory(), true);
 
   // History
   container.register(
@@ -92,17 +75,7 @@ export async function setupContainer(): Promise<Container> {
     true
   );
 
-  // Orchestrators
-  container.register(
-    'CodehClient',
-    async () => {
-      const apiClient = await container.resolve('ApiClient') as IApiClient;
-      const historyRepo = await container.resolve('HistoryRepository') as IHistoryRepository;
-      return new CodehClient(apiClient, historyRepo);
-    },
-    true
-  );
-
+  // Orchestrators (CodehChat only - CodehClient is lazy loaded)
   container.register(
     'CodehChat',
     async () => {
@@ -113,6 +86,27 @@ export async function setupContainer(): Promise<Container> {
   );
 
   return container;
+}
+
+/**
+ * Factory function to create CodehClient on-demand
+ * This allows the app to start without requiring API configuration
+ * Throws error if no configuration exists
+ */
+export async function createCodehClient(container: Container): Promise<CodehClient> {
+  const configLoader = container.resolve<ConfigLoader>('ConfigLoader');
+  const factory = container.resolve<ApiClientFactory>('ApiClientFactory');
+  const historyRepo = await container.resolve('HistoryRepository') as IHistoryRepository;
+
+  const config = await configLoader.mergeConfigs();
+  if (!config) {
+    throw new Error('No configuration found. Please run "codeh config" to set up your API configuration.');
+  }
+
+  const configuration = Configuration.create(config);
+  const apiClient = factory.create(configuration);
+
+  return new CodehClient(apiClient, historyRepo);
 }
 
 /**

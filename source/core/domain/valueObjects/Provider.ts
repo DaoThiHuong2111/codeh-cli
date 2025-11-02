@@ -14,7 +14,6 @@ export class ProviderInfo {
   constructor(
     public readonly name: Provider,
     public readonly displayName: string,
-    public readonly defaultModel: string,
     public readonly requiresApiKey: boolean,
     public readonly supportsStreaming: boolean
   ) {}
@@ -23,34 +22,34 @@ export class ProviderInfo {
     [Provider.ANTHROPIC]: new ProviderInfo(
       Provider.ANTHROPIC,
       'Anthropic (Claude)',
-      'claude-3-5-sonnet-20241022',
       true,
       true
     ),
     [Provider.OPENAI]: new ProviderInfo(
       Provider.OPENAI,
       'OpenAI (GPT)',
-      'gpt-4o',
       true,
       true
     ),
     [Provider.OLLAMA]: new ProviderInfo(
       Provider.OLLAMA,
       'Ollama (Local)',
-      'llama3.1',
       false,
       true
     ),
     [Provider.GENERIC]: new ProviderInfo(
       Provider.GENERIC,
       'Generic API',
-      'default',
       true,
       true
     ),
   };
 
   static fromString(value: string): ProviderInfo {
+    if (!value || value.trim() === '') {
+      throw new Error('Provider cannot be empty');
+    }
+
     const provider = value as Provider;
     if (!this.PROVIDERS[provider]) {
       throw new Error(`Unknown provider: ${value}`);

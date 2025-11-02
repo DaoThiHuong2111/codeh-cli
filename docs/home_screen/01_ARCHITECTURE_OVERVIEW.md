@@ -1,12 +1,12 @@
 # 01. ARCHITECTURE OVERVIEW
 
-> **Phân tích kiến trúc tổng thể của Gemini CLI để làm nền tảng cho việc clone vào CodeH**
+> **Phân tích kiến trúc tổng thể của codeh CLI để làm nền tảng cho việc clone vào CodeH**
 
 ---
 
 ## 📋 QUICK REFERENCE
 
-| Khía cạnh | Gemini CLI | Gợi ý cho CodeH |
+| Khía cạnh | codeh CLI | Gợi ý cho CodeH |
 |-----------|------------|-----------------|
 | **Language** | TypeScript (strict) | TypeScript hoặc tương tự |
 | **UI Framework** | React + Ink | React + Ink hoặc tương đương |
@@ -19,16 +19,16 @@
 
 ## 1. KIẾN TRÚC 3 TẦNG (3-LAYER ARCHITECTURE)
 
-Gemini CLI sử dụng kiến trúc 3 tầng rõ ràng:
+codeh CLI sử dụng kiến trúc 3 tầng rõ ràng:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  LAYER 1: CLI LAYER (User Interface)                       │
 │  packages/cli/                                              │
 │                                                             │
-│  - Entry point (gemini.tsx)                                │
+│  - Entry point (codeh.tsx)                                │
 │  - React UI components (Ink framework)                     │
-│  - Hooks (useGeminiStream, useHistoryManager, etc.)        │
+│  - Hooks (usecodehStream, useHistoryManager, etc.)        │
 │  - State management                                         │
 │  - User interactions (keyboard, prompts)                    │
 └────────────────────┬────────────────────────────────────────┘
@@ -39,8 +39,8 @@ Gemini CLI sử dụng kiến trúc 3 tầng rõ ràng:
 │  LAYER 2: CORE LAYER (Business Logic)                      │
 │  packages/core/                                             │
 │                                                             │
-│  - GeminiClient: Orchestrator chính                        │
-│  - GeminiChat: Quản lý conversation                        │
+│  - codehClient: Orchestrator chính                        │
+│  - codehChat: Quản lý conversation                        │
 │  - Turn: Xử lý một request-response cycle                  │
 │  - Tools: Shell, FileOps, WebSearch, MCP                   │
 │  - Services: Loop detection, Compression, Routing          │
@@ -51,7 +51,7 @@ Gemini CLI sử dụng kiến trúc 3 tầng rõ ràng:
 ┌─────────────────────────────────────────────────────────────┐
 │  LAYER 3: EXTERNAL SERVICES                                │
 │                                                             │
-│  - Google Gemini API (@google/genai SDK)                   │
+│  - Google codeh API (@google/genai SDK)                   │
 │  - IDE Integration (VS Code Extension)                     │
 │  - MCP Servers (Model Context Protocol)                    │
 └─────────────────────────────────────────────────────────────┘
@@ -83,16 +83,16 @@ codeh/
 
 ## 2. MONOREPO STRUCTURE
 
-Gemini CLI sử dụng **monorepo** với **npm workspaces**:
+codeh CLI sử dụng **monorepo** với **npm workspaces**:
 
 ```
-gemini-cli/
+codeh-cli/
 ├── package.json                    # Root package.json
 ├── packages/
 │   ├── cli/                        # ⭐ Main CLI application
 │   │   ├── package.json
 │   │   └── src/
-│   │       ├── gemini.tsx          # Entry point
+│   │       ├── codeh.tsx          # Entry point
 │   │       ├── ui/                 # React components
 │   │       │   ├── App.tsx
 │   │       │   ├── AppContainer.tsx
@@ -101,13 +101,13 @@ gemini-cli/
 │   │       │   │   ├── HistoryItemDisplay.tsx
 │   │       │   │   ├── Composer.tsx
 │   │       │   │   └── messages/
-│   │       │   │       ├── GeminiMessage.tsx
+│   │       │   │       ├── codehMessage.tsx
 │   │       │   │       ├── UserMessage.tsx
 │   │       │   │       ├── ToolMessage.tsx
 │   │       │   │       ├── ToolConfirmationMessage.tsx
 │   │       │   │       └── DiffRenderer.tsx
 │   │       │   └── hooks/
-│   │       │       ├── useGeminiStream.ts      # ⭐⭐⭐
+│   │       │       ├── usecodehStream.ts      # ⭐⭐⭐
 │   │       │       ├── useHistoryManager.ts    # ⭐⭐
 │   │       │       ├── useKeypress.ts
 │   │       │       └── ...
@@ -119,8 +119,8 @@ gemini-cli/
 │   │   ├── package.json
 │   │   └── src/
 │   │       ├── core/
-│   │       │   ├── client.ts       # ⭐⭐⭐ GeminiClient
-│   │       │   ├── geminiChat.ts   # ⭐⭐⭐ GeminiChat
+│   │       │   ├── client.ts       # ⭐⭐⭐ codehClient
+│   │       │   ├── codehChat.ts   # ⭐⭐⭐ codehChat
 │   │       │   ├── turn.ts         # ⭐⭐ Turn
 │   │       │   └── config.ts
 │   │       ├── tools/
@@ -247,12 +247,12 @@ render(<App />);
 }
 ```
 
-**@google/genai** - Official Gemini SDK:
+**@google/genai** - Official codeh SDK:
 ```typescript
 import { GoogleGenerativeAI } from '@google/genai';
 
 const genAI = new GoogleGenerativeAI(apiKey);
-const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+const model = genAI.getGenerativeModel({ model: 'codeh-pro' });
 
 // Streaming
 const result = await model.generateContentStream(prompt);
@@ -421,7 +421,7 @@ interface Part {
 }
 ```
 
-**⚠️ KEY INSIGHT - Gemini CLI GỬI TOÀN BỘ HISTORY mỗi lần:**
+**⚠️ KEY INSIGHT - codeh CLI GỬI TOÀN BỘ HISTORY mỗi lần:**
 
 ```typescript
 // Request 1
@@ -441,7 +441,7 @@ sendMessage({
 });
 ```
 
-**Lý do**: Gemini API là **stateless**, không nhớ conversations trước.
+**Lý do**: codeh API là **stateless**, không nhớ conversations trước.
 
 ### 4.4. Confirmation
 
@@ -517,7 +517,7 @@ Idle
 ┌──────────────────────────────────────────┐
 │ CLI Layer                                │
 │ - AppContainer (React component)         │
-│ - useGeminiStream hook                   │
+│ - usecodehStream hook                   │
 │   └─ submitQuery(prompt)                 │
 └──────┬───────────────────────────────────┘
        │
@@ -525,21 +525,21 @@ Idle
        ▼
 ┌──────────────────────────────────────────┐
 │ Core Layer                               │
-│ - GeminiClient.sendMessageStream()       │
+│ - codehClient.sendMessageStream()       │
 │   ├─ Check context overflow              │
 │   ├─ Compress if needed                  │
 │   ├─ Add IDE context                     │
-│   └─ GeminiChat.sendMessageStream()      │
+│   └─ codehChat.sendMessageStream()      │
 │       ├─ Add to history                  │
 │       ├─ Get full history                │
-│       └─ Call Gemini API                 │
+│       └─ Call codeh API                 │
 └──────┬───────────────────────────────────┘
        │
        │ Async Stream
        ▼
 ┌──────────────────────────────────────────┐
 │ Stream Processing                        │
-│ - processGeminiStreamEvents()            │
+│ - processcodehStreamEvents()            │
 │   ├─ For each chunk:                     │
 │   │   ├─ Update UI state                 │
 │   │   ├─ Append to history               │
@@ -565,7 +565,7 @@ Idle
 
 ```
 packages/cli/src/
-├── gemini.tsx                      # ⭐⭐⭐ Entry point
+├── codeh.tsx                      # ⭐⭐⭐ Entry point
 │   └─ main() function
 │   └─ startInteractiveUI()
 │
@@ -590,7 +590,7 @@ packages/cli/src/
 │   │   │   └─ User input UI
 │   │   │
 │   │   ├── messages/
-│   │   │   ├── GeminiMessage.tsx
+│   │   │   ├── codehMessage.tsx
 │   │   │   ├── UserMessage.tsx
 │   │   │   ├── ToolMessage.tsx
 │   │   │   ├── ToolGroupMessage.tsx
@@ -602,9 +602,9 @@ packages/cli/src/
 │   │   └── DialogManager.tsx
 │   │
 │   ├── hooks/
-│   │   ├── useGeminiStream.ts      # ⭐⭐⭐ CORE streaming logic
+│   │   ├── usecodehStream.ts      # ⭐⭐⭐ CORE streaming logic
 │   │   │   └─ submitQuery()
-│   │   │   └─ processGeminiStreamEvents()
+│   │   │   └─ processcodehStreamEvents()
 │   │   │
 │   │   ├── useHistoryManager.ts    # ⭐⭐ History management
 │   │   │   └─ addItem()
@@ -646,15 +646,15 @@ packages/cli/src/
 ```
 packages/core/src/
 ├── core/
-│   ├── client.ts                   # ⭐⭐⭐ GeminiClient
-│   │   └─ class GeminiClient
+│   ├── client.ts                   # ⭐⭐⭐ codehClient
+│   │   └─ class codehClient
 │   │       ├─ sendMessageStream()  # Main method
 │   │       ├─ tryCompressChat()
 │   │       ├─ getIdeContextParts()
 │   │       └─ getHistory()
 │   │
-│   ├── geminiChat.ts               # ⭐⭐⭐ GeminiChat
-│   │   └─ class GeminiChat
+│   ├── codehChat.ts               # ⭐⭐⭐ codehChat
+│   │   └─ class codehChat
 │   │       ├─ sendMessageStream()
 │   │       ├─ getHistory()
 │   │       ├─ addHistory()
@@ -701,16 +701,16 @@ packages/core/src/
 
 ```
 AppContainer
-  └─ useGeminiStream
-      ├─ config.getGeminiClient()
-      │   └─ GeminiClient
-      │       └─ GeminiChat
+  └─ usecodehStream
+      ├─ config.getcodehClient()
+      │   └─ codehClient
+      │       └─ codehChat
       │           └─ @google/genai API
       │
       ├─ useHistoryManager
       │   └─ Local state (items array)
       │
-      └─ processGeminiStreamEvents
+      └─ processcodehStreamEvents
           └─ Updates history in real-time
 ```
 
@@ -730,7 +730,7 @@ AppContainer
   - [ ] Content, Part, Message
   - [ ] StreamEvent
   - [ ] HistoryItem
-- [ ] Implement basic API client (tương tự GeminiClient)
+- [ ] Implement basic API client (tương tự codehClient)
 
 ### Phase 3: Basic streaming
 - [ ] Implement AsyncGenerator cho streaming
@@ -755,11 +755,11 @@ AppContainer
 ### ✅ **SHOULD DO:**
 
 1. **Hiểu concepts, không copy code**
-   - Học cách Gemini CLI giải quyết vấn đề
+   - Học cách codeh CLI giải quyết vấn đề
    - Adapt vào context của CodeH
 
 2. **Giữ architecture đơn giản**
-   - Không cần phức tạp như Gemini CLI
+   - Không cần phức tạp như codeh CLI
    - Focus vào features cần thiết
 
 3. **Test từng layer**
@@ -773,11 +773,11 @@ AppContainer
 ### ❌ **SHOULD NOT DO:**
 
 1. **Copy nguyên xi code**
-   - Code của Gemini CLI specific cho use case của nó
+   - Code của codeh CLI specific cho use case của nó
    - CodeH có requirements khác
 
 2. **Over-engineer**
-   - Không cần tất cả features của Gemini CLI
+   - Không cần tất cả features của codeh CLI
    - Start simple, iterate
 
 3. **Ignore error handling**
@@ -835,4 +835,4 @@ Sau khi đã hiểu kiến trúc tổng thể, đọc tiếp:
 
 ---
 
-**Tóm tắt**: Gemini CLI có kiến trúc 3-layer rõ ràng, sử dụng React+Ink cho UI, và tập trung vào streaming UX. CodeH có thể học concepts này và adapt cho phù hợp với requirements riêng.
+**Tóm tắt**: codeh CLI có kiến trúc 3-layer rõ ràng, sử dụng React+Ink cho UI, và tập trung vào streaming UX. CodeH có thể học concepts này và adapt cho phù hợp với requirements riêng.

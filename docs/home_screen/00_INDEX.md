@@ -1,13 +1,3 @@
-# TÀI LIỆU KỸ THUẬT - CLONE GEMINI CLI FEATURES VÀO CODEH
-
-> **Mục đích**: Tài liệu kỹ thuật chi tiết để clone các chức năng cốt lõi từ Gemini CLI sang project CodeH CLI
->
-> **Tác giả**: Phân tích từ Gemini CLI source code
->
-> **Ngày tạo**: 2025-01-02
-
----
-
 ## 📚 DANH MỤC TÀI LIỆU
 
 ### **Phần 1: Tổng Quan**
@@ -22,7 +12,7 @@
   - Flow xử lý từ user input đến kết quả
   - Entry point và initialization
   - submitQuery() chi tiết
-  - GeminiClient.sendMessageStream()
+  - codehClient.sendMessageStream()
   - Streaming và event processing
   - **Implementation checklist cho CodeH**
 
@@ -107,36 +97,9 @@ Chọn tài liệu tương ứng với feature đang implement:
 ### 3. **Reference Nhanh**
 Mỗi tài liệu có:
 - **Quick Reference**: Tóm tắt các điểm chính ở đầu
-- **Code Examples**: Ví dụ code cụ thể từ Gemini CLI
+- **Code Examples**: Ví dụ code cụ thể từ codeh CLI
 - **Implementation Notes**: Lưu ý khi clone sang CodeH
 - **Checklist**: Danh sách công việc cần làm
-
----
-
-## ⚠️ LƯU Ý QUAN TRỌNG
-
-### **1. Adaptation, NOT Direct Copy**
-- Tài liệu này phân tích **CÁC THỨ HOẠT ĐỘNG** của Gemini CLI
-- Khi clone sang CodeH, cần **ADAPT** cho phù hợp với:
-  - Architecture hiện tại của CodeH
-  - Tech stack của CodeH (có thể khác Gemini CLI)
-  - Requirements cụ thể của CodeH
-
-### **2. Focus vào Logic, Không phải Implementation Details**
-- **Học**: FLOW, ALGORITHMS, STATE MANAGEMENT
-- **Không cần**: Copy nguyên xi code, dependencies
-
-### **3. Ưu Tiên Features**
-Không nhất thiết phải implement tất cả. Checklist trong mỗi phần giúp bạn:
-- ✅ **Must Have**: Core features bắt buộc
-- 🔶 **Should Have**: Features quan trọng
-- 🔹 **Nice to Have**: Features bonus
-
-### **4. Test Driven**
-Mỗi feature nên có:
-- Unit tests
-- Integration tests
-- Manual testing scenarios
 
 ---
 
@@ -150,37 +113,6 @@ Mỗi feature nên có:
 | **UI Streaming** | Medium | ✅ Must | Prompt Processing |
 | **Diff Rendering** | Medium | 🔶 Should | UI Streaming |
 | **Confirmation System** | High | 🔶 Should | UI Streaming |
-
----
-
-## 🚀 QUICK START
-
-### Bước 1: Đọc Architecture Overview
-```bash
-# Hiểu tổng quan về hệ thống
-cat 01_ARCHITECTURE_OVERVIEW.md
-```
-
-### Bước 2: Chọn Feature Đầu Tiên
-Recommend: Bắt đầu với **Prompt Processing**
-```bash
-cat 02_PROMPT_PROCESSING_FLOW.md
-```
-
-### Bước 3: Follow Implementation Checklist
-Mỗi tài liệu có phần **"Implementation for CodeH"** ở cuối.
-
-### Bước 4: Reference Data Structures
-```bash
-# Khi cần xem type definitions
-cat 08_DATA_STRUCTURES.md
-```
-
-### Bước 5: Follow Roadmap
-```bash
-# Xem kế hoạch implementation tổng thể
-cat 09_IMPLEMENTATION_ROADMAP.md
-```
 
 ---
 
@@ -232,36 +164,19 @@ cat 09_IMPLEMENTATION_ROADMAP.md
 
 ---
 
-## 📝 ĐÓNG GÓP & CẬP NHẬT
-
-Tài liệu này được tạo từ phân tích **Gemini CLI source code** tại thời điểm 2025-01-02.
-
-### Khi Gemini CLI có updates:
-1. So sánh với source code mới
-2. Cập nhật các thay đổi trong tài liệu tương ứng
-3. Đánh dấu version và ngày cập nhật
-
-### Khi implement vào CodeH:
-1. Ghi chú các vấn đề gặp phải
-2. Document các adaptation decisions
-3. Tạo CodeH-specific notes
-
----
-
 ## 📞 HỖ TRỢ
 
 ### Source Code Reference:
-- **Gemini CLI GitHub**: https://github.com/google/gemini-cli
-- **Main Branch**: Commit hash at analysis time
+- **codeh CLI GitHub**: https://github.com/google/codeh-cli
 
 ### Key Files To Reference:
 ```
 packages/cli/src/
-├── gemini.tsx                          # Entry point
+├── codeh.tsx                          # Entry point
 ├── ui/
 │   ├── AppContainer.tsx                # Main UI container
 │   ├── hooks/
-│   │   ├── useGeminiStream.ts          # Core streaming logic ⭐
+│   │   ├── usecodehStream.ts          # Core streaming logic ⭐
 │   │   └── useHistoryManager.ts        # History management ⭐
 │   └── components/
 │       ├── MainContent.tsx             # History display
@@ -271,13 +186,7 @@ packages/cli/src/
 
 packages/core/src/
 └── core/
-    ├── client.ts                       # GeminiClient ⭐
-    ├── geminiChat.ts                   # Chat management ⭐
+    ├── client.ts                       # codehClient ⭐
+    ├── codehChat.ts                   # Chat management ⭐
     └── turn.ts                         # Turn execution
 ```
-
----
-
-**Chúc bạn thành công với việc clone features vào CodeH!** 🎉
-
-Hãy nhớ: **Hiểu > Copy**. Mục tiêu là học cách nó hoạt động, rồi adapt vào context của CodeH.

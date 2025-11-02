@@ -1,4 +1,4 @@
-# BỘ TÀI LIỆU KỸ THUẬT - CLONE GEMINI CLI VÀO CODEH
+# BỘ TÀI LIỆU KỸ THUẬT - CLONE codeh CLI VÀO CODEH
 
 ## 🎯 Tóm tắt nội dung đã tạo
 
@@ -32,7 +32,7 @@ Dựa trên phân tích chi tiết tôi đã thực hiện, đây là outline ch
 - Diagram từ user input → kết quả
 - Các bước chính trong flow
 
-### 2. Entry Point (gemini.tsx:main)
+### 2. Entry Point (codeh.tsx:main)
 ```typescript
 - Setup & Configuration
 - Parse arguments
@@ -43,7 +43,7 @@ Dựa trên phân tích chi tiết tôi đã thực hiện, đây là outline ch
 ```
 
 ### 3. submitQuery() - Core Function
-**File:** `packages/cli/src/ui/hooks/useGeminiStream.ts:760-922`
+**File:** `packages/cli/src/ui/hooks/usecodehStream.ts:760-922`
 
 ```typescript
 async submitQuery(query, options, prompt_id) {
@@ -51,9 +51,9 @@ async submitQuery(query, options, prompt_id) {
   // Step 2: Reset state for new query
   // Step 3: Setup AbortController
   // Step 4: Generate prompt_id
-  // Step 5: prepareQueryForGemini()
-  // Step 6: geminiClient.sendMessageStream()
-  // Step 7: processGeminiStreamEvents()
+  // Step 5: prepareQueryForcodeh()
+  // Step 6: codehClient.sendMessageStream()
+  // Step 7: processcodehStreamEvents()
   // Step 8: Handle loop detection
   // Step 9: Error handling
 }
@@ -64,12 +64,12 @@ async submitQuery(query, options, prompt_id) {
 - Create AbortController (để cancel)
 - Generate unique prompt_id: `sessionId + '########' + promptCount`
 - Prepare query (handle files, images)
-- Call GeminiClient.sendMessageStream()
+- Call codehClient.sendMessageStream()
 - Process stream events
 - Update UI real-time
 - Handle errors và loop detection
 
-### 4. GeminiClient.sendMessageStream()
+### 4. codehClient.sendMessageStream()
 **File:** `packages/core/src/core/client.ts:476-659`
 
 ```typescript
@@ -97,8 +97,8 @@ if (estimatedTokens > remainingTokens * 0.95) {
 }
 ```
 
-### 5. GeminiChat.sendMessageStream()
-**File:** `packages/core/src/core/geminiChat.ts:225-343`
+### 5. codehChat.sendMessageStream()
+**File:** `packages/core/src/core/codehChat.ts:225-343`
 
 ```typescript
 - Add message to history
@@ -109,8 +109,8 @@ if (estimatedTokens > remainingTokens * 0.95) {
 - Yield chunks
 ```
 
-### 6. processGeminiStreamEvents()
-**File:** `packages/cli/src/ui/hooks/useGeminiStream.ts`
+### 6. processcodehStreamEvents()
+**File:** `packages/cli/src/ui/hooks/usecodehStream.ts`
 
 ```typescript
 - For each event from stream:
@@ -131,16 +131,16 @@ if (estimatedTokens > remainingTokens * 0.95) {
 
 ### 1. KEY INSIGHT: Gửi Toàn Bộ History
 
-**❗ QUAN TRỌNG**: Gemini CLI GỬI TOÀN BỘ conversation history mỗi lần request
+**❗ QUAN TRỌNG**: codeh CLI GỬI TOÀN BỘ conversation history mỗi lần request
 
 **Lý do:**
-- Gemini API là STATELESS
+- codeh API là STATELESS
 - API không nhớ conversations trước đó
 - Phải gửi full context mỗi lần
 
 **Code minh họa:**
 ```typescript
-// GeminiChat.getHistory() - line 414-421
+// codehChat.getHistory() - line 414-421
 getHistory(curated: boolean = false): Content[] {
   const history = curated
     ? extractCuratedHistory(this.history)  // Remove old IDE context
@@ -167,7 +167,7 @@ interface HistoryItem {
 }
 
 interface Message {
-  type: 'user' | 'gemini' | 'tool' | 'error' | 'info';
+  type: 'user' | 'codeh' | 'tool' | 'error' | 'info';
   text: string;
   parts?: Part[];
   toolCalls?: ToolCall[];
@@ -191,7 +191,7 @@ interface UseHistoryManagerReturn {
 **Streaming updates:**
 ```typescript
 // Khi bắt đầu stream
-setPendingHistoryItem({ type: 'gemini', text: '' });
+setPendingHistoryItem({ type: 'codeh', text: '' });
 
 // Mỗi chunk
 updatePendingHistoryItem((prev) => ({
@@ -237,7 +237,7 @@ const remainingTokenCount =
 // Check overflow (95% threshold)
 if (estimatedRequestTokenCount > remainingTokenCount * 0.95) {
   yield {
-    type: GeminiEventType.ContextWindowWillOverflow,
+    type: codehEventType.ContextWindowWillOverflow,
     value: { estimatedRequestTokenCount, remainingTokenCount }
   };
   return new Turn(chat, prompt_id);
@@ -327,9 +327,9 @@ const tokenCount = response.totalTokens;
 **Token limits:**
 ```typescript
 const TOKEN_LIMITS = {
-  'gemini-pro': 32000,
-  'gemini-1.5-pro': 1000000,
-  'gemini-1.5-flash': 1000000,
+  'codeh-pro': 32000,
+  'codeh-1.5-pro': 1000000,
+  'codeh-1.5-flash': 1000000,
 };
 
 function tokenLimit(model: string): number {
@@ -341,7 +341,7 @@ function tokenLimit(model: string): number {
 
 ```typescript
 if (maxSessionTurns > 0 && sessionTurnCount > maxSessionTurns) {
-  yield { type: GeminiEventType.MaxSessionTurns };
+  yield { type: codehEventType.MaxSessionTurns };
   return;
 }
 ```
@@ -365,7 +365,7 @@ App
     ├── MainContent
     │   └── HistoryItemDisplay (foreach item)
     │       ├── UserMessage
-    │       ├── GeminiMessage
+    │       ├── codehMessage
     │       ├── ToolGroupMessage
     │       ├── ErrorMessage
     │       └── InfoMessage
@@ -393,7 +393,7 @@ Responding → (finish) → Idle
 **Mechanism:** React state updates trigger re-renders
 
 ```typescript
-// In useGeminiStream
+// In usecodehStream
 const [streamingText, setStreamingText] = useState('');
 
 // For each chunk
@@ -413,7 +413,7 @@ export const HistoryItemDisplay = ({ item, isPending }) => {
 
   switch (itemForDisplay.type) {
     case 'user': return <UserMessage {...itemForDisplay} />;
-    case 'gemini': return <GeminiMessage {...itemForDisplay} />;
+    case 'codeh': return <codehMessage {...itemForDisplay} />;
     case 'tool': return <ToolGroupMessage {...itemForDisplay} />;
     case 'error': return <ErrorMessage {...itemForDisplay} />;
     case 'info': return <InfoMessage {...itemForDisplay} />;
@@ -618,7 +618,7 @@ interface Message { ... }
 
 // Stream events
 interface StreamEvent { ... }
-enum GeminiEventType { ... }
+enum codehEventType { ... }
 
 // History
 interface HistoryItem { ... }

@@ -1,6 +1,6 @@
 import React from 'react';
-import { Container } from '../core/di/Container';
-import Navigation from './components/organisms/Navigation';
+import {Container} from '../core/di/Container.js';
+import Navigation from './components/organisms/Navigation.js';
 
 interface AppProps {
 	container: Container;

@@ -13,23 +13,23 @@ User nhập text
     ↓
 [1] submitQuery() - Validate & khởi tạo
     ↓
-[2] prepareQueryForGemini() - Chuẩn bị request
+[2] prepareQueryForcodeh() - Chuẩn bị request
     ↓
-[3] GeminiClient.sendMessageStream() - Gọi API
+[3] codehClient.sendMessageStream() - Gọi API
     ├─ Kiểm tra context overflow (95% threshold)
     ├─ Kiểm tra max turns limit
     ↓
-[4] GeminiChat.sendMessageStream() - Quản lý history
+[4] codehChat.sendMessageStream() - Quản lý history
     ├─ Thêm user message vào history
     ├─ Lấy FULL history (stateless)
     ├─ Tạo request với toàn bộ history
     ↓
 [5] Turn.run() - Thực thi 1 turn
-    ├─ Gọi Gemini API (streaming)
+    ├─ Gọi codeh API (streaming)
     ├─ Nhận response chunks
     ├─ Xử lý tool calls (nếu có)
     ↓
-[6] processGeminiStreamEvents() - Xử lý events
+[6] processcodehStreamEvents() - Xử lý events
     ├─ TextChunk → Cập nhật UI
     ├─ ToolCallRequest → Xin phép user
     ├─ ToolCallResult → Tiếp tục
@@ -45,13 +45,13 @@ User nhập text
 
 ### Bước 1: submitQuery()
 
-**Vị trí**: `packages/cli/src/ui/hooks/useGeminiStream.ts:760-922`
+**Vị trí**: `packages/cli/src/ui/hooks/usecodehStream.ts:760-922`
 
 **Nhiệm vụ**:
 1. Validate input (không empty, state phải Idle)
 2. Khởi tạo AbortController (để cancel)
 3. Tạo prompt_id unique
-4. Gọi prepareQueryForGemini()
+4. Gọi prepareQueryForcodeh()
 
 **State transitions**:
 - Idle → Responding
@@ -62,9 +62,9 @@ User nhập text
 
 ---
 
-### Bước 2: prepareQueryForGemini()
+### Bước 2: prepareQueryForcodeh()
 
-**Vị trí**: `packages/cli/src/ui/hooks/useGeminiStream.ts:590-670`
+**Vị trí**: `packages/cli/src/ui/hooks/usecodehStream.ts:590-670`
 
 **Nhiệm vụ**:
 1. Lấy IDE context (nếu enabled)
@@ -90,14 +90,14 @@ User nhập text
 
 ---
 
-### Bước 3: GeminiClient.sendMessageStream()
+### Bước 3: codehClient.sendMessageStream()
 
 **Vị trí**: `packages/core/src/core/client.ts:476-659`
 
 **Nhiệm vụ chính**:
 
 #### 3.1. Chuẩn bị request
-- Build Content object theo format Gemini API
+- Build Content object theo format codeh API
 - Add IDE context parts (nếu có)
 - Add tools declarations
 
@@ -122,14 +122,14 @@ User nhập text
 - Emit event `MaxSessionTurnsExceeded`
 - Suggest compression
 
-#### 3.4. Gọi GeminiChat
+#### 3.4. Gọi codehChat
 - Pass request xuống layer tiếp theo
 
 ---
 
-### Bước 4: GeminiChat.sendMessageStream()
+### Bước 4: codehChat.sendMessageStream()
 
-**Vị trí**: `packages/core/src/core/geminiChat.ts:225-343`
+**Vị trí**: `packages/core/src/core/codehChat.ts:225-343`
 
 **Nhiệm vụ**:
 
@@ -171,7 +171,7 @@ const requestContents = this.getHistory(true)
 
 **Nhiệm vụ**:
 
-#### 5.1. Gọi Gemini API
+#### 5.1. Gọi codeh API
 - Method: `generateContentStream()`
 - Mode: Streaming (AsyncGenerator)
 
@@ -200,9 +200,9 @@ Xử lý từng chunk:
 
 ---
 
-### Bước 6: processGeminiStreamEvents()
+### Bước 6: processcodehStreamEvents()
 
-**Vị trí**: `packages/cli/src/ui/hooks/useGeminiStream.ts:673-800`
+**Vị trí**: `packages/cli/src/ui/hooks/usecodehStream.ts:673-800`
 
 **Event Loop**:
 
@@ -371,7 +371,7 @@ AI xử lý result, response tiếp
 ## 6. CONTEXT OVERFLOW HANDLING
 
 ### Detection Point
-**Vị trí**: GeminiClient.sendMessageStream() - TRƯỚC khi gọi API
+**Vị trí**: codehClient.sendMessageStream() - TRƯỚC khi gọi API
 
 ### Threshold
 **95%** của remaining tokens
@@ -486,7 +486,7 @@ ideContext: {
 ## 10. KEY TECHNICAL INSIGHTS
 
 ### 1. Stateless API
-Gemini API **không lưu** conversation history. Mỗi request phải gửi full context.
+codeh API **không lưu** conversation history. Mỗi request phải gửi full context.
 
 ### 2. Streaming Architecture
 AsyncGenerator pattern cho phép:
@@ -518,9 +518,9 @@ Multiple checkpoints:
 ## 📚 REFERENCES
 
 ### Files quan trọng:
-- `useGeminiStream.ts:760-922` - submitQuery()
+- `usecodehStream.ts:760-922` - submitQuery()
 - `client.ts:476-659` - Context checks
-- `geminiChat.ts:225-343` - History management
+- `codehChat.ts:225-343` - History management
 - `turn.ts:85-250` - API interaction
 
 ### Related Docs:

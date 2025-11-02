@@ -22,6 +22,15 @@ export class ConfigPresenter {
 		try {
 			const config = await this.loader.load();
 
+			if (!config) {
+				return {
+					provider: '',
+					model: '',
+					isValid: false,
+					errors: ['No configuration found'],
+				};
+			}
+
 			return {
 				provider: config.provider,
 				model: config.model,
@@ -102,25 +111,5 @@ export class ConfigPresenter {
 			{ value: Provider.OLLAMA, label: 'Ollama (Local)' },
 			{ value: Provider.GENERIC, label: 'Generic API' },
 		];
-	}
-
-	/**
-	 * Get default models for provider
-	 */
-	getDefaultModels(provider: string) {
-		switch (provider) {
-			case Provider.ANTHROPIC:
-				return [
-					'claude-3-5-sonnet-20241022',
-					'claude-3-opus-20240229',
-					'claude-3-sonnet-20240229',
-				];
-			case Provider.OPENAI:
-				return ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo'];
-			case Provider.OLLAMA:
-				return ['llama3.1', 'llama3', 'mistral'];
-			default:
-				return [];
-		}
 	}
 }

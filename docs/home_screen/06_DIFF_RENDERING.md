@@ -2,7 +2,7 @@
 
 ## 📋 Tổng quan
 
-Tài liệu này mô tả **cơ chế hiển thị file changes** dạng unified diff trong Gemini CLI.
+Tài liệu này mô tả **cơ chế hiển thị file changes** dạng unified diff trong codeh CLI.
 
 ---
 
@@ -178,7 +178,7 @@ Highlight code trong diff lines để dễ đọc
 - Speed: Fast (~0.1ms per line)
 - Complexity: Low
 
-**Gemini CLI choice**: Depends on language complexity
+**codeh CLI choice**: Depends on language complexity
 
 ### 4.3. Highlighted Elements
 
@@ -291,7 +291,7 @@ Old                          │ New
 **Unified**: Better for small terminal width
 **Side-by-side**: Better for comparing large changes
 
-**Gemini CLI default**: Unified (terminal width limited)
+**codeh CLI default**: Unified (terminal width limited)
 
 ---
 
@@ -329,7 +329,7 @@ Highlight exact changed words within a line
 
 **Complexity**: O(n*m) where n,m = word counts
 
-**Usage**: Optional enhancement, not default in Gemini CLI
+**Usage**: Optional enhancement, not default in codeh CLI
 
 ---
 

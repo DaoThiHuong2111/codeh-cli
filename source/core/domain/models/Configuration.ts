@@ -25,9 +25,13 @@ export class Configuration {
   }): Configuration {
     const providerInfo = ProviderInfo.fromString(data.provider);
 
+    if (!data.model || data.model.trim() === '') {
+      throw new Error('Model is required');
+    }
+
     return new Configuration(
       providerInfo.name,
-      data.model || providerInfo.defaultModel,
+      data.model,
       data.apiKey,
       data.baseUrl,
       data.maxTokens,
@@ -48,6 +52,10 @@ export class Configuration {
   }
 
   isValid(): boolean {
+    if (!this.model || this.model.trim() === '') {
+      return false;
+    }
+
     if (this.requiresApiKey() && !this.apiKey) {
       return false;
     }
@@ -65,6 +73,10 @@ export class Configuration {
 
   getValidationErrors(): string[] {
     const errors: string[] = [];
+
+    if (!this.model || this.model.trim() === '') {
+      errors.push('Model is required');
+    }
 
     if (this.requiresApiKey() && !this.apiKey) {
       errors.push(`API key is required for ${this.provider}`);

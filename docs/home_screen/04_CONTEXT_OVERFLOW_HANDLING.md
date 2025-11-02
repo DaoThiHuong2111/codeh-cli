@@ -2,7 +2,7 @@
 
 ## 📋 Tổng quan
 
-Tài liệu này mô tả **cơ chế kỹ thuật** để phát hiện và xử lý context overflow trong Gemini CLI.
+Tài liệu này mô tả **cơ chế kỹ thuật** để phát hiện và xử lý context overflow trong codeh CLI.
 
 ---
 
@@ -27,7 +27,7 @@ Tài liệu này mô tả **cơ chế kỹ thuật** để phát hiện và xử
 ## 2. OVERFLOW DETECTION
 
 ### 2.1. Timing
-**Khi nào check**: TRƯỚC khi gửi request đến API (trong `GeminiClient.sendMessageStream()`)
+**Khi nào check**: TRƯỚC khi gửi request đến API (trong `codehClient.sendMessageStream()`)
 
 ### 2.2. Công thức tính
 ```
@@ -47,13 +47,13 @@ if (estimatedTokens > threshold):
 
 | Model | Token Limit |
 |-------|-------------|
-| gemini-2.0-flash-thinking | 32,768 |
-| gemini-2.0-* (others) | 1,000,000 |
-| gemini-1.5-flash-002 | 1,000,000 |
-| gemini-1.5-flash | 1,000,000 |
-| gemini-1.5-pro-002 | 2,000,000 |
-| gemini-1.5-pro | 2,000,000 |
-| gemini-exp-* | 2,000,000 |
+| codeh-2.0-flash-thinking | 32,768 |
+| codeh-2.0-* (others) | 1,000,000 |
+| codeh-1.5-flash-002 | 1,000,000 |
+| codeh-1.5-flash | 1,000,000 |
+| codeh-1.5-pro-002 | 2,000,000 |
+| codeh-1.5-pro | 2,000,000 |
+| codeh-exp-* | 2,000,000 |
 | Default fallback | 32,768 |
 
 ### 2.4. Tại sao 95% threshold?
@@ -65,7 +65,7 @@ if (estimatedTokens > threshold):
 4. **Better UX** - Cảnh báo trước thay vì API error
 
 **Ví dụ**:
-- Model: gemini-1.5-pro (2M limit)
+- Model: codeh-1.5-pro (2M limit)
 - Current usage: 1,900,000 tokens
 - Remaining: 100,000 tokens
 - Threshold: 95,000 tokens
@@ -317,7 +317,7 @@ submitQuery(text)
     ↓
 prepareQuery()
     ↓
-GeminiClient.sendMessageStream()
+codehClient.sendMessageStream()
     ↓
     ┌─────────────────────────────────┐
     │ CHECKPOINT 1: Token Overflow    │

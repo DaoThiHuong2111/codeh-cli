@@ -24,8 +24,9 @@ export interface IConfigRepository {
 
   /**
    * Get all configuration
+   * Returns null if no configuration exists
    */
-  getAll(): Promise<ConfigData>;
+  getAll(): Promise<ConfigData | null>;
 
   /**
    * Check if configuration exists

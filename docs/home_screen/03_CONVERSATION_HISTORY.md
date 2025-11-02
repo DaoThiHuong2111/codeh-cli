@@ -1,6 +1,6 @@
 # 03. CONVERSATION HISTORY MANAGEMENT
 
-> **Chi tiết cách Gemini CLI quản lý conversation history và GỬI TOÀN BỘ HISTORY mỗi lần**
+> **Chi tiết cách codeh CLI quản lý conversation history và GỬI TOÀN BỘ HISTORY mỗi lần**
 
 ---
 
@@ -8,11 +8,11 @@
 
 **❗ KEY INSIGHT:**
 ```
-Gemini CLI GỬI TOÀN BỘ CONVERSATION HISTORY mỗi lần request!
+codeh CLI GỬI TOÀN BỘ CONVERSATION HISTORY mỗi lần request!
 KHÔNG CHỈ gửi prompt mới nhất.
 ```
 
-**Lý do:** Gemini API là **STATELESS** - không nhớ conversations trước đó
+**Lý do:** codeh API là **STATELESS** - không nhớ conversations trước đó
 
 ---
 
@@ -20,7 +20,7 @@ KHÔNG CHỈ gửi prompt mới nhất.
 
 ### 1.1. Câu Trả Lời: TOÀN BỘ HỘI THOẠI
 
-**File:** `packages/core/src/core/geminiChat.ts` (line 255-257)
+**File:** `packages/core/src/core/codehChat.ts` (line 255-257)
 
 ```typescript
 // Add user content to history
@@ -44,7 +44,7 @@ const stream = await this.makeApiCallAndProcessStream(
 // ═══════════════════════════════════════════════════════
 // REQUEST 1
 // ═══════════════════════════════════════════════════════
-POST /v1/models/gemini-pro:generateContentStream
+POST /v1/models/codeh-pro:generateContentStream
 {
   "contents": [
     {
@@ -57,13 +57,13 @@ POST /v1/models/gemini-pro:generateContentStream
 // RESPONSE 1
 {
   "role": "model",
-  "parts": [{ "text": "I am Gemini, a large language model." }]
+  "parts": [{ "text": "I am codeh, a large language model." }]
 }
 
 // ═══════════════════════════════════════════════════════
 // REQUEST 2 - GỬI LẠI TẤT CẢ HISTORY
 // ═══════════════════════════════════════════════════════
-POST /v1/models/gemini-pro:generateContentStream
+POST /v1/models/codeh-pro:generateContentStream
 {
   "contents": [
     // ← Previous user message
@@ -74,7 +74,7 @@ POST /v1/models/gemini-pro:generateContentStream
     // ← Previous model response
     {
       "role": "model",
-      "parts": [{ "text": "I am Gemini, a large language model." }]
+      "parts": [{ "text": "I am codeh, a large language model." }]
     },
     // ← NEW user message
     {
@@ -87,11 +87,11 @@ POST /v1/models/gemini-pro:generateContentStream
 // ═══════════════════════════════════════════════════════
 // REQUEST 3 - TIẾP TỤC GỬI TOÀN BỘ
 // ═══════════════════════════════════════════════════════
-POST /v1/models/gemini-pro:generateContentStream
+POST /v1/models/codeh-pro:generateContentStream
 {
   "contents": [
     { "role": "user", "parts": [{ "text": "Hello, who are you?" }] },
-    { "role": "model", "parts": [{ "text": "I am Gemini..." }] },
+    { "role": "model", "parts": [{ "text": "I am codeh..." }] },
     { "role": "user", "parts": [{ "text": "What can you help me with?" }] },
     { "role": "model", "parts": [{ "text": "I can help with..." }] },
     { "role": "user", "parts": [{ "text": "Write a Python function" }] }  // NEW
@@ -101,14 +101,14 @@ POST /v1/models/gemini-pro:generateContentStream
 
 ### 1.3. Tại Sao Phải Gửi Toàn Bộ?
 
-**Gemini API characteristics:**
+**codeh API characteristics:**
 1. **Stateless**: API không lưu state giữa các requests
 2. **No session storage**: Không có session ID hay conversation tracking
 3. **Context cần thiết**: Model cần full context để generate coherent responses
 
 **Alternative approaches (KHÔNG dùng):**
 - ❌ Chỉ gửi new message → Model không biết context
-- ❌ Session-based API → Gemini không hỗ trợ
+- ❌ Session-based API → codeh không hỗ trợ
 - ❌ Embedding-based retrieval → Quá phức tạp, không real-time
 
 ---
@@ -163,12 +163,12 @@ const modelContent: Content = {
 };
 ```
 
-### 2.2. History Structure trong GeminiChat
+### 2.2. History Structure trong codehChat
 
-**File:** `packages/core/src/core/geminiChat.ts`
+**File:** `packages/core/src/core/codehChat.ts`
 
 ```typescript
-class GeminiChat {
+class codehChat {
   private history: Content[] = [];  // ← In-memory history
 
   // Add message
@@ -216,7 +216,7 @@ interface Message {
 
 enum MessageType {
   USER = 'user',
-  GEMINI = 'gemini',
+  codeh = 'codeh',
   TOOL = 'tool',
   ERROR = 'error',
   INFO = 'info',
@@ -229,7 +229,7 @@ enum MessageType {
 const item: HistoryItem = {
   committed: null,
   pending: {
-    type: 'gemini',
+    type: 'codeh',
     text: '',  // Empty initially
     timestamp: Date.now()
   }
@@ -371,24 +371,24 @@ function ChatComponent() {
 
   // During streaming
   const streamResponse = async (prompt: string) => {
-    // Add empty gemini message
-    const geminiIndex = history.items.length;
+    // Add empty codeh message
+    const codehIndex = history.items.length;
     history.addItem({
-      type: 'gemini',
+      type: 'codeh',
       text: '',
       timestamp: Date.now()
     });
 
     // Update as chunks arrive
     for await (const chunk of stream) {
-      history.updateItem(geminiIndex, (prev) => ({
+      history.updateItem(codehIndex, (prev) => ({
         ...prev,
         text: prev.text + chunk.text
       }));
     }
 
     // Finalize
-    history.commitPending(geminiIndex);
+    history.commitPending(codehIndex);
   };
 
   return (
@@ -564,7 +564,7 @@ async function loadHistory(
 useEffect(() => {
   // Debounce save
   const timer = setTimeout(() => {
-    saveHistory(sessionId, geminiChat.getHistory());
+    saveHistory(sessionId, codehChat.getHistory());
   }, 1000);  // Save after 1s of no changes
 
   return () => clearTimeout(timer);
@@ -715,4 +715,4 @@ function useConversation() {
 
 ---
 
-**Tóm tắt**: Gemini CLI LUÔN gửi toàn bộ conversation history mỗi lần request. History được quản lý với structure committed/pending cho streaming updates. Curated history giúp optimize token usage.
+**Tóm tắt**: codeh CLI LUÔN gửi toàn bộ conversation history mỗi lần request. History được quản lý với structure committed/pending cho streaming updates. Curated history giúp optimize token usage.

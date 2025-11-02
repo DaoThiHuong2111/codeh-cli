@@ -1,61 +1,50 @@
 /**
  * Welcome Presenter
- * Handles business logic for Welcome screen
+ * Handles business logic for Welcome screen with API integration
  */
 
+import { UpgradeInfo } from '../../core/domain/models/UpgradeInfo';
+import { UpgradeApiService } from '../../infrastructure/api/UpgradeApiService';
+
 export class WelcomePresenter {
+	private apiService: UpgradeApiService;
+
+	constructor() {
+		this.apiService = new UpgradeApiService();
+	}
+
 	/**
-	 * Check for updates
+	 * Fetch upgrade information from API
 	 */
-	async checkForUpdates(): Promise<{
-		hasUpdate: boolean;
-		currentVersion: string;
-		latestVersion?: string;
-	}> {
-		try {
-			// Read version from package.json
-			const fs = await import('fs/promises');
-			const path = await import('path');
-			const { fileURLToPath } = await import('url');
+	async fetchUpgradeInfo(): Promise<UpgradeInfo | null> {
+		return await this.apiService.fetchUpgradeInfo();
+	}
 
-			// Get the directory of this file
-			const __filename = fileURLToPath(import.meta.url);
-			const __dirname = path.dirname(__filename);
-			const packagePath = path.join(__dirname, '../../../package.json');
+	/**
+	 * Check if upgrade info has valid content
+	 */
+	hasValidUpgradeInfo(upgradeInfo: UpgradeInfo | null): boolean {
+		if (!upgradeInfo) return false;
+		return upgradeInfo.hasValidContent();
+	}
 
-			const packageContent = await fs.readFile(packagePath, 'utf-8');
-			const packageJson = JSON.parse(packageContent);
-			const currentVersion = packageJson.version;
-
-			// TODO: Implement actual version check
-			// For now, just return no update
-			return {
-				hasUpdate: false,
-				currentVersion,
-			};
-		} catch (error) {
-			return {
-				hasUpdate: false,
-				currentVersion: 'unknown',
-			};
+	/**
+	 * Get display message from upgrade info
+	 */
+	getDisplayMessage(upgradeInfo: UpgradeInfo | null): string {
+		if (!upgradeInfo) {
+			return 'Welcome to CODEH CLI - Your AI coding assistant';
 		}
+		return upgradeInfo.message || 'Welcome to CODEH CLI - Your AI coding assistant';
 	}
 
 	/**
-	 * Get welcome message
+	 * Get display version from upgrade info
 	 */
-	getWelcomeMessage(): string {
-		return 'Welcome to CODEH CLI - Your AI coding assistant';
-	}
-
-	/**
-	 * Get quick tips
-	 */
-	getQuickTips(): string[] {
-		return [
-			'Press Enter to start',
-			'Press C to configure',
-			'Use Ctrl+C to exit',
-		];
+	getDisplayVersion(upgradeInfo: UpgradeInfo | null): string {
+		if (!upgradeInfo) {
+			return '';
+		}
+		return upgradeInfo.version || '';
 	}
 }
