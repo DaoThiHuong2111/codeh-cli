@@ -70,7 +70,7 @@ export function useHomeLogic(container: Container): UseHomeLogicReturn {
 			}
 
 			if (!success || !client) {
-				setOutput('❌ Failed to connect to API. Please check your configuration (press Ctrl+C, then run "codeh config").');
+				setOutput('❌ Failed to connect to API. Please check your configuration (/config).');
 				return;
 			}
 

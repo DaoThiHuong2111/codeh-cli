@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { ConfigValidator } from '../../core/domain/validators/ConfigValidator';
-import { ConfigPresenter } from '../presenters/ConfigPresenter';
-import { MenuItem } from '../components/molecules/Menu';
+import {useState, useEffect} from 'react';
+import {ConfigValidator} from '../../core/domain/validators/ConfigValidator';
+import {ConfigPresenter} from '../presenters/ConfigPresenter';
+import {MenuItem} from '../components/molecules/Menu';
 
 export enum ConfigStep {
 	PROVIDER = 'provider',
@@ -38,7 +38,7 @@ export interface UseConfigWizardReturn {
 	setMaxTokens: (value: string) => void;
 	setProviderIndex: (value: number) => void;
 	setConfirmIndex: (value: number) => void;
-	goBack: () => void;
+	goBack: (configStep?: ConfigStep | null) => void;
 	completeStep: () => Promise<void>;
 	save: (onSuccess: () => void) => Promise<void>;
 }
@@ -47,7 +47,9 @@ export function useConfigWizard(): UseConfigWizardReturn {
 	const presenter = new ConfigPresenter();
 
 	// Step management
-	const [currentStep, setCurrentStep] = useState<ConfigStep>(ConfigStep.PROVIDER);
+	const [currentStep, setCurrentStep] = useState<ConfigStep>(
+		ConfigStep.PROVIDER,
+	);
 	const [error, setError] = useState('');
 	const [saving, setSaving] = useState(false);
 
@@ -56,7 +58,7 @@ export function useConfigWizard(): UseConfigWizardReturn {
 	const [selectedModel, setSelectedModel] = useState('');
 	const [apiKey, setApiKey] = useState('');
 	const [baseUrl, setBaseUrl] = useState('');
-	const [maxTokens, setMaxTokens] = useState('4096');
+	const [maxTokens, setMaxTokens] = useState('128000');
 
 	// Menu state
 	const [providerIndex, setProviderIndex] = useState(0);
@@ -64,9 +66,18 @@ export function useConfigWizard(): UseConfigWizardReturn {
 
 	const providers = presenter.getProviders();
 	const confirmOptions: MenuItem[] = [
-		{ label: 'Confirm & Save', value: 'save' },
-		{ label: 'Edit Configuration', value: 'edit' },
+		{label: 'Confirm & Save', value: 'save'},
+		{label: 'Edit Configuration', value: 'edit'},
 	];
+
+	const stepBackMap: Record<ConfigStep, ConfigStep> = {
+		[ConfigStep.MODEL]: ConfigStep.PROVIDER,
+		[ConfigStep.API_KEY]: ConfigStep.MODEL,
+		[ConfigStep.BASE_URL]: ConfigStep.API_KEY,
+		[ConfigStep.MAX_TOKENS]: ConfigStep.BASE_URL,
+		[ConfigStep.CONFIRM]: ConfigStep.MAX_TOKENS,
+		[ConfigStep.PROVIDER]: ConfigStep.PROVIDER, // Stay at first step
+	};
 
 	// Clear error when user starts typing
 	useEffect(() => {
@@ -78,26 +89,14 @@ export function useConfigWizard(): UseConfigWizardReturn {
 	/**
 	 * Go back to previous step
 	 */
-	const goBack = () => {
+	const goBack = (configStep: ConfigStep | null = null) => {
 		setError('');
-
-		switch (currentStep) {
-			case ConfigStep.MODEL:
-				setCurrentStep(ConfigStep.PROVIDER);
-				break;
-			case ConfigStep.API_KEY:
-				setCurrentStep(ConfigStep.MODEL);
-				break;
-			case ConfigStep.BASE_URL:
-				setCurrentStep(ConfigStep.API_KEY);
-				break;
-			case ConfigStep.MAX_TOKENS:
-				setCurrentStep(ConfigStep.BASE_URL);
-				break;
-			case ConfigStep.CONFIRM:
-				setCurrentStep(ConfigStep.MAX_TOKENS);
-				break;
+		if (configStep !== null) {
+			setCurrentStep(configStep);
+			return;
 		}
+		const previousStep = stepBackMap[currentStep];
+		setCurrentStep(previousStep);
 	};
 
 	/**
@@ -122,7 +121,10 @@ export function useConfigWizard(): UseConfigWizardReturn {
 				break;
 
 			case ConfigStep.API_KEY:
-				const apiKeyValidation = ConfigValidator.validateApiKey(apiKey, selectedProvider);
+				const apiKeyValidation = ConfigValidator.validateApiKey(
+					apiKey,
+					selectedProvider,
+				);
 				if (!apiKeyValidation.isValid) {
 					setError(apiKeyValidation.error || 'Invalid API key');
 					return;
@@ -140,7 +142,8 @@ export function useConfigWizard(): UseConfigWizardReturn {
 				break;
 
 			case ConfigStep.MAX_TOKENS:
-				const maxTokensValidation = ConfigValidator.validateMaxTokens(maxTokens);
+				const maxTokensValidation =
+					ConfigValidator.validateMaxTokens(maxTokens);
 				if (!maxTokensValidation.isValid) {
 					setError(maxTokensValidation.error || 'Invalid max tokens');
 					return;

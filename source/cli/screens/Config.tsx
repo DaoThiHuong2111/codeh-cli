@@ -1,21 +1,20 @@
 import React from 'react';
-import { Box, Text } from 'ink';
-import { Container } from '../../core/di/Container';
-import { useNavigation } from '../contexts/NavigationContext';
-import { useConfigWizard, ConfigStep } from '../hooks/useConfigWizard';
-import { useConfigKeyboard } from '../hooks/useConfigKeyboard';
+import {Box, Text} from 'ink';
+import {Container} from '../../core/di/Container';
+import {useNavigation} from '../contexts/NavigationContext';
+import {useConfigWizard, ConfigStep} from '../hooks/useConfigWizard';
+import {useConfigKeyboard} from '../hooks/useConfigKeyboard';
 import Logo from '../components/atoms/Logo';
 import Menu from '../components/molecules/Menu';
 import InputBox from '../components/molecules/InputBox';
-import { ErrorStatus } from '../components/atoms/StatusIndicator';
 
 interface ConfigProps {
 	onConfigComplete?: () => void;
 	container: Container;
 }
 
-export default function Config({ onConfigComplete, container }: ConfigProps) {
-	const { navigateTo } = useNavigation();
+export default function Config({onConfigComplete, container}: ConfigProps) {
+	const {navigateTo} = useNavigation();
 
 	// Business logic hook
 	const wizard = useConfigWizard();
@@ -41,7 +40,7 @@ export default function Config({ onConfigComplete, container }: ConfigProps) {
 						navigateTo('home');
 					});
 				} else if (selectedOption === 'edit') {
-					wizard.goBack();
+					wizard.goBack(ConfigStep.PROVIDER);
 					wizard.setConfirmIndex(0);
 				}
 			} else {
@@ -92,7 +91,9 @@ export default function Config({ onConfigComplete, container }: ConfigProps) {
 						<Text bold>Step 3: Enter API Key</Text>
 						{wizard.selectedProvider === 'ollama' ? (
 							<Box marginTop={1}>
-								<Text dimColor>Ollama doesn't require an API key. Press Enter to continue.</Text>
+								<Text dimColor>
+									Ollama doesn't require an API key. Press Enter to continue.
+								</Text>
 							</Box>
 						) : (
 							<InputBox
@@ -132,11 +133,8 @@ export default function Config({ onConfigComplete, container }: ConfigProps) {
 								value={wizard.maxTokens}
 								onChange={wizard.setMaxTokens}
 								onSubmit={() => wizard.completeStep()}
-								placeholder="Enter max tokens (default: 4096)..."
+								placeholder="Enter max tokens..."
 							/>
-						</Box>
-						<Box marginTop={1}>
-							<Text dimColor>Maximum number of tokens for the model's response (1 - 1,000,000)</Text>
 						</Box>
 					</Box>
 				);
@@ -146,11 +144,25 @@ export default function Config({ onConfigComplete, container }: ConfigProps) {
 					<Box flexDirection="column">
 						<Text bold>Confirm Configuration</Text>
 						<Box marginTop={1} flexDirection="column">
-							<Text>Provider: <Text color="cyan">{wizard.selectedProvider}</Text></Text>
-							<Text>Model: <Text color="cyan">{wizard.selectedModel}</Text></Text>
-							{wizard.apiKey && <Text>API Key: <Text color="green">***configured***</Text></Text>}
-							{wizard.baseUrl && <Text>Base URL: <Text color="cyan">{wizard.baseUrl}</Text></Text>}
-							<Text>Max Tokens: <Text color="cyan">{wizard.maxTokens}</Text></Text>
+							<Text>
+								Provider: <Text color="cyan">{wizard.selectedProvider}</Text>
+							</Text>
+							<Text>
+								Model: <Text color="cyan">{wizard.selectedModel}</Text>
+							</Text>
+							{wizard.apiKey && (
+								<Text>
+									API Key: <Text color="green">***configured***</Text>
+								</Text>
+							)}
+							{wizard.baseUrl && (
+								<Text>
+									Base URL: <Text color="cyan">{wizard.baseUrl}</Text>
+								</Text>
+							)}
+							<Text>
+								Max Tokens: <Text color="cyan">{wizard.maxTokens}</Text>
+							</Text>
 						</Box>
 						<Box marginTop={1}>
 							<Menu
@@ -166,29 +178,28 @@ export default function Config({ onConfigComplete, container }: ConfigProps) {
 	return (
 		<Box flexDirection="column" padding={1}>
 			<Logo />
-
 			<Box marginTop={1}>
-				<Text bold color="yellow">Configuration Wizard</Text>
+				<Text bold color="yellow">
+					Configuration Wizard
+				</Text>
 			</Box>
-
 			<Box marginTop={1} marginBottom={1}>
 				{renderStep()}
 			</Box>
-
-			{wizard.error && (
-				<Box marginTop={1}>
-					<ErrorStatus text={wizard.error} />
-				</Box>
-			)}
-
 			{wizard.saving && (
 				<Box marginTop={1}>
 					<Text>Saving configuration...</Text>
 				</Box>
 			)}
-
 			<Box marginTop={1}>
-				<Text dimColor>Use ↑↓ to navigate • Press Enter to select • ESC to go back • Ctrl+H to Home</Text>
+				{wizard.currentStep === ConfigStep.PROVIDER ||
+				wizard.currentStep === ConfigStep.CONFIRM ? (
+					<Text dimColor>
+						Use ↑↓ to navigate • Press Enter to select • ESC to go back
+					</Text>
+				) : (
+					<Text dimColor>Press Enter to select • ESC to go back</Text>
+				)}
 			</Box>
 		</Box>
 	);

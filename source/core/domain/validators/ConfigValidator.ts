@@ -100,13 +100,6 @@ export class ConfigValidator {
 			};
 		}
 
-		if (maxTokensNum > 1000000) {
-			return {
-				isValid: false,
-				error: 'Max tokens cannot exceed 1,000,000',
-			};
-		}
-
 		return { isValid: true };
 	}
 }

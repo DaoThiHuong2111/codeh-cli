@@ -13,7 +13,8 @@
 		"build": "tsc && babel source --out-dir dist --extensions \".ts,.tsx,.js,.jsx\"",
 		"build:ts": "tsc",
 		"build:babel": "babel source --out-dir dist --extensions \".ts,.tsx,.js,.jsx\"",
-		"dev": "tsc --watch",
+		"dev": "babel source --out-dir dist --extensions \".ts,.tsx,.js,.jsx\" --watch",
+		"dev:ts": "tsc --watch",
 		"test": "prettier --check . && ava",
 		"lint": "xo",
 		"start": "node dist/cli.js"
