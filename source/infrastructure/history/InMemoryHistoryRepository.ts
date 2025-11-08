@@ -7,7 +7,7 @@ import {
   IHistoryRepository,
   ConversationHistory,
 } from '../../core/domain/interfaces/IHistoryRepository';
-import { Message } from '../../core/domain/interfaces/IApiClient';
+import { Message } from '../../core/domain/models/Message';
 
 export class InMemoryHistoryRepository implements IHistoryRepository {
   private conversations: Map<string, ConversationHistory> = new Map();

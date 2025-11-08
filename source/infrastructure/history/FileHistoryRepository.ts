@@ -7,7 +7,7 @@ import {
   IHistoryRepository,
   ConversationHistory,
 } from '../../core/domain/interfaces/IHistoryRepository';
-import { Message } from '../../core/domain/interfaces/IApiClient';
+import { Message } from '../../core/domain/models/Message';
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 'fs';
 import { homedir } from 'os';
 import { join } from 'path';

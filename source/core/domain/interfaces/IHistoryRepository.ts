@@ -2,7 +2,7 @@
  * Interface for conversation history storage
  */
 
-import { Message } from './IApiClient';
+import { Message } from '../models/Message';
 
 export interface ConversationHistory {
   id: string;
