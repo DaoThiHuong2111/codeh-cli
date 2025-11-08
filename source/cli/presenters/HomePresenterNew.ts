@@ -16,6 +16,10 @@ interface ViewState {
 	input: string;
 	inputError: string;
 
+	// Input History (for ↑↓ navigation)
+	inputHistory: string[];
+	currentHistoryIndex: number;
+
 	// Messages
 	messages: Message[];
 	streamingMessageId: string | null;
@@ -26,6 +30,9 @@ interface ViewState {
 	// Slash Commands
 	filteredSuggestions: Command[];
 	selectedSuggestionIndex: number;
+
+	// Help Overlay
+	showHelp: boolean;
 
 	// Info
 	version: string;
@@ -47,11 +54,14 @@ export class HomePresenterNew {
 		this.state = {
 			input: '',
 			inputError: '',
+			inputHistory: [],
+			currentHistoryIndex: -1,
 			messages: [],
 			streamingMessageId: null,
 			isLoading: false,
 			filteredSuggestions: [],
 			selectedSuggestionIndex: 0,
+			showHelp: false,
 			version: config.version || '1.0.0',
 			model: config.model || 'claude-3-5-sonnet',
 			directory: process.cwd(),
@@ -92,6 +102,9 @@ export class HomePresenterNew {
 			this._notifyView();
 			return;
 		}
+
+		// Add to input history
+		this.addToInputHistory(userInput);
 
 		// Check if slash command
 		if (userInput.startsWith('/')) {
@@ -291,6 +304,57 @@ export class HomePresenterNew {
 		this._notifyView();
 	}
 
+	// === Input History ===
+
+	private addToInputHistory(input: string): void {
+		// Don't add empty or duplicate inputs
+		if (!input.trim()) return;
+		if (this.state.inputHistory[0] === input) return;
+
+		// Add to beginning of history
+		this.state.inputHistory.unshift(input);
+
+		// Limit to 50 items
+		if (this.state.inputHistory.length > 50) {
+			this.state.inputHistory = this.state.inputHistory.slice(0, 50);
+		}
+
+		// Reset index
+		this.state.currentHistoryIndex = -1;
+	}
+
+	navigateHistory = (direction: 'up' | 'down'): void => {
+		const history = this.state.inputHistory;
+		if (history.length === 0) return;
+
+		if (direction === 'up') {
+			// Navigate to older inputs
+			if (this.state.currentHistoryIndex < history.length - 1) {
+				this.state.currentHistoryIndex++;
+				this.state.input = history[this.state.currentHistoryIndex];
+			}
+		} else {
+			// Navigate to newer inputs
+			if (this.state.currentHistoryIndex > 0) {
+				this.state.currentHistoryIndex--;
+				this.state.input = history[this.state.currentHistoryIndex];
+			} else if (this.state.currentHistoryIndex === 0) {
+				// Go back to empty input
+				this.state.currentHistoryIndex = -1;
+				this.state.input = '';
+			}
+		}
+
+		this._notifyView();
+	};
+
+	// === Help Overlay ===
+
+	toggleHelp = (): void => {
+		this.state.showHelp = !this.state.showHelp;
+		this._notifyView();
+	};
+
 	// === Getters ===
 
 	get input() {
@@ -322,5 +386,8 @@ export class HomePresenterNew {
 	}
 	get streamingMessageId() {
 		return this.state.streamingMessageId;
+	}
+	get showHelp() {
+		return this.state.showHelp;
 	}
 }

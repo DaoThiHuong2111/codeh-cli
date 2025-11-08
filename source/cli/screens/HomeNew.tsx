@@ -8,6 +8,7 @@ import TipsSection from '../components/molecules/TipsSection.js';
 import Logo from '../components/atoms/Logo.js';
 import { ConversationArea } from '../components/organisms/ConversationArea.js';
 import { SlashSuggestions } from '../components/organisms/SlashSuggestions.js';
+import { HelpOverlay } from '../components/organisms/HelpOverlay.js';
 
 interface HomeNewProps {
 	container: Container;
@@ -20,6 +21,22 @@ export default function HomeNew({ container }: HomeNewProps) {
 	useInput((input, key) => {
 		if (!presenter) return;
 
+		// Toggle help with ?
+		if (input === '?' && !presenter.isLoading) {
+			presenter.toggleHelp();
+			return;
+		}
+
+		// Close help or clear input with Esc
+		if (key.escape) {
+			if (presenter.showHelp) {
+				presenter.toggleHelp();
+			} else if (presenter.input) {
+				presenter.handleInputChange('');
+			}
+			return;
+		}
+
 		// Navigate suggestions (when typing slash command)
 		if (presenter.hasSuggestions()) {
 			if (key.upArrow) {
@@ -28,6 +45,16 @@ export default function HomeNew({ container }: HomeNewProps) {
 				presenter.handleSuggestionNavigate('down');
 			} else if (key.return || key.tab) {
 				presenter.handleSuggestionSelect();
+			}
+			return;
+		}
+
+		// Navigate input history (when NOT in suggestion mode)
+		if (!presenter.hasSuggestions() && !presenter.isLoading) {
+			if (key.upArrow) {
+				presenter.navigateHistory('up');
+			} else if (key.downArrow) {
+				presenter.navigateHistory('down');
 			}
 		}
 	});
@@ -91,6 +118,9 @@ export default function HomeNew({ container }: HomeNewProps) {
 				/>
 			)}
 
+			{/* Help Overlay */}
+			{presenter.showHelp && <HelpOverlay onClose={presenter.toggleHelp} />}
+
 			{/* Input Area */}
 			<InputBox
 				value={presenter.input}
@@ -109,7 +139,11 @@ export default function HomeNew({ container }: HomeNewProps) {
 
 			{/* Footer */}
 			<Box marginTop={1}>
-				<Text dimColor>Press Ctrl+C to exit | Type /help for commands</Text>
+				<Text dimColor>
+					Press <Text color="green">?</Text> for help | <Text color="green">
+						Ctrl+C
+					</Text> to exit
+				</Text>
 			</Box>
 		</Box>
 	);
