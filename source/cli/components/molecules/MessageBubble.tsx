@@ -2,6 +2,7 @@ import { Box, Text } from 'ink';
 import React from 'react';
 import type { Message } from '../../../core/domain/models/Message.js';
 import { StreamingIndicator } from '../atoms/Spinner.js';
+import { MarkdownText } from './MarkdownText.js';
 
 interface MessageBubbleProps {
 	message: Message;
@@ -53,9 +54,19 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 			</Box>
 
 			{/* Content */}
-			<Box marginLeft={2}>
-				<Text>{message.content}</Text>
-				{isStreaming && <StreamingIndicator />}
+			<Box marginLeft={2} flexDirection="column">
+				{/* Use markdown rendering for assistant messages */}
+				{message.role === 'assistant' ? (
+					<Box flexDirection="column">
+						<MarkdownText content={message.content} />
+						{isStreaming && <StreamingIndicator />}
+					</Box>
+				) : (
+					<Box>
+						<Text>{message.content}</Text>
+						{isStreaming && <StreamingIndicator />}
+					</Box>
+				)}
 			</Box>
 
 			{/* Metadata (tokens) */}
