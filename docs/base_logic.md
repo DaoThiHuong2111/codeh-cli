@@ -10,31 +10,26 @@
 - **Output classification layer**: định dạng và hiển thị các loại output khác nhau
 - **API management layer**: hooks, logging, error handling
 
-### 2. Configuration System (Updated for unified environment variables)
+### 2. Configuration System (Unified CODEH_* Variables Only)
 
-#### **Priority Order (NEW)**:
+#### **Configuration Priority**:
 
-1. **Unified Variables (HIGH PRIORITY)** - 5 biến chính theo `config.md`:
-
-   ```bash
-   CODEH_PROVIDER=anthropic                    # Options: anthropic, openai, generic-chat-completion-api
-   CODEH_MODEL=claude-3                        # Model name
-   CODEH_BASE_URL=https://api.anthropic.com   # Base URL for API
-   CODEH_API_KEY=your-api-key-here             # API key
-   CODEH_MAX_TOKEN=4096                        # Max tokens
-   ```
-
-2. **Legacy Variables (BACKWARD COMPATIBILITY)**:
+1. **Environment Variables (HIGHEST PRIORITY)** - CODEH_* prefix only:
 
    ```bash
-   ANTHROPIC_BASE_URL, ANTHROPIC_API_KEY
-   OPENAI_API_KEY, OPENAI_BASE_URL, OPENAI_MODEL
-   OLLAMA_BASE_URL, OLLAMA_MODEL, OLLAMA_API_KEY
+   CODEH_PROVIDER=anthropic                    # Required: anthropic, openai, ollama, generic
+   CODEH_MODEL=claude-3-5-sonnet-20241022      # Required: Model name
+   CODEH_BASE_URL=https://api.anthropic.com    # Required: Base URL for API
+   CODEH_API_KEY=your-api-key-here             # Required (except Ollama): API key
+   CODEH_MAX_TOKEN=4096                        # Optional: Max tokens (default: 4096)
+   CODEH_TEMPERATURE=0.7                       # Optional: Temperature (default: 0.7)
    ```
 
-3. **File Config (FALLBACK)**:
+2. **File Config (FALLBACK)**:
    - Path: `~/.codeh/configs.json`
-   - Format: `{"custom_models": [{"provider": "...", "model": "...", "base_url": "...", "api_key": "..."}]}`
+   - Format: `{"provider": "...", "model": "...", "baseUrl": "...", "apiKey": "...", "maxTokens": 4096, "temperature": 0.7}`
+
+**Note**: Legacy variables (ANTHROPIC_*, OPENAI_*, OLLAMA_*) are NO LONGER supported. Use CODEH_* prefix only.
 
 #### **Configuration Flow Logic**:
 
