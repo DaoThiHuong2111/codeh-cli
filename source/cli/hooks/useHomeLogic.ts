@@ -63,20 +63,20 @@ export function useHomeLogic(container: Container): UseHomeLogicReturn {
 
 		try {
 			// Initialize client if not already done
-			let success = true;
+			let activeClient = client;
 			if (!clientInitialized) {
-				success = await initializeClient();
-				setClientInitialized(success);
+				activeClient = await initializeClient();
+				setClientInitialized(!!activeClient);
 			}
 
-			if (!success || !client) {
+			if (!activeClient) {
 				setOutput('❌ Failed to connect to API. Please check your configuration (/config).');
 				return;
 			}
 
 			setOutput('Thinking...');
 
-			const presenter = usePresenter(HomePresenter, client, chat);
+			const presenter = usePresenter(HomePresenter, activeClient, chat);
 			if (!presenter) {
 				setOutput('❌ Error: Presenter not initialized');
 				return;

@@ -26,7 +26,7 @@ export interface ApiResponse {
 }
 
 export interface Message {
-  role: 'user' | 'assistant' | 'system';
+  role: 'user' | 'assistant' | 'system' | 'error';
   content: string;
   toolCalls?: ToolCall[];
 }

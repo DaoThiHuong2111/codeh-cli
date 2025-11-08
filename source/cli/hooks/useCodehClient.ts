@@ -15,12 +15,12 @@ export function useCodehClient(container: Container) {
 
 	/**
 	 * Lazy load the client when first needed
-	 * Returns true if successful, false if error
+	 * Returns the client if successful, null if error
 	 */
-	const initializeClient = useCallback(async (): Promise<boolean> => {
-		// If already loaded, return success
+	const initializeClient = useCallback(async (): Promise<CodehClient | null> => {
+		// If already loaded, return it
 		if (client) {
-			return true;
+			return client;
 		}
 
 		setLoading(true);
@@ -29,12 +29,12 @@ export function useCodehClient(container: Container) {
 		try {
 			const newClient = await createCodehClient(container);
 			setClient(newClient);
-			return true;
+			return newClient;
 		} catch (err: any) {
 			const errorMessage = err.message || 'Failed to load CodehClient';
 			setError(errorMessage);
 			console.error('Failed to load CodehClient:', err);
-			return false;
+			return null;
 		} finally {
 			setLoading(false);
 		}

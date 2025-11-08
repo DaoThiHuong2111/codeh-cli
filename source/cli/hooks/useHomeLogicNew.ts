@@ -27,9 +27,14 @@ export function useHomeLogicNew(container: Container): UseHomeLogicNewReturn {
 				setLoading(true);
 
 				// Initialize client if needed
-				const success = await initializeClient();
-				if (!success || !client) {
-					setError('Failed to initialize API client');
+				const initializedClient = await initializeClient();
+				console.log('[DEBUG useHomeLogicNew] Initialized client:', initializedClient);
+				console.log('[DEBUG useHomeLogicNew] clientError:', clientError);
+
+				if (!initializedClient) {
+					const errorMsg = clientError || 'Failed to initialize API client';
+					console.error('[ERROR] API client initialization failed:', errorMsg);
+					setError(errorMsg);
 					return;
 				}
 
@@ -51,7 +56,7 @@ export function useHomeLogicNew(container: Container): UseHomeLogicNewReturn {
 
 				// Create presenter
 				const newPresenter = new HomePresenterNew(
-					client,
+					initializedClient,
 					commandRegistry,
 					sessionManager,
 					config,
