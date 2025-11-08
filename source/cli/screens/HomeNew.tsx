@@ -10,6 +10,7 @@ import { ConversationArea } from '../components/organisms/ConversationArea.js';
 import { SlashSuggestions } from '../components/organisms/SlashSuggestions.js';
 import { HelpOverlay } from '../components/organisms/HelpOverlay.js';
 import { Footer } from '../components/organisms/Footer.js';
+import { TodosDisplay } from '../components/organisms/TodosDisplay.js';
 
 interface HomeNewProps {
 	container: Container;
@@ -110,6 +111,9 @@ export default function HomeNew({ container }: HomeNewProps) {
 			{presenter.messages.length === 0 && !presenter.isLoading && (
 				<TipsSection />
 			)}
+
+			{/* Todos Display (show when there are todos) */}
+			{presenter.todos.length > 0 && <TodosDisplay todos={presenter.todos} />}
 
 			{/* Slash Command Suggestions */}
 			{presenter.hasSuggestions() && (

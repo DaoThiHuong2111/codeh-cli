@@ -6,6 +6,8 @@
 import { CodehClient } from '../../core/application/CodehClient.js';
 import type { Message } from '../../core/domain/models/Message.js';
 import { Message as MessageModel } from '../../core/domain/models/Message.js';
+import type { Todo } from '../../core/domain/models/Todo.js';
+import { Todo as TodoModel } from '../../core/domain/models/Todo.js';
 import type { Command } from '../../core/domain/valueObjects/Command.js';
 import type { ISessionManager } from '../../core/domain/interfaces/ISessionManager.js';
 import type { ICommandRegistry } from '../../core/domain/interfaces/ICommandRegistry.js';
@@ -23,6 +25,9 @@ interface ViewState {
 	// Messages
 	messages: Message[];
 	streamingMessageId: string | null;
+
+	// Todos
+	todos: Todo[];
 
 	// Loading
 	isLoading: boolean;
@@ -68,6 +73,7 @@ export class HomePresenterNew {
 			currentHistoryIndex: -1,
 			messages: [],
 			streamingMessageId: null,
+			todos: [],
 			isLoading: false,
 			filteredSuggestions: [],
 			selectedSuggestionIndex: 0,
@@ -80,6 +86,12 @@ export class HomePresenterNew {
 			model: config.model || 'claude-3-5-sonnet',
 			directory: process.cwd(),
 		};
+
+		// Add sample todos for testing (TODO: Remove in production)
+		this.addTodo('Implement todos display feature', 'in_progress');
+		this.addTodo('Add markdown rendering support', 'completed');
+		this.addTodo('Create keyboard shortcuts system', 'completed');
+		this.addTodo('Add character counter to input', 'pending');
 
 		// Start duration timer (update every second)
 		this.startDurationTimer();
@@ -425,6 +437,31 @@ export class HomePresenterNew {
 	get messageCount() {
 		return this.state.messages.length;
 	}
+	get todos() {
+		return this.state.todos;
+	}
+
+	// === Todos Management ===
+
+	addTodo = (content: string, status: 'pending' | 'in_progress' | 'completed' = 'pending'): void => {
+		const todo = TodoModel.create(content, { status });
+		this.state.todos.push(todo);
+		this._notifyView();
+	};
+
+	updateTodoStatus = (todoId: string, status: 'pending' | 'in_progress' | 'completed'): void => {
+		const index = this.state.todos.findIndex(t => t.id === todoId);
+		if (index >= 0) {
+			const updatedTodo = this.state.todos[index].withStatus(status);
+			this.state.todos[index] = updatedTodo;
+			this._notifyView();
+		}
+	};
+
+	clearTodos = (): void => {
+		this.state.todos = [];
+		this._notifyView();
+	};
 
 	// === Stats Management ===
 
