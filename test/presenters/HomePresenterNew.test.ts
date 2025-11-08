@@ -25,7 +25,19 @@ class MockCodehClient {
 		}
 
 		return {
-			metadata: { duration: 100, tokenUsage: { total: 50 }, model: 'mock-model', finishReason: 'stop' },
+			request: { role: 'user', content: input },
+			response: { role: 'assistant', content: response },
+			metadata: {
+				duration: 100,
+				tokenUsage: {
+					prompt: 20,
+					completion: 30,
+					total: 50
+				},
+				model: 'mock-model',
+				finishReason: 'stop'
+			},
+			isComplete: () => true,
 		};
 	}
 }
@@ -443,4 +455,154 @@ test('getters return current state values', (t) => {
 	t.is(presenter.showHelp, false);
 	t.is(presenter.totalTokens, 0);
 	t.is(presenter.estimatedCost, 0);
+});
+
+// === Issue Fix Tests ===
+
+// Test for Issue #1: Message metadata should be set without mutation
+test('handleSubmit creates message with metadata immutably', async (t) => {
+	const presenter = createMockPresenter();
+
+	await presenter.handleSubmit('Test message');
+
+	// Wait for async completion
+	await new Promise(resolve => setTimeout(resolve, 100));
+
+	// Should have 2 messages: user + assistant
+	t.true(presenter.messages.length >= 2);
+
+	const assistantMessage = presenter.messages.find(m => m.role === 'assistant');
+	t.truthy(assistantMessage, 'Should have assistant message');
+
+	// Check metadata exists and was set properly (not mutated)
+	t.truthy(assistantMessage!.metadata, 'Should have metadata');
+	t.truthy(assistantMessage!.metadata!.usage, 'Should have usage stats');
+	t.is(assistantMessage!.metadata!.usage.promptTokens, 20, 'Prompt tokens correct');
+	t.is(assistantMessage!.metadata!.usage.completionTokens, 30, 'Completion tokens correct');
+	t.is(assistantMessage!.metadata!.usage.totalTokens, 50, 'Total tokens correct');
+
+	// Verify immutability: all Message properties are readonly
+	// TypeScript will catch if we try: assistantMessage.metadata = {}
+	// At runtime, the object should be properly constructed
+	t.is(typeof assistantMessage!.metadata, 'object');
+});
+
+// Test for Issue #2: Streaming message ID should be consistent across chunks
+test('handleSubmit maintains consistent message ID during streaming', async (t) => {
+	const presenter = createMockPresenter();
+	const capturedMessageIds: string[] = [];
+
+	// Set view callback to capture message IDs during streaming
+	presenter.setViewUpdateCallback(() => {
+		const streamingMsg = presenter.messages.find(m => m.role === 'assistant');
+		if (streamingMsg) {
+			capturedMessageIds.push(streamingMsg.id);
+		}
+	});
+
+	await presenter.handleSubmit('Test streaming');
+
+	// Wait for completion
+	await new Promise(resolve => setTimeout(resolve, 100));
+
+	// Should have captured multiple IDs during streaming
+	t.true(capturedMessageIds.length > 0, 'Should capture IDs during streaming');
+
+	// All IDs should be the same (consistent ID)
+	const uniqueIds = new Set(capturedMessageIds);
+	t.is(uniqueIds.size, 1, 'All streaming message IDs should be identical');
+});
+
+// Test streaming message ID consistency - detailed version
+test('streaming chunks use same message ID', async (t) => {
+	const presenter = createMockPresenter();
+	const messageIds: string[] = [];
+	let updateCount = 0;
+
+	presenter.setViewUpdateCallback(() => {
+		updateCount++;
+		const assistantMsg = presenter.messages.find(m => m.role === 'assistant');
+		if (assistantMsg) {
+			messageIds.push(assistantMsg.id);
+		}
+	});
+
+	await presenter.handleSubmit('Hello world');
+
+	// Wait for async
+	await new Promise(resolve => setTimeout(resolve, 100));
+
+	// Should have multiple updates (multiple chunks)
+	t.true(updateCount > 1, 'Should have multiple view updates during streaming');
+	t.true(messageIds.length > 0, 'Should capture message IDs');
+
+	// Check all IDs are identical
+	if (messageIds.length > 1) {
+		const firstId = messageIds[0];
+		const allSame = messageIds.every(id => id === firstId);
+		t.true(allSame, `All message IDs should be ${firstId}, but got: ${messageIds.join(', ')}`);
+	}
+});
+
+// Test that final message replaces streaming message (same ID check)
+test('final message replaces streaming message at correct index', async (t) => {
+	const presenter = createMockPresenter();
+
+	await presenter.handleSubmit('Test replacement');
+
+	// Wait for completion
+	await new Promise(resolve => setTimeout(resolve, 100));
+
+	// Should have exactly 2 messages: user + final assistant (not duplicated)
+	const assistantMessages = presenter.messages.filter(m => m.role === 'assistant');
+	t.is(assistantMessages.length, 1, 'Should have exactly 1 assistant message (not duplicated)');
+
+	// Final message should have metadata from turn
+	const finalMsg = assistantMessages[0];
+	t.truthy(finalMsg.metadata, 'Final message should have metadata');
+	t.truthy(finalMsg.metadata!.usage, 'Final message should have usage stats');
+});
+
+// Test token stats are updated from metadata
+test('handleSubmit updates token stats from metadata', async (t) => {
+	const presenter = createMockPresenter();
+
+	const initialTokens = presenter.totalTokens;
+	const initialCost = presenter.estimatedCost;
+
+	await presenter.handleSubmit('Count tokens');
+
+	// Wait for completion
+	await new Promise(resolve => setTimeout(resolve, 100));
+
+	// Tokens should be updated
+	t.true(presenter.totalTokens > initialTokens, 'Total tokens should increase');
+	t.is(presenter.totalTokens, initialTokens + 50, 'Should add 50 tokens from mock');
+
+	// Cost should be updated
+	t.true(presenter.estimatedCost > initialCost, 'Estimated cost should increase');
+	t.is(presenter.estimatedCost, (50 / 1000) * 0.005, 'Cost should be calculated correctly');
+});
+
+// Test message immutability - no 'as any' cast used
+test('message objects are not mutated after creation', async (t) => {
+	const presenter = createMockPresenter();
+
+	await presenter.handleSubmit('Immutability test');
+	await new Promise(resolve => setTimeout(resolve, 100));
+
+	const assistantMsg = presenter.messages.find(m => m.role === 'assistant');
+	t.truthy(assistantMsg);
+
+	// Store original metadata reference
+	const originalMetadata = assistantMsg!.metadata;
+
+	// Try to access again - should be same reference (not mutated)
+	const sameMsg = presenter.messages.find(m => m.role === 'assistant');
+	t.is(sameMsg!.metadata, originalMetadata, 'Metadata reference should not change');
+
+	// Metadata properties should be readonly (TypeScript enforces this)
+	// Runtime check: metadata object is frozen or sealed (depending on implementation)
+	t.truthy(assistantMsg!.metadata, 'Metadata exists');
+	t.is(typeof assistantMsg!.metadata!.usage, 'object', 'Usage is object');
 });

@@ -142,8 +142,8 @@ export class HomePresenterNew {
 		const userMessage = MessageModel.user(userInput);
 		this.state.messages.push(userMessage);
 
-		// Track streaming message
-		let assistantMessageId = '';
+		// Track streaming message - Create ID once for consistency
+		const assistantMessageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 		let assistantContent = '';
 
 		// Set loading
@@ -163,18 +163,20 @@ export class HomePresenterNew {
 						(m) => m.id === assistantMessageId,
 					);
 
-					// Create new message with updated content
-					const updatedMessage = MessageModel.assistant(assistantContent);
+					// Create new message with updated content using consistent ID
+					const updatedMessage = new MessageModel(
+						assistantMessageId,  // Fixed ID for all chunks
+						'assistant',
+						assistantContent,
+						new Date(),
+					);
 
 					if (existingIndex >= 0) {
-						// Replace existing message (maintain ID for streaming indicator)
-						assistantMessageId = updatedMessage.id;
-						this.state.streamingMessageId = updatedMessage.id;
+						// Replace existing message with same ID
 						this.state.messages[existingIndex] = updatedMessage;
 					} else {
 						// First chunk - add new message
-						assistantMessageId = updatedMessage.id;
-						this.state.streamingMessageId = updatedMessage.id;
+						this.state.streamingMessageId = assistantMessageId;
 						this.state.messages.push(updatedMessage);
 					}
 
@@ -183,24 +185,24 @@ export class HomePresenterNew {
 			);
 
 			if (turn.isComplete() && turn.response) {
-				// Create final message with metadata
-				const finalMessage = MessageModel.assistant(
+				// Create final message with metadata (no mutation!)
+				const finalMessage = MessageModel.create(
+					'assistant',
 					turn.response.content,
-					turn.response.toolCalls,
+					{
+						toolCalls: turn.response.toolCalls,
+						metadata: turn.metadata?.tokenUsage ? {
+							usage: {
+								promptTokens: turn.metadata.tokenUsage.prompt,
+								completionTokens: turn.metadata.tokenUsage.completion,
+								totalTokens: turn.metadata.tokenUsage.total,
+							},
+						} : undefined,
+					},
 				);
 
-				// Update metadata if available
+				// Update token stats
 				if (turn.metadata?.tokenUsage) {
-					(finalMessage as any).metadata = {
-						...finalMessage.metadata,
-						usage: {
-							promptTokens: turn.metadata.tokenUsage.prompt,
-							completionTokens: turn.metadata.tokenUsage.completion,
-							totalTokens: turn.metadata.tokenUsage.total,
-						},
-					};
-
-					// Update token stats
 					this.updateTokenStats(turn.metadata.tokenUsage.total);
 				}
 
