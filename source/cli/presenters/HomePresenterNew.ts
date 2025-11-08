@@ -34,6 +34,12 @@ interface ViewState {
 	// Help Overlay
 	showHelp: boolean;
 
+	// Stats
+	totalTokens: number;
+	estimatedCost: number;
+	sessionDuration: number; // in seconds
+	gitBranch?: string;
+
 	// Info
 	version: string;
 	model: string;
@@ -43,6 +49,8 @@ interface ViewState {
 export class HomePresenterNew {
 	private state: ViewState;
 	private viewUpdateCallback?: () => void;
+	private durationTimer?: NodeJS.Timeout;
+	private sessionStartTime: number;
 
 	constructor(
 		private client: CodehClient,
@@ -50,6 +58,8 @@ export class HomePresenterNew {
 		public sessionManager: ISessionManager,
 		private config: any,
 	) {
+		this.sessionStartTime = Date.now();
+
 		// Initialize state
 		this.state = {
 			input: '',
@@ -62,10 +72,17 @@ export class HomePresenterNew {
 			filteredSuggestions: [],
 			selectedSuggestionIndex: 0,
 			showHelp: false,
+			totalTokens: 0,
+			estimatedCost: 0,
+			sessionDuration: 0,
+			gitBranch: this.getGitBranch(),
 			version: config.version || '1.0.0',
 			model: config.model || 'claude-3-5-sonnet',
 			directory: process.cwd(),
 		};
+
+		// Start duration timer (update every second)
+		this.startDurationTimer();
 	}
 
 	// === View Management ===
@@ -176,6 +193,9 @@ export class HomePresenterNew {
 							totalTokens: turn.metadata.tokenUsage.total,
 						},
 					};
+
+					// Update token stats
+					this.updateTokenStats(turn.metadata.tokenUsage.total);
 				}
 
 				// Replace streaming message with final message
@@ -389,5 +409,59 @@ export class HomePresenterNew {
 	}
 	get showHelp() {
 		return this.state.showHelp;
+	}
+	get totalTokens() {
+		return this.state.totalTokens;
+	}
+	get estimatedCost() {
+		return this.state.estimatedCost;
+	}
+	get sessionDuration() {
+		return this.state.sessionDuration;
+	}
+	get gitBranch() {
+		return this.state.gitBranch;
+	}
+	get messageCount() {
+		return this.state.messages.length;
+	}
+
+	// === Stats Management ===
+
+	private startDurationTimer(): void {
+		// Update duration every second
+		this.durationTimer = setInterval(() => {
+			this.state.sessionDuration = Math.floor(
+				(Date.now() - this.sessionStartTime) / 1000,
+			);
+			this._notifyView();
+		}, 1000);
+	}
+
+	private updateTokenStats(tokens: number): void {
+		this.state.totalTokens += tokens;
+
+		// Estimate cost based on model
+		// Simple pricing: $0.005 per 1K tokens (average)
+		this.state.estimatedCost = (this.state.totalTokens / 1000) * 0.005;
+	}
+
+	private getGitBranch(): string | undefined {
+		try {
+			const { execSync } = require('child_process');
+			const branch = execSync('git rev-parse --abbrev-ref HEAD', {
+				encoding: 'utf8',
+				stdio: ['pipe', 'pipe', 'ignore'],
+			}).trim();
+			return branch;
+		} catch {
+			return undefined;
+		}
+	}
+
+	cleanup(): void {
+		if (this.durationTimer) {
+			clearInterval(this.durationTimer);
+		}
 	}
 }

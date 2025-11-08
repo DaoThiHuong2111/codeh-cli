@@ -9,6 +9,7 @@ import Logo from '../components/atoms/Logo.js';
 import { ConversationArea } from '../components/organisms/ConversationArea.js';
 import { SlashSuggestions } from '../components/organisms/SlashSuggestions.js';
 import { HelpOverlay } from '../components/organisms/HelpOverlay.js';
+import { Footer } from '../components/organisms/Footer.js';
 
 interface HomeNewProps {
 	container: Container;
@@ -137,7 +138,17 @@ export default function HomeNew({ container }: HomeNewProps) {
 				</Box>
 			)}
 
-			{/* Footer */}
+			{/* Footer with Stats */}
+			<Footer
+				model={presenter.model}
+				messageCount={presenter.messageCount}
+				totalTokens={presenter.totalTokens}
+				estimatedCost={presenter.estimatedCost}
+				sessionDuration={presenter.sessionDuration}
+				gitBranch={presenter.gitBranch}
+			/>
+
+			{/* Help Hint */}
 			<Box marginTop={1}>
 				<Text dimColor>
 					Press <Text color="green">?</Text> for help | <Text color="green">
