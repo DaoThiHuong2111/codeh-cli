@@ -9,7 +9,7 @@ export interface ViewModel {
 }
 
 export interface MessageViewModel {
-	role: 'user' | 'assistant' | 'system';
+	role: 'user' | 'assistant' | 'system' | 'error';
 	content: string;
 	timestamp: Date;
 }
