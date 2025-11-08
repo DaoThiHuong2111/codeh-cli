@@ -5,7 +5,7 @@
 
 import { ToolCall } from '../interfaces/IApiClient';
 
-export type MessageRole = 'user' | 'assistant' | 'system';
+export type MessageRole = 'user' | 'assistant' | 'system' | 'error';
 
 export class Message {
   constructor(
@@ -45,6 +45,11 @@ export class Message {
 
   static system(content: string): Message {
     return this.create('system', content);
+  }
+
+  static error(error: Error | string): Message {
+    const content = typeof error === 'string' ? error : error.message;
+    return this.create('error', content);
   }
 
   private static generateId(): string {

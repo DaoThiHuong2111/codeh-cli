@@ -1,0 +1,264 @@
+/**
+ * Home Presenter (Enhanced với MVP pattern)
+ * Handles business logic và state management cho Home screen
+ */
+
+import { CodehClient } from '../../core/application/CodehClient.js';
+import type { Message } from '../../core/domain/models/Message.js';
+import { Message as MessageModel } from '../../core/domain/models/Message.js';
+import type { Command } from '../../core/domain/valueObjects/Command.js';
+import type { ISessionManager } from '../../core/domain/interfaces/ISessionManager.js';
+import type { ICommandRegistry } from '../../core/domain/interfaces/ICommandRegistry.js';
+import { Session } from '../../core/domain/valueObjects/Session.js';
+
+interface ViewState {
+	// Input
+	input: string;
+	inputError: string;
+
+	// Messages
+	messages: Message[];
+	streamingMessageId: string | null;
+
+	// Loading
+	isLoading: boolean;
+
+	// Slash Commands
+	filteredSuggestions: Command[];
+	selectedSuggestionIndex: number;
+
+	// Info
+	version: string;
+	model: string;
+	directory: string;
+}
+
+export class HomePresenterNew {
+	private state: ViewState;
+	private viewUpdateCallback?: () => void;
+
+	constructor(
+		private client: CodehClient,
+		private commandRegistry: ICommandRegistry,
+		public sessionManager: ISessionManager,
+		private config: any,
+	) {
+		// Initialize state
+		this.state = {
+			input: '',
+			inputError: '',
+			messages: [],
+			streamingMessageId: null,
+			isLoading: false,
+			filteredSuggestions: [],
+			selectedSuggestionIndex: 0,
+			version: config.version || '1.0.0',
+			model: config.model || 'claude-3-5-sonnet',
+			directory: process.cwd(),
+		};
+	}
+
+	// === View Management ===
+
+	setViewUpdateCallback(callback: () => void) {
+		this.viewUpdateCallback = callback;
+	}
+
+	private _notifyView() {
+		this.viewUpdateCallback?.();
+	}
+
+	// === Input Handlers ===
+
+	handleInputChange = (value: string) => {
+		this.state.input = value;
+		this.state.inputError = '';
+
+		// Filter suggestions if starts with /
+		if (value.startsWith('/')) {
+			this.state.filteredSuggestions = this.commandRegistry.filter(value);
+			this.state.selectedSuggestionIndex = 0;
+		} else {
+			this.state.filteredSuggestions = [];
+		}
+
+		this._notifyView();
+	};
+
+	handleSubmit = async (userInput: string) => {
+		// Validation
+		if (!userInput.trim()) {
+			this.state.inputError = 'Please enter a message';
+			this._notifyView();
+			return;
+		}
+
+		// Check if slash command
+		if (userInput.startsWith('/')) {
+			await this.handleCommand(userInput);
+			return;
+		}
+
+		// Clear input
+		this.state.input = '';
+
+		// Add user message
+		const userMessage = MessageModel.user(userInput);
+		this.state.messages.push(userMessage);
+
+		// Set loading
+		this.state.isLoading = true;
+		this._notifyView();
+
+		try {
+			// Execute AI request
+			const turn = await this.client.execute(userInput);
+
+			if (turn.isComplete() && turn.response) {
+				// Add assistant message
+				const assistantMessage = MessageModel.assistant(
+					turn.response.content,
+					turn.response.toolCalls,
+				);
+				this.state.messages.push(assistantMessage);
+			} else {
+				throw new Error('Failed to get response from AI');
+			}
+		} catch (error: any) {
+			// Add error message
+			const errorMessage = MessageModel.error(error);
+			this.state.messages.push(errorMessage);
+		} finally {
+			this.state.isLoading = false;
+			this._notifyView();
+		}
+	};
+
+	// === Command Handlers ===
+
+	private async handleCommand(input: string) {
+		const [cmd, ...args] = input.split(' ');
+
+		// Find command
+		const command = this.commandRegistry.get(cmd);
+
+		if (!command) {
+			this.state.inputError = `Unknown command: ${cmd}`;
+			this._notifyView();
+			return;
+		}
+
+		// Clear input
+		this.state.input = '';
+		this.state.filteredSuggestions = [];
+
+		try {
+			await command.execute(args, this);
+		} catch (error: any) {
+			const errorMessage = MessageModel.error(`Command error: ${error.message}`);
+			this.state.messages.push(errorMessage);
+		}
+
+		this._notifyView();
+	}
+
+	// === Suggestion Handlers ===
+
+	handleSuggestionNavigate = (direction: 'up' | 'down') => {
+		const count = this.state.filteredSuggestions.length;
+		if (count === 0) return;
+
+		if (direction === 'up') {
+			this.state.selectedSuggestionIndex =
+				(this.state.selectedSuggestionIndex - 1 + count) % count;
+		} else {
+			this.state.selectedSuggestionIndex =
+				(this.state.selectedSuggestionIndex + 1) % count;
+		}
+
+		this._notifyView();
+	};
+
+	handleSuggestionSelect = (): string | null => {
+		const selected =
+			this.state.filteredSuggestions[this.state.selectedSuggestionIndex];
+
+		if (!selected) return null;
+
+		// Auto-fill input
+		this.state.input = selected.cmd + ' ';
+		this.state.filteredSuggestions = [];
+
+		this._notifyView();
+
+		return selected.cmd;
+	};
+
+	hasSuggestions = (): boolean => {
+		return this.state.filteredSuggestions.length > 0;
+	};
+
+	// === Conversation Management ===
+
+	async clearConversation(): Promise<void> {
+		this.state.messages = [];
+		this._notifyView();
+	}
+
+	async startNewConversation(): Promise<void> {
+		await this.clearConversation();
+	}
+
+	addSystemMessage(message: Message): void {
+		this.state.messages.push(message);
+		this._notifyView();
+	}
+
+	// === Session Management ===
+
+	async saveSession(name: string): Promise<void> {
+		const session = Session.create(name, this.state.messages, this.state.model);
+
+		await this.sessionManager.save(session);
+	}
+
+	async loadSession(name: string): Promise<void> {
+		const session = await this.sessionManager.load(name);
+
+		this.state.messages = session.messages;
+		this._notifyView();
+	}
+
+	// === Getters ===
+
+	get input() {
+		return this.state.input;
+	}
+	get inputError() {
+		return this.state.inputError;
+	}
+	get messages() {
+		return this.state.messages;
+	}
+	get isLoading() {
+		return this.state.isLoading;
+	}
+	get filteredSuggestions() {
+		return this.state.filteredSuggestions;
+	}
+	get selectedSuggestionIndex() {
+		return this.state.selectedSuggestionIndex;
+	}
+	get version() {
+		return this.state.version;
+	}
+	get model() {
+		return this.state.model;
+	}
+	get directory() {
+		return this.state.directory;
+	}
+	get streamingMessageId() {
+		return this.state.streamingMessageId;
+	}
+}
