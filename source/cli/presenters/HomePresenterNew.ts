@@ -87,12 +87,6 @@ export class HomePresenterNew {
 			directory: process.cwd(),
 		};
 
-		// Add sample todos for testing (TODO: Remove in production)
-		this.addTodo('Implement todos display feature', 'in_progress');
-		this.addTodo('Add markdown rendering support', 'completed');
-		this.addTodo('Create keyboard shortcuts system', 'completed');
-		this.addTodo('Add character counter to input', 'pending');
-
 		// Start duration timer (update every second)
 		this.startDurationTimer();
 	}
