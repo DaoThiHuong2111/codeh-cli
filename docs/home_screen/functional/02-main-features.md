@@ -4,7 +4,16 @@
 
 ---
 
-## 1. Trò Chuyện Với AI
+## ⚠️ Trạng Thái Features
+
+> **Legend:**
+> - ✅ **Implemented** - Đã hoạt động (v1.0.0)
+> - 🚧 **Planned** - Trong roadmap (v1.1 - v1.3)
+> - 💡 **Future** - Ý tưởng cho tương lai (v2.0+)
+
+---
+
+## 1. Trò Chuyện Với AI ✅
 
 **Mô tả:**
 Gửi câu hỏi hoặc yêu cầu đến AI assistant và nhận câu trả lời realtime.
@@ -28,7 +37,9 @@ Gửi câu hỏi hoặc yêu cầu đến AI assistant và nhận câu trả l�
 
 ---
 
-## 2. Xem Lịch Sử Hội Thoại
+## 2. Xem Lịch Sử Hội Thoại 🚧
+
+> **Status**: Planned for v1.1 - Hiện tại chỉ hiển thị output cuối cùng
 
 **Mô tả:**
 Xem lại tất cả các cuộc hội thoại trước đó trong phiên làm việc.
@@ -47,7 +58,9 @@ Xem lại tất cả các cuộc hội thoại trước đó trong phiên làm v
 
 ---
 
-## 3. Sử Dụng Slash Commands
+## 3. Sử Dụng Slash Commands 🚧
+
+> **Status**: Planned for v1.1 - Hiện tại chưa có slash commands
 
 **Mô tả:**
 Thực hiện các lệnh đặc biệt bằng cách gõ `/` theo sau tên lệnh.
@@ -77,7 +90,9 @@ Thực hiện các lệnh đặc biệt bằng cách gõ `/` theo sau tên lện
 
 ---
 
-## 4. Quản Lý Todos
+## 4. Quản Lý Todos 🚧
+
+> **Status**: Planned for v1.2 - Feature độc đáo của CODEH CLI
 
 **Mô tả:**
 Theo dõi tiến độ công việc với danh sách todos tích hợp.
@@ -104,7 +119,9 @@ Tasks: 2/5 completed
 
 ---
 
-## 5. Xem Tips Và Gợi Ý
+## 5. Xem Tips Và Gợi Ý ✅
+
+> **Status**: Implemented - 3 static tips hiển thị khi start
 
 **Mô tả:**
 Nhận tips hữu ích khi không có việc gì đang xử lý.
@@ -122,7 +139,9 @@ Nhận tips hữu ích khi không có việc gì đang xử lý.
 
 ---
 
-## 6. Input History Navigation
+## 6. Input History Navigation 🚧
+
+> **Status**: Planned for v1.2 - Keyboard shortcuts cần implement
 
 **Mô tả:**
 Truy cập lại các câu hỏi đã gửi trước đó.
@@ -140,7 +159,9 @@ Truy cập lại các câu hỏi đã gửi trước đó.
 
 ---
 
-## 7. Keyboard Shortcuts
+## 7. Keyboard Shortcuts ⚠️
+
+> **Status**: Partial - Chỉ có Ctrl+C, phím khác planned for v1.2
 
 **Mô tả:**
 Làm việc nhanh hơn với phím tắt.
@@ -159,6 +180,43 @@ Làm việc nhanh hơn với phím tắt.
 - `↑` / `↓` - Chọn suggestion
 - `Enter` / `Tab` - Áp dụng suggestion
 - `Esc` - Hủy suggestions
+
+---
+
+## 📊 Summary: Current vs Planned
+
+### ✅ Implemented (v1.0.0)
+1. **Trò chuyện với AI** - Basic Q&A working
+2. **Xem tips** - Static tips hiển thị
+
+### 🚧 Planned Features
+
+**v1.1 (Core) - 2-3 weeks:**
+- Conversation history display
+- Slash commands (/help, /clear, /save, /load)
+- Streaming responses
+- Session persistence
+
+**v1.2 (Advanced UX) - 3-4 weeks:**
+- Todos management
+- Input history navigation
+- Full keyboard shortcuts
+- Help overlay
+
+**v1.3+ (Extensions):**
+- Multi-modal input
+- Virtual scrolling
+- Advanced features
+
+### 💡 New Features (Học từ Gemini CLI)
+- **Streaming responses** - Real-time text như ChatGPT
+- **Session save/load** - Persistent conversations
+- **Multi-modal input** - Files, images, PDFs (future)
+
+**Xem thêm:**
+- [ROADMAP.md](../ROADMAP.md) - Lộ trình chi tiết
+- [GEMINI_COMPARISON.md](../GEMINI_COMPARISON.md) - So sánh với Gemini CLI
+- [CURRENT_STATE.md](../CURRENT_STATE.md) - Implementation status
 
 ---
 

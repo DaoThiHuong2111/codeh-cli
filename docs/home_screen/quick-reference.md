@@ -1,45 +1,82 @@
 # 🏠 Home Screen - Quick Reference
 
-> Tài liệu tham khảo nhanh cho màn hình Home. Xem [HOME_SCREEN.md](./HOME_SCREEN.md) cho chi tiết đầy đủ.
+> Tài liệu tham khảo nhanh cho màn hình Home. Xem docs đầy đủ trong thư mục này.
+
+---
+
+## ⚠️ Current vs Planned
+
+> **QUAN TRỌNG**: Đây là reference cho **vision đầy đủ**.
+> - ✅ = Implemented (v1.0.0)
+> - 🚧 = Planned (v1.1+)
+> - See [CURRENT_STATE.md](./CURRENT_STATE.md) for implementation status
+
+---
 
 ## 🎯 Tóm Tắt
 
-**Home Screen** là màn hình chính của CODEH CLI, sử dụng **MVP pattern** với logic xử lý qua `HomePresenter`.
+**Home Screen** là màn hình chính của CODEH CLI:
+- ✅ MVP pattern với HomePresenter
+- ✅ Basic Q&A với AI
+- 🚧 Full conversation history (v1.1)
+- 🚧 Slash commands (v1.1)
+- 🚧 Streaming responses (v1.1)
 
 ## 📁 Files Chính
 
 ```
-source/cli/screens/Home.js              # UI Component (97 lines)
-source/cli/presenters/HomePresenter.js  # Business Logic (144 lines)
-source/cli/hooks/useHomePresenter.js    # React Hook Bridge (78 lines)
+source/cli/screens/Home.tsx              # UI Component (64 lines) ✅
+source/cli/presenters/HomePresenter.ts   # Business Logic (90 lines) ✅
+source/cli/hooks/useHomeLogic.ts         # React Hook (112 lines) ✅
 ```
 
 ## 🧩 Components
 
+### Current (v1.0.0) - ✅ Implemented
 ```
 Home
-├── Logo
-├── InfoSection (version, model, directory)
-├── ConversationArea (messages)
-├── TodosDisplay [conditional]
-├── TipsDisplay [conditional]
-├── InputPromptArea
-├── SlashSuggestions [conditional]
-├── Footer
-└── HelpOverlay [conditional]
+├── Logo ✅
+├── InfoSection (version, model, directory) ✅
+├── TipsSection (static tips) ✅
+├── InputBox (basic input) ✅
+└── Output (plain text) ✅
+```
+
+### Planned (v1.1+) - 🚧 Roadmap
+```
+Home (Enhanced)
+├── ConversationArea (messages) 🚧 v1.1
+│   └── Message[] (user/assistant/error/system) 🚧 v1.1
+├── TodosDisplay [conditional] 🚧 v1.2
+├── SlashSuggestions [conditional] 🚧 v1.1
+├── Footer (stats) 🚧 v1.2
+└── HelpOverlay [conditional] 🚧 v1.2
 ```
 
 ## ⚙️ State (HomePresenter)
 
-```javascript
+### Current (v1.0.0) - ✅ Implemented
+```typescript
 {
-  input: string               // User input
-  messages: Message[]         // Conversation history
-  todos: Todo[]              // Task list
-  isLoading: boolean         // API call in progress
-  inputError: string         // Validation error
-  selectedSuggestionIndex: number
-  showHelp: boolean          // Help overlay visible
+  output: string              // Latest response only
+  processing: boolean         // Loading state
+  version: string            // App version
+  model: string              // AI model name
+  directory: string          // Working directory
+  chatError: string | null   // Error message
+}
+```
+
+### Planned (v1.1+) - 🚧 Roadmap
+```typescript
+{
+  // Current state + these additions:
+  messages: Message[]         // Full conversation history 🚧 v1.1
+  todos: Todo[]              // Task list 🚧 v1.2
+  inputError: string         // Validation error 🚧 v1.2
+  selectedSuggestionIndex: number  // For slash commands 🚧 v1.1
+  showHelp: boolean          // Help overlay 🚧 v1.2
+  inputHistory: string[]     // Input history 🚧 v1.2
 }
 ```
 
@@ -113,22 +150,19 @@ if (!apiClient) throw "API not configured. Please configure..."
 
 ## 🔌 API Methods
 
-### HomePresenter
-```javascript
-// Input
-handleInputChange(value)
-handleSubmit(userInput)
+### HomePresenter (Current - v1.0.0)
+```typescript
+// ✅ Implemented
+async handleInput(input: string): Promise<ExecutionResult>
+getConversation(): ConversationViewModel
+async clearConversation(): Promise<void>
+async startNewConversation(): Promise<void>
+needsCompression(): boolean
 
-// Suggestions
-handleSuggestionNavigate(direction)
-handleSuggestionSelect()
-
-// UI
-toggleHelp()
-
-// Conversation
-clearConversation()
-init()
+// 🚧 Planned (v1.1+)
+// handleSuggestionNavigate(direction) - v1.1
+// handleSuggestionSelect() - v1.1
+// toggleHelp() - v1.2
 ```
 
 ## 📝 Best Practices
@@ -145,25 +179,37 @@ init()
 - Forget to handle errors
 - Mutate state directly
 
-## ⚠️ Known Issues
+## ⚠️ Known Gaps & Issues
 
-1. **Missing services/** ← Need to fix
-   ```javascript
-   // Home.js:19-20 - These imports fail
-   import {getVersion} from '../../services/system/index.js';
-   ```
+### Current Limitations (v1.0.0)
+1. **No conversation history** - Chỉ hiển thị output cuối
+2. **No slash commands** - Không có command system
+3. **No streaming** - Response xuất hiện cùng lúc
+4. **No session persistence** - Mất hết khi thoát
+5. **Plain text only** - Không có markdown rendering
 
-2. **No offline support** - Requires internet
-
-3. **Memory leaks** (potential) - Long conversations
+### Planned Fixes
+- See [ROADMAP.md](./ROADMAP.md) for development timeline
+- v1.1 sẽ fix issues 1-4
+- v1.2 sẽ add markdown + advanced features
 
 ## 🔗 Quick Links
 
-- [Full Documentation](./HOME_SCREEN.md)
-- [Architecture](./ARCHITECTURE.md)
-- [Components](./COMPONENTS.md)
-- [API Docs](./API.md)
+### Documentation
+- [README.md](./README.md) - Documentation index
+- [CURRENT_STATE.md](./CURRENT_STATE.md) - Implementation status
+- [ROADMAP.md](./ROADMAP.md) - Development roadmap
+- [GEMINI_COMPARISON.md](./GEMINI_COMPARISON.md) - Comparison with Gemini CLI
+
+### Functional Docs
+- [01-overview.md](./functional/01-overview.md) - UI overview
+- [02-main-features.md](./functional/02-main-features.md) - Features list
+
+### Technical Docs
+- [01-overview.md](./technical/01-overview.md) - Architecture
+- [02-components.md](./technical/02-components.md) - Components detail
 
 ---
 
 **Version**: 1.0.0 | **Last Updated**: 2025-01-08
+**Status**: Updated với current implementation + roadmap
