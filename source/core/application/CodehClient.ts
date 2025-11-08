@@ -96,17 +96,19 @@ export class CodehClient {
   }
 
   /**
-   * Stream a response
+   * Execute with streaming - calls onChunk for each content chunk
+   * Returns final Turn when complete
    */
-  async *executeStream(input: string): AsyncGenerator<string, Turn, void> {
+  async executeWithStreaming(
+    input: string,
+    onChunk: (content: string) => void
+  ): Promise<Turn> {
     const startTime = Date.now();
 
     // Validate input
     const validation = this.inputClassifier.validate(input);
     if (!validation.valid) {
       const errorMessage = validation.errors.join('\n');
-      yield `❌ Input validation failed:\n${errorMessage}`;
-
       const requestMsg = Message.user(input);
       const responseMsg = Message.assistant(
         `❌ Input validation failed:\n${errorMessage}`
@@ -124,9 +126,10 @@ export class CodehClient {
     const recentMessages = await this.historyRepo.getRecentMessages(10);
 
     let fullResponse = '';
+    let usage: any = undefined;
 
     try {
-      await this.apiClient.streamChat(
+      const apiResponse = await this.apiClient.streamChat(
         {
           messages: [
             ...recentMessages.map((m) => ({
@@ -139,11 +142,15 @@ export class CodehClient {
         (chunk) => {
           if (chunk.content) {
             fullResponse += chunk.content;
+            onChunk(chunk.content);
+          }
+          if (chunk.usage) {
+            usage = chunk.usage;
           }
         }
       );
 
-      // Create response message
+      // Create response message with full content
       const responseMsg = Message.assistant(fullResponse);
 
       // Save to history
@@ -154,10 +161,17 @@ export class CodehClient {
         .withResponse(responseMsg)
         .withMetadata({
           duration: Date.now() - startTime,
+          tokenUsage: usage
+            ? {
+                prompt: usage.promptTokens,
+                completion: usage.completionTokens,
+                total: usage.totalTokens,
+              }
+            : undefined,
+          model: apiResponse.model,
+          finishReason: apiResponse.finishReason,
         });
     } catch (error: any) {
-      yield `❌ Error: ${error.message}`;
-
       const errorMsg = Message.assistant(`❌ Error: ${error.message}`);
 
       return Turn.create(requestMsg)

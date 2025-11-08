@@ -66,8 +66,92 @@ export class OpenAIClient implements IApiClient {
     request: ApiRequest,
     onChunk: (chunk: StreamChunk) => void
   ): Promise<ApiResponse> {
-    // TODO: Implement streaming for OpenAI
-    throw new Error('Streaming not implemented yet for OpenAI');
+    if (!request.model) {
+      throw new Error('Model is required and should be provided by user configuration');
+    }
+
+    const requestBody = {
+      model: request.model,
+      max_tokens: request.maxTokens || 4096,
+      messages: request.messages.map((m) => ({
+        role: m.role,
+        content: m.content,
+      })),
+      temperature: request.temperature,
+      stream: true,
+    };
+
+    // Remove undefined values
+    Object.keys(requestBody).forEach(
+      (key) =>
+        (requestBody as any)[key] === undefined &&
+        delete (requestBody as any)[key]
+    );
+
+    let fullContent = '';
+    let usage: any = undefined;
+    let finishReason: string | undefined;
+    let modelName = request.model;
+
+    await this.httpClient.streamPost(
+      `${this.baseUrl}/chat/completions`,
+      requestBody,
+      (chunk: any) => {
+        // OpenAI streaming format:
+        // - choices[0].delta.content: content chunks
+        // - choices[0].finish_reason: completion reason
+        // - usage: token usage (only in final chunk for some models)
+
+        const choice = chunk.choices?.[0];
+        if (!choice) return;
+
+        if (choice.delta?.content) {
+          const content = choice.delta.content;
+          fullContent += content;
+          onChunk({
+            content,
+            done: false,
+          });
+        }
+
+        if (choice.finish_reason) {
+          finishReason = choice.finish_reason;
+        }
+
+        if (chunk.usage) {
+          usage = chunk.usage;
+        }
+
+        if (chunk.model) {
+          modelName = chunk.model;
+        }
+
+        // Check if stream is done
+        if (choice.finish_reason) {
+          onChunk({
+            done: true,
+            usage: usage
+              ? {
+                  promptTokens: usage.prompt_tokens || 0,
+                  completionTokens: usage.completion_tokens || 0,
+                  totalTokens: usage.total_tokens || 0,
+                }
+              : undefined,
+          });
+        }
+      }
+    );
+
+    return {
+      content: fullContent,
+      model: modelName,
+      usage: {
+        promptTokens: usage?.prompt_tokens || 0,
+        completionTokens: usage?.completion_tokens || 0,
+        totalTokens: usage?.total_tokens || 0,
+      },
+      finishReason: finishReason as ApiResponse['finishReason'],
+    };
   }
 
   async healthCheck(): Promise<boolean> {

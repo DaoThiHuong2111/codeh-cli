@@ -119,4 +119,96 @@ export class HttpClient {
   setTimeout(timeout: number): void {
     this.defaultTimeout = timeout;
   }
+
+  /**
+   * Stream a POST request with SSE (Server-Sent Events)
+   * Calls onChunk for each chunk received
+   */
+  async streamPost(
+    url: string,
+    body: any,
+    onChunk: (data: any) => void,
+    options: Omit<HttpRequestOptions, 'method' | 'body'> = {}
+  ): Promise<void> {
+    const fetch = await import('node-fetch').then((m) => m.default);
+
+    const headers = {
+      'Content-Type': 'application/json',
+      ...this.defaultHeaders,
+      ...options.headers,
+    };
+
+    const requestOptions: any = {
+      method: 'POST',
+      headers,
+      body: typeof body === 'string' ? body : JSON.stringify(body),
+    };
+
+    try {
+      const response = await fetch(url, requestOptions);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+
+      if (!response.body) {
+        throw new Error('Response body is null');
+      }
+
+      // Read stream line by line
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      for await (const chunk of response.body) {
+        buffer += decoder.decode(chunk as any, { stream: true });
+        const lines = buffer.split('\n');
+
+        // Process all complete lines
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (!line.trim() || line.startsWith(':')) {
+            continue;
+          }
+
+          // Parse SSE format: "data: {...}"
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6).trim();
+
+            // Check for end signal
+            if (data === '[DONE]') {
+              return;
+            }
+
+            try {
+              const parsed = JSON.parse(data);
+              onChunk(parsed);
+            } catch (e) {
+              // Some APIs send non-JSON data, skip it
+              continue;
+            }
+          }
+        }
+      }
+
+      // Process remaining buffer
+      if (buffer.trim() && buffer.startsWith('data: ')) {
+        const data = buffer.slice(6).trim();
+        if (data !== '[DONE]') {
+          try {
+            const parsed = JSON.parse(data);
+            onChunk(parsed);
+          } catch (e) {
+            // Ignore parse errors
+          }
+        }
+      }
+    } catch (error: any) {
+      if (error.name === 'AbortError' || error.code === 'ETIMEDOUT') {
+        throw new Error(`Request timeout after ${this.defaultTimeout}ms`);
+      }
+      throw error;
+    }
+  }
 }

@@ -106,30 +106,92 @@ export class HomePresenterNew {
 		const userMessage = MessageModel.user(userInput);
 		this.state.messages.push(userMessage);
 
+		// Track streaming message
+		let assistantMessageId = '';
+		let assistantContent = '';
+
 		// Set loading
 		this.state.isLoading = true;
 		this._notifyView();
 
 		try {
-			// Execute AI request
-			const turn = await this.client.execute(userInput);
+			// Execute AI request with streaming
+			const turn = await this.client.executeWithStreaming(
+				userInput,
+				(chunk: string) => {
+					// Accumulate content
+					assistantContent += chunk;
+
+					// Find existing message or create new one
+					const existingIndex = this.state.messages.findIndex(
+						(m) => m.id === assistantMessageId,
+					);
+
+					// Create new message with updated content
+					const updatedMessage = MessageModel.assistant(assistantContent);
+
+					if (existingIndex >= 0) {
+						// Replace existing message (maintain ID for streaming indicator)
+						assistantMessageId = updatedMessage.id;
+						this.state.streamingMessageId = updatedMessage.id;
+						this.state.messages[existingIndex] = updatedMessage;
+					} else {
+						// First chunk - add new message
+						assistantMessageId = updatedMessage.id;
+						this.state.streamingMessageId = updatedMessage.id;
+						this.state.messages.push(updatedMessage);
+					}
+
+					this._notifyView();
+				},
+			);
 
 			if (turn.isComplete() && turn.response) {
-				// Add assistant message
-				const assistantMessage = MessageModel.assistant(
+				// Create final message with metadata
+				const finalMessage = MessageModel.assistant(
 					turn.response.content,
 					turn.response.toolCalls,
 				);
-				this.state.messages.push(assistantMessage);
+
+				// Update metadata if available
+				if (turn.metadata?.tokenUsage) {
+					(finalMessage as any).metadata = {
+						...finalMessage.metadata,
+						usage: {
+							promptTokens: turn.metadata.tokenUsage.prompt,
+							completionTokens: turn.metadata.tokenUsage.completion,
+							totalTokens: turn.metadata.tokenUsage.total,
+						},
+					};
+				}
+
+				// Replace streaming message with final message
+				const index = this.state.messages.findIndex(
+					(m) => m.id === assistantMessageId,
+				);
+				if (index >= 0) {
+					this.state.messages[index] = finalMessage;
+				} else {
+					this.state.messages.push(finalMessage);
+				}
 			} else {
 				throw new Error('Failed to get response from AI');
 			}
 		} catch (error: any) {
+			// Remove the streaming message if exists
+			const index = this.state.messages.findIndex(
+				(m) => m.id === assistantMessageId,
+			);
+			if (index >= 0) {
+				this.state.messages.splice(index, 1);
+			}
+
 			// Add error message
 			const errorMessage = MessageModel.error(error);
 			this.state.messages.push(errorMessage);
 		} finally {
 			this.state.isLoading = false;
+			this.state.streamingMessageId = null;
 			this._notifyView();
 		}
 	};
