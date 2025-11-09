@@ -28,7 +28,7 @@ export const TableRenderer: React.FC<TableRendererProps> = ({
 
 	// Check if table fits in terminal
 	const totalWidth = columnWidths.reduce((sum, w) => sum + w, 0) + headers.length * 3 + 1;
-	const shouldTruncate = terminalWidth && totalWidth > terminalWidth;
+	const shouldTruncate = terminalWidth ? totalWidth > terminalWidth : false;
 
 	return (
 		<Box flexDirection="column" paddingY={1}>

@@ -2,7 +2,7 @@
  * Streaming-related types
  */
 
-import type {StreamChunk} from '../../../core/domain/interfaces/IApiClient';
+import type {StreamChunk} from '../../../../core/domain/interfaces/IApiClient';
 
 /**
  * Streaming state

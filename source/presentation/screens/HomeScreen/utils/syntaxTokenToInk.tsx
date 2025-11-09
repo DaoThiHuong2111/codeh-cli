@@ -120,7 +120,7 @@ export function codeToInkLines(
 				{/* TODO: Implement proper per-line highlighting while preserving tokens */}
 				<Text>{line}</Text>
 			</React.Fragment>
-		});
+		);
 	});
 }
 
