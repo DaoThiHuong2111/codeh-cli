@@ -257,5 +257,7 @@ See [Technical Documentation](./technical.md) for implementation details.
 
 - [Features Documentation](./features.md)
 - [Technical Documentation](./technical.md)
+- [LLM UI/UX Implementation](./llm-ui-ux.md) - UI/UX cho streaming LLM responses
 - [User Flows](./flows.md)
 - [User Guide](../../guides/user-guide.md)
+- [LLM API Integration](../../architecture/llm-api-integration.md) - Backend API integration

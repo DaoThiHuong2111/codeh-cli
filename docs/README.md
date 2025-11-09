@@ -13,6 +13,7 @@ Tài liệu dự án CODEH CLI - Terminal UI cho AI chat với 3-layer architect
 ### 🏗️ [Architecture](./architecture/)
 
 - [Overview](./architecture/overview.md) - Tổng quan kiến trúc 3-layer
+- [LLM API Integration](./architecture/llm-api-integration.md) - Tích hợp 4 nhà cung cấp LLM API
 - [Integrations Guide](./architecture/integrations.md) - VS Code, MCP, A2A integrations
 
 ### 🖥️ [Screens](./screens/)
