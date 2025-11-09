@@ -32,8 +32,9 @@ export interface AssistantMessageProps {
 
 /**
  * AssistantMessage - Display AI responses with provider-specific styling
+ * Memoized to prevent unnecessary re-renders
  */
-export const AssistantMessage: React.FC<AssistantMessageProps> = ({
+const AssistantMessageComponent: React.FC<AssistantMessageProps> = ({
 	message,
 	provider,
 	isPending = false,
@@ -125,3 +126,8 @@ function getProviderName(provider: Provider): string {
 
 	return names[provider] || 'Assistant';
 }
+
+/**
+ * Memoized AssistantMessage - prevents re-renders when props don't change
+ */
+export const AssistantMessage = React.memo(AssistantMessageComponent);
