@@ -55,7 +55,6 @@ export function useStreamChat(
 	const [error, setError] = useState<Error | null>(null);
 	const [finalResponse, setFinalResponse] = useState<ApiResponse | null>(null);
 
-	// Track if stream was cancelled
 	const cancelledRef = useRef(false);
 
 	/**
@@ -63,7 +62,6 @@ export function useStreamChat(
 	 */
 	const sendMessage = useCallback(
 		async (content: string, requestOptions?: Partial<ApiRequest>) => {
-			// Reset state
 			setIsStreaming(true);
 			setStreamingContent('');
 			setError(null);
@@ -71,7 +69,6 @@ export function useStreamChat(
 			cancelledRef.current = false;
 
 			try {
-				// Build request
 				const request: ApiRequest = {
 					messages: [{role: 'user', content}],
 					stream: true,
@@ -79,25 +76,20 @@ export function useStreamChat(
 					...requestOptions,
 				};
 
-				// Start streaming
 				const response = await apiClient.streamChat(request, chunk => {
 					if (cancelledRef.current) return;
 
-					// Accumulate content
 					if (chunk.content) {
 						setStreamingContent(prev => prev + chunk.content);
 					}
 
-					// Notify callback
 					onChunkReceived?.(chunk);
 				});
 
-				// Check if cancelled during streaming
 				if (cancelledRef.current) {
 					return;
 				}
 
-				// Streaming completed
 				setFinalResponse(response);
 				setIsStreaming(false);
 				onComplete?.(response);

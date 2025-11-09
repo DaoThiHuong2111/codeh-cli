@@ -4,12 +4,7 @@
  */
 
 import {Router, Request, Response} from 'express';
-import {
-	setupSSE,
-	sendSSEChunk,
-	streamTextWordByWord,
-	generateTokenCount,
-} from '../utils/streaming';
+import {streamTextWordByWord, generateTokenCount} from '../utils/streaming';
 import {getMockResponse} from '../mock-data/responses';
 
 const router = Router();

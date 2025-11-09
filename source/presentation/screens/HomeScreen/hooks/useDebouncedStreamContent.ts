@@ -32,18 +32,15 @@ export function useDebouncedStreamContent(
 	const [debouncedContent, setDebouncedContent] = useState(content);
 
 	useEffect(() => {
-		// Update immediately if content is empty (reset case)
 		if (content === '') {
 			setDebouncedContent('');
 			return;
 		}
 
-		// Set up debounce timer
 		const timeoutId = setTimeout(() => {
 			setDebouncedContent(content);
 		}, delay);
 
-		// Cleanup on content change or unmount
 		return () => {
 			clearTimeout(timeoutId);
 		};

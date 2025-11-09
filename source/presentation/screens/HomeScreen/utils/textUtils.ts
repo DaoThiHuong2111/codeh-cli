@@ -26,7 +26,6 @@ export function wrapText(text: string, width: number): string[] {
 			if (currentLine) {
 				lines.push(currentLine);
 			}
-			// If single word is too long, split it
 			if (measureTextWidth(word) > width) {
 				const chunks = splitLongWord(word, width);
 				lines.push(...chunks.slice(0, -1));
@@ -70,11 +69,6 @@ export function truncateText(
  */
 export function measureTextWidth(text: string): number {
 	if (!text) return 0;
-
-	// Simple implementation: count characters
-	// For more accurate measurement with CJK characters, use string-width package:
-	// import stringWidth from 'string-width';
-	// return stringWidth(text);
 
 	return text.length;
 }

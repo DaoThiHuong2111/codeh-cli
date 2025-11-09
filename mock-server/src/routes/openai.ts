@@ -6,7 +6,6 @@
 import {Router, Request, Response} from 'express';
 import {
 	setupSSE,
-	sendSSEChunk,
 	sendSSEDone,
 	streamTextWordByWord,
 	generateTokenCount,

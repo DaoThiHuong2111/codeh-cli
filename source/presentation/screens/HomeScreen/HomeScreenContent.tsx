@@ -20,7 +20,6 @@ export const HomeScreenContent: React.FC = () => {
 	const {exit} = useApp();
 	const {width, height} = useTerminalSize();
 
-	// Chat state
 	const {
 		history,
 		pendingItem,
@@ -32,13 +31,10 @@ export const HomeScreenContent: React.FC = () => {
 		clearHistory,
 	} = useChat();
 
-	// Settings state
 	const {model} = useSettings();
 
-	// Total token count
 	const [totalTokens, setTotalTokens] = useState(0);
 
-	// Calculate total tokens from history
 	useEffect(() => {
 		const total = history.reduce((sum, item) => {
 			return sum + (item.usage?.totalTokens || 0);
@@ -46,32 +42,26 @@ export const HomeScreenContent: React.FC = () => {
 		setTotalTokens(total);
 	}, [history]);
 
-	// Connection status
 	const connectionStatus: ConnectionStatus = error
 		? 'disconnected'
 		: isStreaming
 			? 'streaming'
 			: 'connected';
 
-	// Handle keyboard shortcuts
 	useInput((input, key) => {
-		// Ctrl+C: Exit
 		if (key.ctrl && input === 'c') {
 			exit();
 		}
 
-		// Ctrl+L: Clear history
 		if (key.ctrl && input === 'l') {
 			clearHistory();
 		}
 
-		// Escape: Cancel streaming
 		if (key.escape && isStreaming) {
 			cancelStream();
 		}
 	});
 
-	// Layout configuration
 	const footerHeight = 3;
 	const inputBoxHeight = 4;
 	const reservedHeight = footerHeight + inputBoxHeight;

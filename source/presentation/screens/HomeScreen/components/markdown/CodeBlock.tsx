@@ -5,7 +5,6 @@
 import React from 'react';
 import {Box, Text} from 'ink';
 import {highlightCode} from '../../utils/highlighter';
-import {renderHighlightedCode} from '../../utils/syntaxTokenToInk';
 import {THEME_COLORS} from '../../utils/colors';
 
 export interface CodeBlockProps {

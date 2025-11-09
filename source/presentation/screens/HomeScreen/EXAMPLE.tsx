@@ -31,46 +31,10 @@ function Example1_Basic() {
 }
 
 // ==========================================
-// Example 2: Using OpenAI
+// Example 2: Custom Configuration
 // ==========================================
 
-function Example2_OpenAI() {
-	const apiClient: IApiClient = new OpenAIClient({
-		apiKey: process.env.OPENAI_API_KEY || '',
-	});
-
-	return (
-		<HomeScreen
-			apiClient={apiClient}
-			initialProvider="openai"
-			initialModel="gpt-4-turbo-preview"
-		/>
-	);
-}
-
-// ==========================================
-// Example 3: Using Ollama (Local)
-// ==========================================
-
-function Example3_Ollama() {
-	const apiClient: IApiClient = new OllamaClient({
-		baseURL: 'http://localhost:11434',
-	});
-
-	return (
-		<HomeScreen
-			apiClient={apiClient}
-			initialProvider="ollama"
-			initialModel="llama2"
-		/>
-	);
-}
-
-// ==========================================
-// Example 4: Custom Configuration
-// ==========================================
-
-function Example4_CustomConfig() {
+function Example2_CustomConfig() {
 	const apiClient: IApiClient = new AnthropicClient({
 		apiKey: process.env.ANTHROPIC_API_KEY || '',
 	});
@@ -85,10 +49,10 @@ function Example4_CustomConfig() {
 }
 
 // ==========================================
-// Example 5: Provider Switching
+// Example 3: Provider Switching
 // ==========================================
 
-function Example5_ProviderSwitching() {
+function Example3_ProviderSwitching() {
 	// In a real app, you'd implement provider switching logic
 	// This example shows the concept
 
@@ -126,9 +90,7 @@ function Example5_ProviderSwitching() {
 // Default: Run Example 1
 const app = render(<Example1_Basic />);
 
-// Handle exit
 app.waitUntilExit().then(() => {
-	console.log('HomeScreen exited');
 	process.exit(0);
 });
 

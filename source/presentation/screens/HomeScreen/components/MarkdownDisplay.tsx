@@ -38,7 +38,6 @@ export const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({
 }) => {
 	if (!text) return null;
 
-	// Raw markdown mode - show syntax-highlighted markdown code
 	if (!renderMarkdown) {
 		return (
 			<CodeBlock
@@ -51,7 +50,6 @@ export const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({
 		);
 	}
 
-	// Parse markdown into blocks
 	const blocks = parseMarkdown(text);
 
 	if (blocks.length === 0) {

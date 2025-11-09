@@ -24,18 +24,15 @@ export function tokensToInkElements(result: Root | null): React.ReactNode {
  * Convert a single HAST node to React element
  */
 function convertNode(node: any, index: number): React.ReactNode {
-	// Text node
 	if (node.type === 'text') {
 		return (node as HastText).value;
 	}
 
-	// Element node
 	if (node.type === 'element') {
 		const element = node as Element;
 		const className = element.properties?.className;
 		const color = getColorFromClassName(className);
 
-		// Recursively convert children
 		const children = element.children?.map((child, i) => convertNode(child, i));
 
 		return (
@@ -56,15 +53,13 @@ function getColorFromClassName(className: any): string | undefined {
 		return undefined;
 	}
 
-	// Find hljs class (e.g., 'hljs-keyword', 'hljs-string')
 	const hljsClass = className.find((c: string) => c.startsWith('hljs-'));
 
 	if (!hljsClass) {
 		return undefined;
 	}
 
-	// Extract token type (e.g., 'keyword' from 'hljs-keyword')
-	const tokenType = hljsClass.substring(5); // Remove 'hljs-' prefix
+	const tokenType = hljsClass.substring(5);
 
 	return getSyntaxColor(tokenType);
 }
@@ -84,7 +79,6 @@ export function codeToInkLines(
 	const maxLineNumWidth = String(lines.length).length;
 
 	if (!result) {
-		// No syntax highlighting - return plain text lines
 		return lines.map((line, index) => {
 			const lineNum = String(index + 1).padStart(maxLineNumWidth, ' ');
 			return (
@@ -100,13 +94,6 @@ export function codeToInkLines(
 		});
 	}
 
-	// With syntax highlighting
-	const highlighted = tokensToInkElements(result);
-
-	// Split highlighted content by lines
-	// This is a simplified approach - proper line splitting with preserved highlighting
-	// would require more complex logic to maintain token boundaries
-
 	return lines.map((line, index) => {
 		const lineNum = String(index + 1).padStart(maxLineNumWidth, ' ');
 		return (
@@ -116,8 +103,6 @@ export function codeToInkLines(
 						{lineNum}{' '}
 					</Text>
 				)}
-				{/* For now, show line without per-line highlighting */}
-				{/* TODO: Implement proper per-line highlighting while preserving tokens */}
 				<Text>{line}</Text>
 			</React.Fragment>
 		);

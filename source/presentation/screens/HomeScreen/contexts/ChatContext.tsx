@@ -61,7 +61,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
 	defaultRequest,
 	children,
 }) => {
-	// History management
 	const {
 		history,
 		pendingItem,
@@ -75,37 +74,28 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
 		maxItems: 100,
 	});
 
-	// Track accumulated content during streaming (to avoid stale closure)
 	const accumulatedContentRef = React.useRef('');
 
-	// Streaming management
 	const {
 		isStreaming,
-		streamingContent,
 		error,
-		finalResponse,
 		sendMessage: sendStreamMessage,
 		cancelStream: cancelStreamInternal,
 	} = useStreamChat({
 		apiClient,
 		defaultRequest,
 		onChunkReceived: chunk => {
-			// Accumulate content locally to avoid stale closure
 			if (chunk.content) {
 				accumulatedContentRef.current += chunk.content;
 				updatePendingContent(accumulatedContentRef.current);
 			}
 		},
 		onComplete: response => {
-			// Complete pending and add to history
 			completePending(response.content, response.usage);
-			// Reset accumulated content for next stream
 			accumulatedContentRef.current = '';
 		},
 		onError: err => {
-			// Keep error in streaming state
 			console.error('Streaming error:', err);
-			// Reset accumulated content on error
 			accumulatedContentRef.current = '';
 		},
 	});
@@ -115,13 +105,10 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
 	 */
 	const sendMessage = useCallback(
 		async (content: string) => {
-			// Reset accumulated content for new message
 			accumulatedContentRef.current = '';
 
-			// Add user message to history
 			addUserMessage(content, provider);
 
-			// Create pending item for streaming
 			setPendingItem({
 				type: 'message',
 				userMessage: content,
@@ -131,7 +118,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
 				timestamp: new Date(),
 			});
 
-			// Start streaming
 			await sendStreamMessage(content);
 		},
 		[provider, addUserMessage, setPendingItem, sendStreamMessage],
@@ -143,7 +129,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
 	const cancelStream = useCallback(() => {
 		cancelStreamInternal();
 		setPendingItem(null);
-		// Reset accumulated content on cancel
 		accumulatedContentRef.current = '';
 	}, [cancelStreamInternal, setPendingItem]);
 
