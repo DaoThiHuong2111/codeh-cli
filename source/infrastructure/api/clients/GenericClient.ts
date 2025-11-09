@@ -67,8 +67,95 @@ export class GenericClient implements IApiClient {
     request: ApiRequest,
     onChunk: (chunk: StreamChunk) => void
   ): Promise<ApiResponse> {
-    // TODO: Implement streaming for Generic API
-    throw new Error('Streaming not implemented yet for Generic API');
+    if (!request.model) {
+      throw new Error('Model is required and should be provided by user configuration');
+    }
+
+    const requestBody = {
+      model: request.model,
+      messages: request.messages.map((m) => ({
+        role: m.role,
+        content: m.content,
+      })),
+      max_tokens: request.maxTokens,
+      temperature: request.temperature,
+      stream: true, // Enable streaming
+    };
+
+    // Remove undefined values
+    Object.keys(requestBody).forEach(
+      (key) =>
+        (requestBody as any)[key] === undefined &&
+        delete (requestBody as any)[key]
+    );
+
+    let fullContent = '';
+    let usage: any = undefined;
+    let finishReason: string | undefined;
+    let modelName = request.model;
+
+    // OpenAI-compatible streaming endpoint
+    const url = this.baseUrl.replace(/\/$/, '') + '/chat/completions';
+
+    await this.httpClient.streamPost(
+      url,
+      requestBody,
+      (chunk: any) => {
+        // Generic streaming format (OpenAI-compatible):
+        // - choices[0].delta.content: content chunks
+        // - choices[0].finish_reason: completion reason
+        // - usage: token usage (may be in final chunk)
+
+        const choice = chunk.choices?.[0];
+        if (!choice) return;
+
+        if (choice.delta?.content) {
+          const content = choice.delta.content;
+          fullContent += content;
+          onChunk({
+            content,
+            done: false,
+          });
+        }
+
+        if (choice.finish_reason) {
+          finishReason = choice.finish_reason;
+        }
+
+        if (chunk.usage) {
+          usage = chunk.usage;
+        }
+
+        if (chunk.model) {
+          modelName = chunk.model;
+        }
+
+        // Signal completion
+        if (choice.finish_reason) {
+          onChunk({
+            done: true,
+            usage: usage
+              ? {
+                  promptTokens: usage.prompt_tokens || 0,
+                  completionTokens: usage.completion_tokens || 0,
+                  totalTokens: usage.total_tokens || 0,
+                }
+              : undefined,
+          });
+        }
+      }
+    );
+
+    return {
+      content: fullContent,
+      model: modelName,
+      usage: {
+        promptTokens: usage?.prompt_tokens || 0,
+        completionTokens: usage?.completion_tokens || 0,
+        totalTokens: usage?.total_tokens || 0,
+      },
+      finishReason: finishReason as ApiResponse['finishReason'],
+    };
   }
 
   async healthCheck(): Promise<boolean> {
