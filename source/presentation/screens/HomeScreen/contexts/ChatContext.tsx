@@ -75,6 +75,9 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
 		maxItems: 100,
 	});
 
+	// Track accumulated content during streaming (to avoid stale closure)
+	const accumulatedContentRef = React.useRef('');
+
 	// Streaming management
 	const {
 		isStreaming,
@@ -87,18 +90,23 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
 		apiClient,
 		defaultRequest,
 		onChunkReceived: chunk => {
-			// Update pending content as chunks arrive
+			// Accumulate content locally to avoid stale closure
 			if (chunk.content) {
-				updatePendingContent(streamingContent + chunk.content);
+				accumulatedContentRef.current += chunk.content;
+				updatePendingContent(accumulatedContentRef.current);
 			}
 		},
 		onComplete: response => {
 			// Complete pending and add to history
 			completePending(response.content, response.usage);
+			// Reset accumulated content for next stream
+			accumulatedContentRef.current = '';
 		},
 		onError: err => {
 			// Keep error in streaming state
 			console.error('Streaming error:', err);
+			// Reset accumulated content on error
+			accumulatedContentRef.current = '';
 		},
 	});
 
@@ -107,6 +115,9 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
 	 */
 	const sendMessage = useCallback(
 		async (content: string) => {
+			// Reset accumulated content for new message
+			accumulatedContentRef.current = '';
+
 			// Add user message to history
 			addUserMessage(content, provider);
 
@@ -132,6 +143,8 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
 	const cancelStream = useCallback(() => {
 		cancelStreamInternal();
 		setPendingItem(null);
+		// Reset accumulated content on cancel
+		accumulatedContentRef.current = '';
 	}, [cancelStreamInternal, setPendingItem]);
 
 	const value: ChatContextValue = {
