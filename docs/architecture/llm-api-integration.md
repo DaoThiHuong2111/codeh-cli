@@ -1120,4 +1120,8 @@ export class MockApiClient implements IApiClient {
 - `source/infrastructure/api/ApiClientFactory.ts` - Factory implementation
 - `source/infrastructure/api/clients/` - Client implementations
 - `source/infrastructure/api/HttpClient.ts` - HTTP utilities
+
+### Related Documentation
+
 - `docs/screens/home/technical.md` - HomeScreen technical docs
+- `docs/screens/home/llm-ui-ux.md` - UI/UX implementation cho streaming responses
