@@ -97,6 +97,11 @@ export class GenericClient implements IApiClient {
 		let usage: any = undefined;
 		let finishReason: string | undefined;
 		let modelName = request.model;
+		const toolCalls: any[] = [];
+		const toolCallsInProgress = new Map<
+			number,
+			{id: string; name: string; argsJson: string}
+		>();
 
 		// OpenAI-compatible streaming endpoint
 		const url = this.baseUrl.replace(/\/$/, '') + '/chat/completions';
@@ -104,12 +109,14 @@ export class GenericClient implements IApiClient {
 		await this.httpClient.streamPost(url, requestBody, (chunk: any) => {
 			// Generic streaming format (OpenAI-compatible):
 			// - choices[0].delta.content: content chunks
+			// - choices[0].delta.tool_calls: tool call chunks
 			// - choices[0].finish_reason: completion reason
 			// - usage: token usage (may be in final chunk)
 
 			const choice = chunk.choices?.[0];
 			if (!choice) return;
 
+			// Handle content
 			if (choice.delta?.content) {
 				const content = choice.delta.content;
 				fullContent += content;
@@ -117,6 +124,29 @@ export class GenericClient implements IApiClient {
 					content,
 					done: false,
 				});
+			}
+
+			// Handle tool calls (OpenAI format)
+			if (choice.delta?.tool_calls) {
+				for (const tcDelta of choice.delta.tool_calls) {
+					const index = tcDelta.index;
+					let toolCall = toolCallsInProgress.get(index);
+
+					if (!toolCall) {
+						// New tool call
+						toolCall = {
+							id: tcDelta.id || '',
+							name: tcDelta.function?.name || '',
+							argsJson: '',
+						};
+						toolCallsInProgress.set(index, toolCall);
+					}
+
+					// Accumulate function arguments
+					if (tcDelta.function?.arguments) {
+						toolCall.argsJson += tcDelta.function.arguments;
+					}
+				}
 			}
 
 			if (choice.finish_reason) {
@@ -133,6 +163,15 @@ export class GenericClient implements IApiClient {
 
 			// Signal completion
 			if (choice.finish_reason) {
+				// Complete all tool calls
+				for (const toolCall of toolCallsInProgress.values()) {
+					toolCalls.push({
+						id: toolCall.id,
+						name: toolCall.name,
+						arguments: this.parseArguments(toolCall.argsJson),
+					});
+				}
+
 				onChunk({
 					done: true,
 					usage: usage
@@ -155,6 +194,7 @@ export class GenericClient implements IApiClient {
 				totalTokens: usage?.total_tokens || 0,
 			},
 			finishReason: finishReason as ApiResponse['finishReason'],
+			toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
 		};
 	}
 
@@ -182,9 +222,23 @@ export class GenericClient implements IApiClient {
 
 	private normalizeResponse(response: any, request: ApiRequest): ApiResponse {
 		// Try OpenAI format first
-		if (response.choices && response.choices[0]?.message?.content) {
+		if (response.choices && response.choices[0]?.message) {
+			const message = response.choices[0].message;
+			const toolCalls: any[] = [];
+
+			// Parse OpenAI tool calls
+			if (message.tool_calls) {
+				for (const tc of message.tool_calls) {
+					toolCalls.push({
+						id: tc.id,
+						name: tc.function?.name || '',
+						arguments: this.parseArguments(tc.function?.arguments),
+					});
+				}
+			}
+
 			return {
-				content: response.choices[0].message.content,
+				content: message.content || '',
 				model: response.model || request.model,
 				usage: {
 					promptTokens: response.usage?.prompt_tokens || 0,
@@ -193,16 +247,32 @@ export class GenericClient implements IApiClient {
 				},
 				finishReason: response.choices[0]
 					.finish_reason as ApiResponse['finishReason'],
+				toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
 			};
 		}
 
 		// Try Anthropic-like format
 		if (response.content) {
+			const contentBlocks = Array.isArray(response.content)
+				? response.content
+				: [{type: 'text', text: response.content}];
+			let textContent = '';
+			const toolCalls: any[] = [];
+
+			for (const block of contentBlocks) {
+				if (block.type === 'text') {
+					textContent += block.text || '';
+				} else if (block.type === 'tool_use') {
+					toolCalls.push({
+						id: block.id,
+						name: block.name,
+						arguments: block.input || {},
+					});
+				}
+			}
+
 			return {
-				content:
-					typeof response.content === 'string'
-						? response.content
-						: response.content[0]?.text || '',
+				content: textContent,
 				model: response.model || request.model,
 				usage: {
 					promptTokens: response.usage?.input_tokens || 0,
@@ -213,6 +283,7 @@ export class GenericClient implements IApiClient {
 				},
 				finishReason: (response.stop_reason ||
 					'stop') as ApiResponse['finishReason'],
+				toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
 			};
 		}
 
@@ -233,5 +304,14 @@ export class GenericClient implements IApiClient {
 			},
 			finishReason: 'stop',
 		};
+	}
+
+	private parseArguments(argsString: string): Record<string, any> {
+		if (!argsString) return {};
+		try {
+			return JSON.parse(argsString);
+		} catch (error) {
+			return {};
+		}
 	}
 }

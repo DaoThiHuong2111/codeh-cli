@@ -96,6 +96,11 @@ export class OpenAIClient implements IApiClient {
 		let usage: any = undefined;
 		let finishReason: string | undefined;
 		let modelName = request.model;
+		const toolCalls: any[] = [];
+		const toolCallsInProgress = new Map<
+			number,
+			{id: string; name: string; argsJson: string}
+		>();
 
 		await this.httpClient.streamPost(
 			`${this.baseUrl}/chat/completions`,
@@ -103,12 +108,14 @@ export class OpenAIClient implements IApiClient {
 			(chunk: any) => {
 				// OpenAI streaming format:
 				// - choices[0].delta.content: content chunks
+				// - choices[0].delta.tool_calls: tool call chunks
 				// - choices[0].finish_reason: completion reason
 				// - usage: token usage (only in final chunk for some models)
 
 				const choice = chunk.choices?.[0];
 				if (!choice) return;
 
+				// Handle content
 				if (choice.delta?.content) {
 					const content = choice.delta.content;
 					fullContent += content;
@@ -116,6 +123,29 @@ export class OpenAIClient implements IApiClient {
 						content,
 						done: false,
 					});
+				}
+
+				// Handle tool calls
+				if (choice.delta?.tool_calls) {
+					for (const tcDelta of choice.delta.tool_calls) {
+						const index = tcDelta.index;
+						let toolCall = toolCallsInProgress.get(index);
+
+						if (!toolCall) {
+							// New tool call
+							toolCall = {
+								id: tcDelta.id || '',
+								name: tcDelta.function?.name || '',
+								argsJson: '',
+							};
+							toolCallsInProgress.set(index, toolCall);
+						}
+
+						// Accumulate function arguments
+						if (tcDelta.function?.arguments) {
+							toolCall.argsJson += tcDelta.function.arguments;
+						}
+					}
 				}
 
 				if (choice.finish_reason) {
@@ -132,6 +162,15 @@ export class OpenAIClient implements IApiClient {
 
 				// Check if stream is done
 				if (choice.finish_reason) {
+					// Complete all tool calls
+					for (const toolCall of toolCallsInProgress.values()) {
+						toolCalls.push({
+							id: toolCall.id,
+							name: toolCall.name,
+							arguments: this.parseArguments(toolCall.argsJson),
+						});
+					}
+
 					onChunk({
 						done: true,
 						usage: usage
@@ -155,6 +194,7 @@ export class OpenAIClient implements IApiClient {
 				totalTokens: usage?.total_tokens || 0,
 			},
 			finishReason: finishReason as ApiResponse['finishReason'],
+			toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
 		};
 	}
 
@@ -182,9 +222,22 @@ export class OpenAIClient implements IApiClient {
 
 	private normalizeResponse(response: any): ApiResponse {
 		const choice = response.choices?.[0];
+		const message = choice?.message;
+
+		// Parse tool calls (OpenAI format)
+		const toolCalls: any[] = [];
+		if (message?.tool_calls) {
+			for (const tc of message.tool_calls) {
+				toolCalls.push({
+					id: tc.id,
+					name: tc.function?.name || '',
+					arguments: this.parseArguments(tc.function?.arguments),
+				});
+			}
+		}
 
 		return {
-			content: choice?.message?.content || '',
+			content: message?.content || '',
 			model: response.model,
 			usage: {
 				promptTokens: response.usage?.prompt_tokens || 0,
@@ -192,6 +245,16 @@ export class OpenAIClient implements IApiClient {
 				totalTokens: response.usage?.total_tokens || 0,
 			},
 			finishReason: choice?.finish_reason as ApiResponse['finishReason'],
+			toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
 		};
+	}
+
+	private parseArguments(argsString: string): Record<string, any> {
+		if (!argsString) return {};
+		try {
+			return JSON.parse(argsString);
+		} catch (error) {
+			return {};
+		}
 	}
 }
