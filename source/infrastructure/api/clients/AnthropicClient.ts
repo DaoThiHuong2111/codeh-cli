@@ -34,6 +34,7 @@ export class AnthropicClient implements IApiClient {
 			})),
 			temperature: request.temperature,
 			system: request.systemPrompt,
+			tools: request.tools,
 		};
 
 		// Remove undefined values
@@ -72,6 +73,7 @@ export class AnthropicClient implements IApiClient {
 			})),
 			temperature: request.temperature,
 			system: request.systemPrompt,
+			tools: request.tools,
 			stream: true,
 		};
 

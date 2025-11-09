@@ -38,6 +38,7 @@ export class OpenAIClient implements IApiClient {
 				content: m.content,
 			})),
 			temperature: request.temperature,
+			tools: request.tools,
 			stream: false,
 		};
 
@@ -82,6 +83,7 @@ export class OpenAIClient implements IApiClient {
 				content: m.content,
 			})),
 			temperature: request.temperature,
+			tools: request.tools,
 			stream: true,
 		};
 

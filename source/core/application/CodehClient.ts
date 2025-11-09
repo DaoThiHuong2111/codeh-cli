@@ -12,11 +12,13 @@ import {InputClassifier} from './services/InputClassifier';
 import {OutputFormatter} from './services/OutputFormatter';
 import {ToolRegistry} from '../tools/base/ToolRegistry';
 import {ToolExecutionOrchestrator} from './ToolExecutionOrchestrator';
+import {ToolDefinitionConverter} from './services/ToolDefinitionConverter';
 
 export class CodehClient {
 	private inputClassifier: InputClassifier;
 	private outputFormatter: OutputFormatter;
 	private toolOrchestrator?: ToolExecutionOrchestrator;
+	private toolRegistry?: ToolRegistry;
 
 	constructor(
 		private apiClient: IApiClient,
@@ -24,6 +26,7 @@ export class CodehClient {
 		toolRegistry?: ToolRegistry,
 		permissionHandler?: IToolPermissionHandler,
 	) {
+		this.toolRegistry = toolRegistry;
 		this.inputClassifier = new InputClassifier();
 		this.outputFormatter = new OutputFormatter();
 
@@ -64,6 +67,11 @@ export class CodehClient {
 		// Get history for context
 		const recentMessages = await this.historyRepo.getRecentMessages(10);
 
+		// Get tool definitions if available
+		const tools = this.toolRegistry
+			? ToolDefinitionConverter.toApiFormatBatch(this.toolRegistry.getDefinitions())
+			: undefined;
+
 		// Call AI API
 		try {
 			const apiResponse = await this.apiClient.chat({
@@ -74,6 +82,7 @@ export class CodehClient {
 					})),
 					{role: 'user', content: input},
 				],
+				tools,
 			});
 
 			// Create response message
@@ -139,6 +148,11 @@ export class CodehClient {
 		// Get history for context
 		const recentMessages = await this.historyRepo.getRecentMessages(10);
 
+		// Get tool definitions if available
+		const tools = this.toolRegistry
+			? ToolDefinitionConverter.toApiFormatBatch(this.toolRegistry.getDefinitions())
+			: undefined;
+
 		let fullResponse = '';
 		let usage: any = undefined;
 
@@ -152,6 +166,7 @@ export class CodehClient {
 						})),
 						{role: 'user', content: input},
 					],
+					tools,
 				},
 				chunk => {
 					if (chunk.content) {

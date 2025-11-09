@@ -14,6 +14,7 @@ import {
 import {ToolExecutionContext} from '../domain/models/ToolExecutionContext';
 import {Message} from '../domain/models/Message';
 import {Turn} from '../domain/models/Turn';
+import {ToolDefinitionConverter} from './services/ToolDefinitionConverter';
 
 export interface ToolExecutionConfig {
 	maxIterations?: number; // Max agentic loop iterations
@@ -198,6 +199,11 @@ export class ToolExecutionOrchestrator {
 		// Get recent conversation history
 		const recentMessages = await this.historyRepo.getRecentMessages(10);
 
+		// Get tool definitions
+		const tools = ToolDefinitionConverter.toApiFormatBatch(
+			this.toolRegistry.getDefinitions(),
+		);
+
 		// Build messages array: history + tool results
 		const messages = [
 			...recentMessages.map(m => ({
@@ -210,8 +216,8 @@ export class ToolExecutionOrchestrator {
 			})),
 		];
 
-		// Call LLM with tool results
-		const apiResponse = await this.apiClient.chat({messages});
+		// Call LLM with tool results and tool definitions
+		const apiResponse = await this.apiClient.chat({messages, tools});
 
 		// Create new turn
 		const toolResultMsg = Message.create(

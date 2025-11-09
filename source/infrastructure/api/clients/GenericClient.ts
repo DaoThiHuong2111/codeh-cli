@@ -40,6 +40,7 @@ export class GenericClient implements IApiClient {
 			})),
 			max_tokens: request.maxTokens,
 			temperature: request.temperature,
+			tools: request.tools,
 			stream: false,
 		};
 
@@ -83,6 +84,7 @@ export class GenericClient implements IApiClient {
 			})),
 			max_tokens: request.maxTokens,
 			temperature: request.temperature,
+			tools: request.tools,
 			stream: true, // Enable streaming
 		};
 
