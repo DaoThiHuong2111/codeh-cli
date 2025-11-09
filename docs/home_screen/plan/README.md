@@ -15,18 +15,18 @@ Plan này được chia thành **9 files** để dễ đọc và maintain, tuân
 
 ### 🌟 Core Planning Documents
 
-| # | File | Nội Dung | Lines | Priority |
-|---|------|----------|-------|----------|
-| 0 | [00-overview.md](./00-overview.md) | Tổng quan strategy, kiến trúc, roadmap | 469 | ⭐ **BẮT ĐẦU TẠI ĐÂY** |
+| #   | File                               | Nội Dung                               | Lines | Priority               |
+| --- | ---------------------------------- | -------------------------------------- | ----- | ---------------------- |
+| 0   | [00-overview.md](./00-overview.md) | Tổng quan strategy, kiến trúc, roadmap | 469   | ⭐ **BẮT ĐẦU TẠI ĐÂY** |
 
 ---
 
 ### 🎨 Layer 1: Presentation Layer
 
-| # | File | Nội Dung | Lines | Phase |
-|---|------|----------|-------|-------|
-| 1 | [01-layer1-cli-components.md](./01-layer1-cli-components.md) | 8 components mới + 3 components enhance | 949 | v1.1 → v1.2 |
-| 2 | [02-layer1-screens-presenters.md](./02-layer1-screens-presenters.md) | Home.tsx, HomePresenter.ts, useHomeLogic.ts | 801 | v1.1 → v1.2 |
+| #   | File                                                                 | Nội Dung                                    | Lines | Phase       |
+| --- | -------------------------------------------------------------------- | ------------------------------------------- | ----- | ----------- |
+| 1   | [01-layer1-cli-components.md](./01-layer1-cli-components.md)         | 8 components mới + 3 components enhance     | 949   | v1.1 → v1.2 |
+| 2   | [02-layer1-screens-presenters.md](./02-layer1-screens-presenters.md) | Home.tsx, HomePresenter.ts, useHomeLogic.ts | 801   | v1.1 → v1.2 |
 
 **Tổng**: 2 files, 1,750 lines
 
@@ -34,10 +34,10 @@ Plan này được chia thành **9 files** để dễ đọc và maintain, tuân
 
 ### 🏛️ Layer 2: Core/Business Logic
 
-| # | File | Nội Dung | Lines | Phase |
-|---|------|----------|-------|-------|
-| 3 | [03-layer2-domain-models.md](./03-layer2-domain-models.md) | Models, Value Objects, Interfaces | 794 | v1.1 → v1.2 |
-| 4 | [04-layer2-application-services.md](./04-layer2-application-services.md) | CodehClient, CommandService, MarkdownService | 742 | v1.1 → v1.2 |
+| #   | File                                                                     | Nội Dung                                     | Lines | Phase       |
+| --- | ------------------------------------------------------------------------ | -------------------------------------------- | ----- | ----------- |
+| 3   | [03-layer2-domain-models.md](./03-layer2-domain-models.md)               | Models, Value Objects, Interfaces            | 794   | v1.1 → v1.2 |
+| 4   | [04-layer2-application-services.md](./04-layer2-application-services.md) | CodehClient, CommandService, MarkdownService | 742   | v1.1 → v1.2 |
 
 **Tổng**: 2 files, 1,536 lines
 
@@ -45,9 +45,9 @@ Plan này được chia thành **9 files** để dễ đọc và maintain, tuân
 
 ### 🏗️ Layer 3: Infrastructure
 
-| # | File | Nội Dung | Lines | Phase |
-|---|------|----------|-------|-------|
-| 5 | [05-layer3-infrastructure.md](./05-layer3-infrastructure.md) | SessionManager, API clients streaming | 383 | v1.1 |
+| #   | File                                                         | Nội Dung                              | Lines | Phase |
+| --- | ------------------------------------------------------------ | ------------------------------------- | ----- | ----- |
+| 5   | [05-layer3-infrastructure.md](./05-layer3-infrastructure.md) | SessionManager, API clients streaming | 383   | v1.1  |
 
 **Tổng**: 1 file, 383 lines
 
@@ -55,10 +55,10 @@ Plan này được chia thành **9 files** để dễ đọc và maintain, tuân
 
 ### 🚀 Phase Implementation Guides
 
-| # | File | Nội Dung | Lines | Timeline |
-|---|------|----------|-------|----------|
-| 6 | [06-phase1-core-features.md](./06-phase1-core-features.md) | 4 core features (History, Commands, Streaming, Sessions) | 455 | 2-3 weeks |
-| 7 | [07-phase2-advanced-ux.md](./07-phase2-advanced-ux.md) | 6 advanced features (Keyboard, Markdown, Todos, etc.) | 492 | 3-4 weeks |
+| #   | File                                                       | Nội Dung                                                 | Lines | Timeline  |
+| --- | ---------------------------------------------------------- | -------------------------------------------------------- | ----- | --------- |
+| 6   | [06-phase1-core-features.md](./06-phase1-core-features.md) | 4 core features (History, Commands, Streaming, Sessions) | 455   | 2-3 weeks |
+| 7   | [07-phase2-advanced-ux.md](./07-phase2-advanced-ux.md)     | 6 advanced features (Keyboard, Markdown, Todos, etc.)    | 492   | 3-4 weeks |
 
 **Tổng**: 2 files, 947 lines
 
@@ -66,9 +66,9 @@ Plan này được chia thành **9 files** để dễ đọc và maintain, tuân
 
 ### 🧪 Testing & Quality
 
-| # | File | Nội Dung | Lines | Coverage |
-|---|------|----------|-------|----------|
-| 8 | [08-testing-strategy.md](./08-testing-strategy.md) | Unit, Integration, E2E tests | 643 | >70% |
+| #   | File                                               | Nội Dung                     | Lines | Coverage |
+| --- | -------------------------------------------------- | ---------------------------- | ----- | -------- |
+| 8   | [08-testing-strategy.md](./08-testing-strategy.md) | Unit, Integration, E2E tests | 643   | >70%     |
 
 **Tổng**: 1 file, 643 lines
 
@@ -79,6 +79,7 @@ Plan này được chia thành **9 files** để dễ đọc và maintain, tuân
 ### 👨‍💻 Cho Developers (Implement từ đầu)
 
 **Đọc theo thứ tự:**
+
 1. ✅ [00-overview.md](./00-overview.md) - Hiểu tổng thể
 2. → [03-layer2-domain-models.md](./03-layer2-domain-models.md) - Domain design
 3. → [05-layer3-infrastructure.md](./05-layer3-infrastructure.md) - Foundation
@@ -96,6 +97,7 @@ Plan này được chia thành **9 files** để dễ đọc và maintain, tuân
 ### 🏗️ Cho Architects
 
 **Focus on:**
+
 - [00-overview.md](./00-overview.md) - Architecture overview
 - [03-layer2-domain-models.md](./03-layer2-domain-models.md) - Domain design
 - [05-layer3-infrastructure.md](./05-layer3-infrastructure.md) - Infrastructure patterns
@@ -105,6 +107,7 @@ Plan này được chia thành **9 files** để dễ đọc và maintain, tuân
 ### 🎯 Cho Project Managers
 
 **Focus on:**
+
 - [00-overview.md](./00-overview.md) - Timeline & roadmap
 - [06-phase1-core-features.md](./06-phase1-core-features.md) - Phase 1 deliverables
 - [07-phase2-advanced-ux.md](./07-phase2-advanced-ux.md) - Phase 2 deliverables
@@ -114,6 +117,7 @@ Plan này được chia thành **9 files** để dễ đọc và maintain, tuân
 ### 🐛 Cho QA
 
 **Focus on:**
+
 - [06-phase1-core-features.md](./06-phase1-core-features.md) - Feature specs Phase 1
 - [07-phase2-advanced-ux.md](./07-phase2-advanced-ux.md) - Feature specs Phase 2
 - [08-testing-strategy.md](./08-testing-strategy.md) - Test cases
@@ -147,15 +151,18 @@ Breakdown by Phase:
 ### Files to Create (Total: ~25 new files)
 
 **Layer 1 (CLI)**:
+
 - 8 new components (Spinner, MessageBubble, ConversationArea, etc.)
 - 3 enhanced components (InputBox, TipsSection, InfoSection)
 
 **Layer 2 (Core)**:
+
 - 6 new value objects/models (Todo, Command, Session, etc.)
 - 4 new interfaces
 - 2 new services (CommandService, MarkdownService)
 
 **Layer 3 (Infrastructure)**:
+
 - 1 new SessionManager
 - 3 API clients enhance (streaming)
 
@@ -180,11 +187,13 @@ Total New Code:    ~5,800 lines
 ## 🚀 Quick Start
 
 ### 1. Đọc Overview
+
 ```bash
 cat 00-overview.md
 ```
 
 ### 2. Chọn Phase
+
 ```bash
 # Phase 1 (Core features)
 cat 06-phase1-core-features.md
@@ -194,6 +203,7 @@ cat 07-phase2-advanced-ux.md
 ```
 
 ### 3. Implement theo Layer
+
 ```bash
 # Layer 3 first (infrastructure)
 cat 05-layer3-infrastructure.md
@@ -208,6 +218,7 @@ cat 02-layer1-screens-presenters.md
 ```
 
 ### 4. Test
+
 ```bash
 cat 08-testing-strategy.md
 npm test
@@ -218,6 +229,7 @@ npm test
 ## ✅ Implementation Checklist
 
 ### Phase 1 (v1.1) - 2-3 weeks
+
 - [ ] Layer 3: SessionManager, API streaming
 - [ ] Layer 2: Domain models, CommandService
 - [ ] Layer 1: MessageBubble, ConversationArea, SlashSuggestions
@@ -226,6 +238,7 @@ npm test
 - [ ] **Deliverable**: Conversation history, Slash commands, Streaming, Sessions
 
 ### Phase 2 (v1.2) - 3-4 weeks
+
 - [ ] Layer 2: Todo model, MarkdownService
 - [ ] Layer 1: TodosDisplay, Footer, HelpOverlay
 - [ ] Features: Keyboard shortcuts, Markdown, Input history
@@ -237,18 +250,21 @@ npm test
 ## 📝 Notes
 
 ### Tuân Thủ Clean Architecture
+
 ✅ Dependency rule (inward only)
 ✅ Layer isolation
 ✅ Interface abstraction
 ✅ DI container usage
 
 ### Code Quality Standards
+
 ✅ File size < 500 lines (most files)
 ✅ Component size < 200 lines
 ✅ Test coverage > 70%
 ✅ TypeScript strict mode
 
 ### Best Practices
+
 ✅ MVP pattern cho presenters
 ✅ Atomic Design cho components
 ✅ Value Objects immutable

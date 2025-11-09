@@ -21,6 +21,7 @@
 ### Màn hình Home là gì?
 
 Màn hình **Home** là trung tâm làm việc chính của CODEH CLI - nơi bạn tương tác với AI assistant để:
+
 - Đặt câu hỏi về lập trình
 - Nhận trợ giúp debug code
 - Học các khái niệm mới
@@ -30,6 +31,7 @@ Màn hình **Home** là trung tâm làm việc chính của CODEH CLI - nơi b�
 ### Mục đích chính
 
 Màn hình Home giúp bạn:
+
 1. **Giao tiếp tự nhiên** với AI qua giao diện command-line
 2. **Xem lịch sử** tất cả các cuộc hội thoại
 3. **Quản lý công việc** với danh sách todos tích hợp
@@ -104,12 +106,14 @@ Màn hình Home giúp bạn:
 ### Các Phần Giao Diện
 
 #### 1. **Header (Phần Đầu)**
+
 - Logo CODEH với gradient màu sắc
 - Thông tin phiên bản ứng dụng
 - Model AI đang sử dụng
 - Thư mục làm việc hiện tại
 
 #### 2. **Conversation Area (Khu Vực Hội Thoại)**
+
 - Hiển thị tất cả tin nhắn trao đổi với AI
 - Mỗi tin nhắn có:
   - **Avatar/Badge**: Phân biệt ai đang nói
@@ -123,13 +127,16 @@ Màn hình Home giúp bạn:
 - Hỗ trợ cuộn lại xem lịch sử
 
 #### 3. **Middle Area (Khu Vực Giữa)**
+
 Hiển thị động dựa trên trạng thái:
 
 **a) Khi đang xử lý:**
+
 - Loading indicator với animation
 - Text "Thinking..." hoặc "Processing..."
 
 **b) Khi có công việc:**
+
 - Danh sách todos với progress bar
 - Icon trạng thái:
   - `○` (xám) - Chưa bắt đầu
@@ -138,10 +145,12 @@ Hiển thị động dựa trên trạng thái:
 - Số lượng: "X/Y completed"
 
 **c) Khi rảnh (idle):**
+
 - Hiển thị tips ngẫu nhiên
 - Icon 💡 với lời khuyên hữu ích
 
 #### 4. **Input Area (Ô Nhập Liệu)**
+
 - Prefix `> ` để bắt đầu
 - Ô nhập text với cursor nhấp nháy
 - Border trang trí trên/dưới
@@ -150,21 +159,27 @@ Hiển thị động dựa trên trạng thái:
 - Placeholder: "Prompt here (Ctrl+C để thoát)..."
 
 #### 5. **Slash Suggestions (Gợi Ý Lệnh)**
+
 Chỉ hiển thị khi:
+
 - Bạn bắt đầu gõ dấu `/`
 - Danh sách lệnh được lọc theo input
 - Item được chọn có màu nổi bật
 - Hướng dẫn navigation: "↑↓ to navigate, Enter to select"
 
 #### 6. **Footer (Phần Cuối)**
+
 Thanh trạng thái hiển thị:
+
 - 🤖 Model đang dùng
 - 📁 Thư mục hiện tại
 - 🪙 Số token đã dùng (nếu có)
 - Git branch (nếu trong Git repo)
 
 #### 7. **Help Overlay (Màn Hình Trợ Giúp)**
+
 Pop-up hiển thị khi bấm `?`:
+
 - Border double-line
 - 2 sections:
   - **Keyboard Shortcuts**: Các phím tắt
@@ -213,13 +228,13 @@ Pop-up hiển thị khi bấm `?`:
 
 ### Components Đang Hoạt Động
 
-| Component | Status | Mô tả |
-|-----------|--------|-------|
-| **Logo** | ✅ Working | ASCII art logo với gradient |
-| **InfoSection** | ✅ Working | Version, model, directory |
-| **TipsSection** | ✅ Working | 3 tips tĩnh |
-| **InputBox** | ✅ Working | Input với border, cursor |
-| **Output** | ✅ Working | Plain text response |
+| Component       | Status     | Mô tả                       |
+| --------------- | ---------- | --------------------------- |
+| **Logo**        | ✅ Working | ASCII art logo với gradient |
+| **InfoSection** | ✅ Working | Version, model, directory   |
+| **TipsSection** | ✅ Working | 3 tips tĩnh                 |
+| **InputBox**    | ✅ Working | Input với border, cursor    |
+| **Output**      | ✅ Working | Plain text response         |
 
 ### Features Đã Có
 
@@ -241,6 +256,7 @@ Pop-up hiển thị khi bấm `?`:
 - 🚧 Keyboard shortcuts (v1.2)
 
 **Xem thêm:**
+
 - [CURRENT_STATE.md](../CURRENT_STATE.md) - Chi tiết implementation hiện tại
 - [ROADMAP.md](../ROADMAP.md) - Lộ trình phát triển
 - [GEMINI_COMPARISON.md](../GEMINI_COMPARISON.md) - So sánh với Gemini CLI

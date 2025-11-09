@@ -64,17 +64,17 @@ sequenceDiagram
 ```javascript
 // Step 1: Empty check
 if (!userInput.trim()) {
-  throw "Please enter a message"
+	throw 'Please enter a message';
 }
 
 // Step 2: Length check
 if (userInput.length > 10000) {
-  throw "Message too long (max 10,000 characters)"
+	throw 'Message too long (max 10,000 characters)';
 }
 
 // Step 3: API check
 if (!this.apiClient) {
-  throw "API not configured"
+	throw 'API not configured';
 }
 ```
 

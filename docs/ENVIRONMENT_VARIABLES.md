@@ -2,22 +2,25 @@
 
 ## Overview
 
-Codeh CLI sử dụng các environment variables với prefix `CODEH_*` để cấu hình. Tất cả các legacy variables (ANTHROPIC_*, OPENAI_*, OLLAMA_*) đã bị loại bỏ để đơn giản hóa configuration.
+Codeh CLI sử dụng các environment variables với prefix `CODEH_*` để cấu hình. Tất cả các legacy variables (ANTHROPIC*\*, OPENAI*\_, OLLAMA\_\_) đã bị loại bỏ để đơn giản hóa configuration.
 
 ## Required Variables
 
 ### CODEH_PROVIDER
+
 - **Type**: String
 - **Required**: Yes
 - **Values**: `anthropic`, `openai`, `ollama`, `generic`
 - **Description**: AI provider bạn muốn sử dụng
 
 ### CODEH_MODEL
+
 - **Type**: String
 - **Required**: Yes
 - **Description**: Tên model cụ thể (ví dụ: `claude-3-5-sonnet-20241022`, `gpt-4`, `llama2`)
 
 ### CODEH_BASE_URL
+
 - **Type**: String (URL)
 - **Required**: Yes
 - **Description**: Base URL của API endpoint
@@ -28,6 +31,7 @@ Codeh CLI sử dụng các environment variables với prefix `CODEH_*` để c�
   - Generic: Custom URL
 
 ### CODEH_API_KEY
+
 - **Type**: String
 - **Required**: Yes (except for Ollama)
 - **Description**: API key để authenticate với provider
@@ -36,6 +40,7 @@ Codeh CLI sử dụng các environment variables với prefix `CODEH_*` để c�
 ## Optional Variables
 
 ### CODEH_MAX_TOKEN
+
 - **Type**: Integer
 - **Required**: No
 - **Default**: `4096`
@@ -43,6 +48,7 @@ Codeh CLI sử dụng các environment variables với prefix `CODEH_*` để c�
 - **Range**: Phụ thuộc vào model (thường 1024 - 128000)
 
 ### CODEH_TEMPERATURE
+
 - **Type**: Float
 - **Required**: No
 - **Default**: `0.7`
@@ -139,14 +145,17 @@ Nếu environment variables được set, chúng sẽ override file configuratio
 Codeh CLI sẽ validate các variables khi start:
 
 ### Required for all providers:
+
 - ✅ `CODEH_PROVIDER` must be set
 - ✅ `CODEH_MODEL` must be set
 - ✅ `CODEH_BASE_URL` must be valid URL
 
 ### Required for non-Ollama providers:
+
 - ✅ `CODEH_API_KEY` must be set (except Ollama)
 
 ### Optional validation:
+
 - ⚠️ `CODEH_MAX_TOKEN` must be positive integer if set
 - ⚠️ `CODEH_TEMPERATURE` must be 0.0-2.0 if set
 
@@ -214,6 +223,7 @@ env | grep CODEH_
 ## Troubleshooting
 
 ### Error: "CODEH_PROVIDER is required"
+
 **Solution**: Set `CODEH_PROVIDER` environment variable
 
 ```bash
@@ -221,6 +231,7 @@ export CODEH_PROVIDER=anthropic
 ```
 
 ### Error: "CODEH_API_KEY is required"
+
 **Solution**: Set `CODEH_API_KEY` (not needed for Ollama)
 
 ```bash
@@ -228,6 +239,7 @@ export CODEH_API_KEY=your-api-key
 ```
 
 ### Error: "Invalid CODEH_BASE_URL"
+
 **Solution**: Ensure URL is valid and includes protocol
 
 ```bash
@@ -239,6 +251,7 @@ export CODEH_BASE_URL=https://api.anthropic.com
 ```
 
 ### Configuration not being read
+
 **Solution**: Check if environment variables are exported
 
 ```bash
@@ -254,11 +267,13 @@ export CODEH_MODEL=claude-3-5-sonnet-20241022
 ## Security Best Practices
 
 1. **Never commit `.env` to git**
+
    ```bash
    echo ".env" >> .gitignore
    ```
 
 2. **Use environment-specific files**
+
    ```bash
    .env.development
    .env.production

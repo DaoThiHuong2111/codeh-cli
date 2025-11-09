@@ -30,28 +30,28 @@ Main class that orchestrates config loading with fallback:
 
 ```typescript
 class ConfigLoader {
-  private envRepo: EnvConfigRepository;
-  private fileRepo: FileConfigRepository;
+	private envRepo: EnvConfigRepository;
+	private fileRepo: FileConfigRepository;
 
-  async mergeConfigs(): Promise<ConfigData | null> {
-    const fileConfig = await this.fileRepo.getAll();
-    const envConfig = await this.envRepo.getAll();
-    
-    // Return null if neither exists
-    if (!envConfig && !fileConfig) {
-      return null;
-    }
-    
-    // Merge with ENV priority
-    return {
-      provider: envConfig?.provider || fileConfig?.provider || 'anthropic',
-      model: envConfig?.model || fileConfig?.model || '',
-      baseUrl: envConfig?.baseUrl || fileConfig?.baseUrl,
-      apiKey: envConfig?.apiKey || fileConfig?.apiKey,
-      maxTokens: envConfig?.maxTokens || fileConfig?.maxTokens || 4096,
-      temperature: envConfig?.temperature || fileConfig?.temperature || 0.7,
-    };
-  }
+	async mergeConfigs(): Promise<ConfigData | null> {
+		const fileConfig = await this.fileRepo.getAll();
+		const envConfig = await this.envRepo.getAll();
+
+		// Return null if neither exists
+		if (!envConfig && !fileConfig) {
+			return null;
+		}
+
+		// Merge with ENV priority
+		return {
+			provider: envConfig?.provider || fileConfig?.provider || 'anthropic',
+			model: envConfig?.model || fileConfig?.model || '',
+			baseUrl: envConfig?.baseUrl || fileConfig?.baseUrl,
+			apiKey: envConfig?.apiKey || fileConfig?.apiKey,
+			maxTokens: envConfig?.maxTokens || fileConfig?.maxTokens || 4096,
+			temperature: envConfig?.temperature || fileConfig?.temperature || 0.7,
+		};
+	}
 }
 ```
 
@@ -60,18 +60,19 @@ class ConfigLoader {
 **Path:** `~/.codeh/configs.json`
 
 **Format:**
+
 ```json
 {
-  "custom_models": [
-    {
-      "provider": "openai",
-      "model": "gpt-4",
-      "base_url": "https://api.openai.com/v1",
-      "api_key": "sk-...",
-      "max_tokens": 128000,
-      "temperature": 0.7
-    }
-  ]
+	"custom_models": [
+		{
+			"provider": "openai",
+			"model": "gpt-4",
+			"base_url": "https://api.openai.com/v1",
+			"api_key": "sk-...",
+			"max_tokens": 128000,
+			"temperature": 0.7
+		}
+	]
 }
 ```
 
@@ -85,28 +86,27 @@ Handles file-based config:
 
 ```typescript
 class FileConfigRepository implements IConfigRepository {
-  private configFile: string; // ~/.codeh/configs.json
-  
-  async getAll(): Promise<ConfigData | null> {
-    const firstModel = this.config.custom_models?.[0];
-    if (!firstModel) {
-      return null; // Trigger Config screen
-    }
-    return {
-      provider: firstModel.provider,
-      model: firstModel.model || '',
-      baseUrl: firstModel.base_url,
-      apiKey: firstModel.api_key,
-      maxTokens: firstModel.max_tokens || 4096,
-      temperature: firstModel.temperature || 0.7,
-    };
-  }
-  
-  async exists(): Promise<boolean> {
-    // File must exist AND have at least one model
-    return existsSync(this.configFile) &&
-           this.config.custom_models?.length > 0;
-  }
+	private configFile: string; // ~/.codeh/configs.json
+
+	async getAll(): Promise<ConfigData | null> {
+		const firstModel = this.config.custom_models?.[0];
+		if (!firstModel) {
+			return null; // Trigger Config screen
+		}
+		return {
+			provider: firstModel.provider,
+			model: firstModel.model || '',
+			baseUrl: firstModel.base_url,
+			apiKey: firstModel.api_key,
+			maxTokens: firstModel.max_tokens || 4096,
+			temperature: firstModel.temperature || 0.7,
+		};
+	}
+
+	async exists(): Promise<boolean> {
+		// File must exist AND have at least one model
+		return existsSync(this.configFile) && this.config.custom_models?.length > 0;
+	}
 }
 ```
 
@@ -116,21 +116,21 @@ Handles environment variables:
 
 ```typescript
 class EnvConfigRepository implements IConfigRepository {
-  async getAll(): Promise<ConfigData | null> {
-    const provider = process.env.CODEH_PROVIDER;
-    if (!provider) {
-      return null;
-    }
-    
-    return {
-      provider: provider as any,
-      model: process.env.CODEH_MODEL || '',
-      baseUrl: process.env.CODEH_BASE_URL,
-      apiKey: process.env.CODEH_API_KEY,
-      maxTokens: parseInt(process.env.CODEH_MAX_TOKENS || '4096'),
-      temperature: parseFloat(process.env.CODEH_TEMPERATURE || '0.7'),
-    };
-  }
+	async getAll(): Promise<ConfigData | null> {
+		const provider = process.env.CODEH_PROVIDER;
+		if (!provider) {
+			return null;
+		}
+
+		return {
+			provider: provider as any,
+			model: process.env.CODEH_MODEL || '',
+			baseUrl: process.env.CODEH_BASE_URL,
+			apiKey: process.env.CODEH_API_KEY,
+			maxTokens: parseInt(process.env.CODEH_MAX_TOKENS || '4096'),
+			temperature: parseFloat(process.env.CODEH_TEMPERATURE || '0.7'),
+		};
+	}
 }
 ```
 
@@ -144,6 +144,7 @@ const config = await loader.load();
 ```
 
 Returns:
+
 - `Configuration` object if config exists
 - `null` if no config (triggers Config screen)
 
@@ -183,7 +184,7 @@ async validate(): Promise<{ valid: boolean; errors: string[] }> {
 // In setup.ts
 const config = await configLoader.mergeConfigs();
 if (!config) {
-  throw new Error('No configuration found. Please run "codeh config"');
+	throw new Error('No configuration found. Please run "codeh config"');
 }
 
 const configuration = Configuration.create(config);
@@ -196,35 +197,35 @@ const apiClient = factory.create(configuration);
 
 ```typescript
 class Configuration {
-  constructor(
-    public readonly provider: Provider,
-    public readonly model: string,
-    public readonly apiKey?: string,
-    public readonly baseUrl?: string,
-    public readonly maxTokens: number = 4096,
-    public readonly temperature: number = 0.7
-  ) {}
-  
-  static create(data: {
-    provider: string;
-    model: string;
-    // ...
-  }): Configuration {
-    const providerInfo = ProviderInfo.fromString(data.provider);
-    
-    if (!data.model || data.model.trim() === '') {
-      throw new Error('Model is required');
-    }
-    
-    return new Configuration(
-      providerInfo.name,
-      data.model,
-      data.apiKey,
-      data.baseUrl,
-      data.maxTokens,
-      data.temperature
-    );
-  }
+	constructor(
+		public readonly provider: Provider,
+		public readonly model: string,
+		public readonly apiKey?: string,
+		public readonly baseUrl?: string,
+		public readonly maxTokens: number = 4096,
+		public readonly temperature: number = 0.7,
+	) {}
+
+	static create(data: {
+		provider: string;
+		model: string;
+		// ...
+	}): Configuration {
+		const providerInfo = ProviderInfo.fromString(data.provider);
+
+		if (!data.model || data.model.trim() === '') {
+			throw new Error('Model is required');
+		}
+
+		return new Configuration(
+			providerInfo.name,
+			data.model,
+			data.apiKey,
+			data.baseUrl,
+			data.maxTokens,
+			data.temperature,
+		);
+	}
 }
 ```
 
@@ -234,10 +235,10 @@ class Configuration {
 
 ```typescript
 enum Provider {
-  ANTHROPIC = 'anthropic',
-  OPENAI = 'openai',
-  OLLAMA = 'ollama',
-  GENERIC = 'generic-chat-completion-api',
+	ANTHROPIC = 'anthropic',
+	OPENAI = 'openai',
+	OLLAMA = 'ollama',
+	GENERIC = 'generic-chat-completion-api',
 }
 ```
 
@@ -245,17 +246,17 @@ enum Provider {
 
 ```typescript
 class ProviderInfo {
-  static fromString(value: string): ProviderInfo {
-    if (!value || value.trim() === '') {
-      throw new Error('Provider cannot be empty');
-    }
-    
-    const provider = value as Provider;
-    if (!this.PROVIDERS[provider]) {
-      throw new Error(`Unknown provider: ${value}`);
-    }
-    return this.PROVIDERS[provider];
-  }
+	static fromString(value: string): ProviderInfo {
+		if (!value || value.trim() === '') {
+			throw new Error('Provider cannot be empty');
+		}
+
+		const provider = value as Provider;
+		if (!this.PROVIDERS[provider]) {
+			throw new Error(`Unknown provider: ${value}`);
+		}
+		return this.PROVIDERS[provider];
+	}
 }
 ```
 
@@ -268,10 +269,10 @@ const loader = new ConfigLoader();
 const status = await loader.getStatus();
 
 if (status.hasConfig) {
-  console.log(`Provider: ${status.provider}`);
-  console.log(`Model: ${status.model}`);
+	console.log(`Provider: ${status.provider}`);
+	console.log(`Model: ${status.model}`);
 } else {
-  // Navigate to Config screen
+	// Navigate to Config screen
 }
 ```
 
@@ -279,12 +280,12 @@ if (status.hasConfig) {
 
 ```typescript
 const config = Configuration.create({
-  provider: 'openai',
-  model: 'gpt-4',
-  apiKey: 'sk-...',
-  baseUrl: 'https://api.openai.com/v1',
-  maxTokens: 128000,
-  temperature: 0.7
+	provider: 'openai',
+	model: 'gpt-4',
+	apiKey: 'sk-...',
+	baseUrl: 'https://api.openai.com/v1',
+	maxTokens: 128000,
+	temperature: 0.7,
 });
 
 await loader.save(config);

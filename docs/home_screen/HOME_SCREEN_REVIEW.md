@@ -12,6 +12,7 @@
 ## 📋 Executive Summary
 
 Đã tiến hành review toàn bộ màn hình Home Screen bao gồm:
+
 - ✅ HomePresenterNew.ts (499 lines) - Presenter logic
 - ✅ HomeNew.tsx (134 lines) - Screen integration
 - ✅ Message.ts (86 lines) - Domain model
@@ -19,6 +20,7 @@
 - ✅ Data flow và integration
 
 **Kết quả**:
+
 - ❌ **1 vấn đề CRITICAL** cần fix ngay
 - ⚠️ **1 vấn đề MINOR** có thể tối ưu
 - ✅ **8 điểm tích cực** hoạt động tốt
@@ -37,36 +39,40 @@
 Code đang mutate trực tiếp property `metadata` của Message object bằng cách sử dụng `as any` để bypass TypeScript readonly protection.
 
 **Code hiện tại**:
+
 ```typescript
 // Lines 187-201
 const finalMessage = MessageModel.assistant(
-  turn.response.content,
-  turn.response.toolCalls,
+	turn.response.content,
+	turn.response.toolCalls,
 );
 
 // ❌ IMMUTABILITY VIOLATION!
 if (turn.metadata?.tokenUsage) {
-  (finalMessage as any).metadata = {  // Mutate readonly property!
-    ...finalMessage.metadata,
-    usage: {
-      promptTokens: turn.metadata.tokenUsage.prompt,
-      completionTokens: turn.metadata.tokenUsage.completion,
-      totalTokens: turn.metadata.tokenUsage.total,
-    },
-  };
+	(finalMessage as any).metadata = {
+		// Mutate readonly property!
+		...finalMessage.metadata,
+		usage: {
+			promptTokens: turn.metadata.tokenUsage.prompt,
+			completionTokens: turn.metadata.tokenUsage.completion,
+			totalTokens: turn.metadata.tokenUsage.total,
+		},
+	};
 
-  // Update token stats
-  this.updateTokenStats(turn.metadata.tokenUsage.total);
+	// Update token stats
+	this.updateTokenStats(turn.metadata.tokenUsage.total);
 }
 ```
 
 **Tại sao đây là vấn đề**:
+
 1. **Vi phạm immutability principle**: Message domain model có tất cả properties là `readonly`
 2. **Bypass type safety**: Sử dụng `as any` để vượt qua TypeScript's type checking
 3. **Không nhất quán với architecture**: Clean Architecture yêu cầu immutable domain objects
 4. **Potential bugs**: Có thể gây ra side effects không mong muốn khi object được share
 
 **Impact**:
+
 - ⚠️ Có thể gây race conditions trong streaming
 - ⚠️ Side effects khi Message được reference ở nhiều nơi
 - ⚠️ Khó debug khi state thay đổi bất ngờ
@@ -77,23 +83,22 @@ Sử dụng `Message.create()` với metadata option thay vì `Message.assistant
 
 ```typescript
 // ✅ CORRECT APPROACH
-const finalMessage = MessageModel.create('assistant',
-  turn.response.content,
-  {
-    toolCalls: turn.response.toolCalls,
-    metadata: turn.metadata?.tokenUsage ? {
-      usage: {
-        promptTokens: turn.metadata.tokenUsage.prompt,
-        completionTokens: turn.metadata.tokenUsage.completion,
-        totalTokens: turn.metadata.tokenUsage.total,
-      },
-    } : undefined,
-  }
-);
+const finalMessage = MessageModel.create('assistant', turn.response.content, {
+	toolCalls: turn.response.toolCalls,
+	metadata: turn.metadata?.tokenUsage
+		? {
+				usage: {
+					promptTokens: turn.metadata.tokenUsage.prompt,
+					completionTokens: turn.metadata.tokenUsage.completion,
+					totalTokens: turn.metadata.tokenUsage.total,
+				},
+			}
+		: undefined,
+});
 
 // Update token stats
 if (turn.metadata?.tokenUsage) {
-  this.updateTokenStats(turn.metadata.tokenUsage.total);
+	this.updateTokenStats(turn.metadata.tokenUsage.total);
 }
 ```
 
@@ -111,29 +116,32 @@ if (turn.metadata?.tokenUsage) {
 Trong streaming callback, mỗi chunk tạo một Message object mới với ID mới. Điều này dẫn đến `assistantMessageId` thay đổi liên tục.
 
 **Code hiện tại**:
+
 ```typescript
 // Lines 155-178
 const updatedMessage = MessageModel.assistant(assistantContent);
 
 if (existingIndex >= 0) {
-  // Replace existing message (maintain ID for streaming indicator)
-  assistantMessageId = updatedMessage.id;  // ⚠️ ID changes every chunk!
-  this.state.streamingMessageId = updatedMessage.id;
-  this.state.messages[existingIndex] = updatedMessage;
+	// Replace existing message (maintain ID for streaming indicator)
+	assistantMessageId = updatedMessage.id; // ⚠️ ID changes every chunk!
+	this.state.streamingMessageId = updatedMessage.id;
+	this.state.messages[existingIndex] = updatedMessage;
 } else {
-  // First chunk - add new message
-  assistantMessageId = updatedMessage.id;
-  this.state.streamingMessageId = updatedMessage.id;
-  this.state.messages.push(updatedMessage);
+	// First chunk - add new message
+	assistantMessageId = updatedMessage.id;
+	this.state.streamingMessageId = updatedMessage.id;
+	this.state.messages.push(updatedMessage);
 }
 ```
 
 **Tại sao đây là issue**:
+
 1. Message.generateId() tạo ID mới mỗi lần: `msg_${Date.now()}_${Math.random()...}`
 2. `assistantMessageId` variable được update liên tục với ID mới
 3. Không efficient - tạo quá nhiều ID không cần thiết
 
 **Impact**:
+
 - ✅ Hoạt động được vì `assistantMessageId` được update sau mỗi chunk
 - ⚠️ Inefficient - tạo nhiều ID và string allocations
 - ⚠️ Khó debug - ID thay đổi liên tục khó track
@@ -141,40 +149,42 @@ if (existingIndex >= 0) {
 **Solution Options**:
 
 **Option A**: Tạo ID một lần và reuse (Recommended):
+
 ```typescript
 // Before streaming callback
 const assistantMessageId = MessageModel.generateId(); // Make static method public
 
 const turn = await this.client.executeWithStreaming(
-  userInput,
-  (chunk: string) => {
-    assistantContent += chunk;
+	userInput,
+	(chunk: string) => {
+		assistantContent += chunk;
 
-    // Create message with fixed ID
-    const updatedMessage = new MessageModel(
-      assistantMessageId,  // ✅ Same ID for all chunks
-      'assistant',
-      assistantContent,
-      new Date(),
-    );
+		// Create message with fixed ID
+		const updatedMessage = new MessageModel(
+			assistantMessageId, // ✅ Same ID for all chunks
+			'assistant',
+			assistantContent,
+			new Date(),
+		);
 
-    const existingIndex = this.state.messages.findIndex(
-      (m) => m.id === assistantMessageId,
-    );
+		const existingIndex = this.state.messages.findIndex(
+			m => m.id === assistantMessageId,
+		);
 
-    if (existingIndex >= 0) {
-      this.state.messages[existingIndex] = updatedMessage;
-    } else {
-      this.state.streamingMessageId = assistantMessageId;
-      this.state.messages.push(updatedMessage);
-    }
+		if (existingIndex >= 0) {
+			this.state.messages[existingIndex] = updatedMessage;
+		} else {
+			this.state.streamingMessageId = assistantMessageId;
+			this.state.messages.push(updatedMessage);
+		}
 
-    this._notifyView();
-  },
+		this._notifyView();
+	},
 );
 ```
 
 **Option B**: Accept hiện trạng (Works but not optimal):
+
 - Code hiện tại hoạt động tốt
 - Chỉ tối ưu nếu cần performance boost
 
@@ -189,6 +199,7 @@ const turn = await this.client.executeWithStreaming(
 **File**: `source/cli/screens/HomeNew.tsx`
 
 **Strengths**:
+
 - ✅ **Clean component structure**: Tách biệt rõ ràng giữa UI và logic
 - ✅ **Global keyboard shortcuts**: useInput() được implement tốt
 - ✅ **Conditional rendering**: Logic rõ ràng, dễ hiểu
@@ -196,33 +207,34 @@ const turn = await this.client.executeWithStreaming(
 - ✅ **Component composition**: Kết hợp các molecules và organisms tốt
 
 **Example Code**:
+
 ```typescript
 // Global shortcuts - Well organized
 useInput((input, key) => {
-  if (!presenter) return;
+	if (!presenter) return;
 
-  // Toggle help with ?
-  if (input === '?' && !presenter.isLoading) {
-    presenter.toggleHelp();
-    return;
-  }
+	// Toggle help with ?
+	if (input === '?' && !presenter.isLoading) {
+		presenter.toggleHelp();
+		return;
+	}
 
-  // Close help or clear input with Esc
-  if (key.escape) {
-    if (presenter.showHelp) {
-      presenter.toggleHelp();
-    } else if (presenter.input) {
-      presenter.handleInputChange('');
-    }
-    return;
-  }
+	// Close help or clear input with Esc
+	if (key.escape) {
+		if (presenter.showHelp) {
+			presenter.toggleHelp();
+		} else if (presenter.input) {
+			presenter.handleInputChange('');
+		}
+		return;
+	}
 
-  // Navigate suggestions vs history - Smart routing
-  if (presenter.hasSuggestions()) {
-    // ... suggestion navigation
-  } else if (!presenter.hasSuggestions() && !presenter.isLoading) {
-    // ... history navigation
-  }
+	// Navigate suggestions vs history - Smart routing
+	if (presenter.hasSuggestions()) {
+		// ... suggestion navigation
+	} else if (!presenter.hasSuggestions() && !presenter.isLoading) {
+		// ... history navigation
+	}
 });
 ```
 
@@ -233,6 +245,7 @@ useInput((input, key) => {
 **File**: `source/core/domain/models/Todo.ts`
 
 **Strengths**:
+
 - ✅ **Perfect immutability**: All properties readonly
 - ✅ **Factory methods**: `create()`, `pending()`, `inProgress()`, `completed()`
 - ✅ **Immutable updates**: `withStatus()`, `complete()`, `start()` return new instances
@@ -240,6 +253,7 @@ useInput((input, key) => {
 - ✅ **Helper methods**: `isPending()`, `isInProgress()`, `isCompleted()`
 
 **Example Code**:
+
 ```typescript
 // ✅ PERFECT IMMUTABILITY
 withStatus(newStatus: TodoStatus): Todo {
@@ -254,10 +268,11 @@ withStatus(newStatus: TodoStatus): Todo {
 ```
 
 **Used correctly in presenter**:
+
 ```typescript
 // Line 449-450 in HomePresenterNew.ts
 const updatedTodo = this.state.todos[index].withStatus(status);
-this.state.todos[index] = updatedTodo;  // ✅ Immutable update!
+this.state.todos[index] = updatedTodo; // ✅ Immutable update!
 ```
 
 ---
@@ -267,19 +282,21 @@ this.state.todos[index] = updatedTodo;  // ✅ Immutable update!
 **Assessment**: ✅ **CORRECT**
 
 **Examples**:
+
 ```typescript
 // Lines 173, 212 in HomePresenterNew.ts
-this.state.messages[existingIndex] = updatedMessage;  // ✅ OK
-this.state.messages[index] = finalMessage;             // ✅ OK
+this.state.messages[existingIndex] = updatedMessage; // ✅ OK
+this.state.messages[index] = finalMessage; // ✅ OK
 
 // Line 450
-this.state.todos[index] = updatedTodo;  // ✅ OK - updatedTodo is new instance
+this.state.todos[index] = updatedTodo; // ✅ OK - updatedTodo is new instance
 
 // Line 225
-this.state.messages.splice(index, 1);  // ✅ OK - remove on error
+this.state.messages.splice(index, 1); // ✅ OK - remove on error
 ```
 
 **Why these are OK**:
+
 1. `state.messages` và `state.todos` arrays themselves không phải readonly
 2. Chỉ có Message và Todo **objects** là readonly
 3. Replace array elements với new instances là acceptable pattern
@@ -292,6 +309,7 @@ this.state.messages.splice(index, 1);  // ✅ OK - remove on error
 **Assessment**: ✅ **GOOD**
 
 **Strengths**:
+
 ```typescript
 // Try-catch wraps AI execution
 try {
@@ -317,6 +335,7 @@ try {
 ```
 
 **Good practices**:
+
 - ✅ Cleanup streaming message on error
 - ✅ Show error to user
 - ✅ Reset loading state in finally block
@@ -329,12 +348,14 @@ try {
 **Assessment**: ✅ **EXCELLENT**
 
 **Features**:
+
 - ✅ Stores last 50 inputs
 - ✅ No duplicates: `if (this.state.inputHistory[0] === input) return`
 - ✅ Navigation: ↑↓ with proper bounds checking
 - ✅ Reset to empty when navigating down from newest
 
 **Code quality**:
+
 ```typescript
 // Line 335-349: addToInputHistory
 private addToInputHistory(input: string): void {
@@ -362,26 +383,28 @@ private addToInputHistory(input: string): void {
 **Assessment**: ✅ **GOOD**
 
 **Features**:
+
 - ✅ Filter suggestions as user types
 - ✅ Navigate with ↑↓
 - ✅ Select with Tab or Enter
 - ✅ Auto-fill input on selection
 
 **Code**:
+
 ```typescript
 handleSuggestionSelect = (): string | null => {
-  const selected =
-    this.state.filteredSuggestions[this.state.selectedSuggestionIndex];
+	const selected =
+		this.state.filteredSuggestions[this.state.selectedSuggestionIndex];
 
-  if (!selected) return null;
+	if (!selected) return null;
 
-  // Auto-fill input
-  this.state.input = selected.cmd + ' ';  // ✅ Add space for args
-  this.state.filteredSuggestions = [];     // ✅ Clear suggestions
+	// Auto-fill input
+	this.state.input = selected.cmd + ' '; // ✅ Add space for args
+	this.state.filteredSuggestions = []; // ✅ Clear suggestions
 
-  this._notifyView();
+	this._notifyView();
 
-  return selected.cmd;
+	return selected.cmd;
 };
 ```
 
@@ -392,6 +415,7 @@ handleSuggestionSelect = (): string | null => {
 **Assessment**: ✅ **GOOD**
 
 **Code**:
+
 ```typescript
 async saveSession(name: string): Promise<void> {
   const session = Session.create(name, this.state.messages, this.state.model);
@@ -412,6 +436,7 @@ async loadSession(name: string): Promise<void> {
 **Assessment**: ✅ **EXCELLENT**
 
 **Code**:
+
 ```typescript
 // Line 492-496
 cleanup(): void {
@@ -423,6 +448,7 @@ cleanup(): void {
 ```
 
 **Why important**:
+
 - Timer chạy mỗi giây (line 464-469)
 - Nếu không cleanup sẽ memory leak
 - Screen unmount phải call cleanup()
@@ -433,21 +459,21 @@ cleanup(): void {
 
 ### Code Quality Metrics
 
-| Metric | Value | Status |
-|--------|-------|--------|
-| **Critical Issues** | 1 | ❌ Needs fix |
-| **Minor Issues** | 1 | ⚠️ Optional |
-| **Positive Points** | 8 | ✅ Good |
-| **Lines Reviewed** | 832 | ✅ Complete |
-| **Files Reviewed** | 4 | ✅ Full scope |
+| Metric              | Value | Status        |
+| ------------------- | ----- | ------------- |
+| **Critical Issues** | 1     | ❌ Needs fix  |
+| **Minor Issues**    | 1     | ⚠️ Optional   |
+| **Positive Points** | 8     | ✅ Good       |
+| **Lines Reviewed**  | 832   | ✅ Complete   |
+| **Files Reviewed**  | 4     | ✅ Full scope |
 
 ### Issue Breakdown
 
-| Severity | Count | Priority |
-|----------|-------|----------|
-| 🔴 Critical | 1 | High |
-| 🟡 Minor | 1 | Low |
-| 🟢 Info | 0 | - |
+| Severity    | Count | Priority |
+| ----------- | ----- | -------- |
+| 🔴 Critical | 1     | High     |
+| 🟡 Minor    | 1     | Low      |
+| 🟢 Info     | 0     | -        |
 
 ---
 
@@ -471,6 +497,7 @@ cleanup(): void {
 ### Testing Recommendations
 
 3. **Add Test for Issue #1**
+
    ```typescript
    test('finalMessage should have metadata without mutation', async (t) => {
      // Test that Message.metadata is set correctly without using 'as any'
@@ -486,15 +513,16 @@ cleanup(): void {
    ```
 
 4. **Add Test for Streaming ID Consistency**
+
    ```typescript
-   test('streaming message should maintain consistent ID', async (t) => {
-     // Test that streaming message ID doesn't change between chunks
-     let capturedIds: string[] = [];
+   test('streaming message should maintain consistent ID', async t => {
+   	// Test that streaming message ID doesn't change between chunks
+   	let capturedIds: string[] = [];
 
-     // Mock streaming to capture IDs
-     // ...
+   	// Mock streaming to capture IDs
+   	// ...
 
-     t.is(new Set(capturedIds).size, 1, 'All IDs should be the same');
+   	t.is(new Set(capturedIds).size, 1, 'All IDs should be the same');
    });
    ```
 
@@ -505,6 +533,7 @@ cleanup(): void {
 ### HomePresenterNew.ts Structure
 
 **Total Methods**: 49 symbols
+
 - ✅ Constructor: Proper initialization
 - ✅ Event Handlers: handleSubmit, handleInputChange, handleCommand
 - ✅ Navigation: navigateHistory, handleSuggestionNavigate
@@ -514,6 +543,7 @@ cleanup(): void {
 - ✅ Cleanup: cleanup() method
 
 **State Management**:
+
 - ✅ Centralized state object
 - ✅ View updates via callback: `this._notifyView()`
 - ✅ Immutable domain objects (except Issue #1)
@@ -521,6 +551,7 @@ cleanup(): void {
 ### HomeNew.tsx Structure
 
 **Components Used**:
+
 - ✅ Logo
 - ✅ InfoSection (version, model, directory)
 - ✅ ConversationArea (messages, streaming)
@@ -532,12 +563,14 @@ cleanup(): void {
 - ✅ Footer (with stats)
 
 **Conditional Rendering Logic**:
+
 ```typescript
 {presenter.messages.length === 0 && !presenter.isLoading && <TipsSection />}
 {presenter.todos.length > 0 && <TodosDisplay todos={presenter.todos} />}
 {presenter.hasSuggestions() && <SlashSuggestions ... />}
 {presenter.showHelp && <HelpOverlay ... />}
 ```
+
 ✅ All conditions are correct and efficient
 
 ---
@@ -565,6 +598,7 @@ cleanup(): void {
 ## 📚 References
 
 ### Related Files
+
 - `source/cli/presenters/HomePresenterNew.ts` - Main presenter
 - `source/cli/screens/HomeNew.tsx` - Main screen
 - `source/core/domain/models/Message.ts` - Domain model
@@ -572,6 +606,7 @@ cleanup(): void {
 - `docs/ERROR_ANALYSIS_REPORT.md` - Previous errors analysis
 
 ### Architecture Documents
+
 - Clean Architecture principles
 - MVP pattern implementation
 - Immutability guidelines

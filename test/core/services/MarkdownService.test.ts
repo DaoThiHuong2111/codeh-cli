@@ -3,13 +3,16 @@
  */
 
 import test from 'ava';
-import { MarkdownService, BlockType } from '../../../source/core/application/services/MarkdownService.js';
+import {
+	MarkdownService,
+	BlockType,
+} from '../../../source/core/application/services/MarkdownService.js';
 
 const service = new MarkdownService();
 
 // === Heading Parsing Tests ===
 
-test('parses H1 heading correctly', (t) => {
+test('parses H1 heading correctly', t => {
 	const blocks = service.parse('# Title');
 
 	t.is(blocks.length, 1);
@@ -18,7 +21,7 @@ test('parses H1 heading correctly', (t) => {
 	t.is(blocks[0].level, 1);
 });
 
-test('parses H2 heading correctly', (t) => {
+test('parses H2 heading correctly', t => {
 	const blocks = service.parse('## Subtitle');
 
 	t.is(blocks[0].type, BlockType.HEADING);
@@ -26,14 +29,14 @@ test('parses H2 heading correctly', (t) => {
 	t.is(blocks[0].level, 2);
 });
 
-test('parses H3 heading correctly', (t) => {
+test('parses H3 heading correctly', t => {
 	const blocks = service.parse('### Section');
 
 	t.is(blocks[0].type, BlockType.HEADING);
 	t.is(blocks[0].level, 3);
 });
 
-test('parses multiple headings', (t) => {
+test('parses multiple headings', t => {
 	const text = '# H1\n## H2\n### H3';
 	const blocks = service.parse(text);
 
@@ -45,7 +48,7 @@ test('parses multiple headings', (t) => {
 
 // === Code Block Parsing Tests ===
 
-test('parses code block without language', (t) => {
+test('parses code block without language', t => {
 	const text = '```\nconst x = 1;\n```';
 	const blocks = service.parse(text);
 
@@ -55,7 +58,7 @@ test('parses code block without language', (t) => {
 	t.is(blocks[0].language, '');
 });
 
-test('parses code block with language', (t) => {
+test('parses code block with language', t => {
 	const text = '```typescript\nconst x: number = 1;\n```';
 	const blocks = service.parse(text);
 
@@ -64,7 +67,7 @@ test('parses code block with language', (t) => {
 	t.is(blocks[0].content, 'const x: number = 1;');
 });
 
-test('parses multi-line code block', (t) => {
+test('parses multi-line code block', t => {
 	const text = '```javascript\nfunction hello() {\n  return "world";\n}\n```';
 	const blocks = service.parse(text);
 
@@ -73,7 +76,7 @@ test('parses multi-line code block', (t) => {
 	t.true(blocks[0].content.includes('return "world"'));
 });
 
-test('parses multiple code blocks', (t) => {
+test('parses multiple code blocks', t => {
 	const text = '```js\ncode1\n```\nText\n```py\ncode2\n```';
 	const blocks = service.parse(text);
 
@@ -85,7 +88,7 @@ test('parses multiple code blocks', (t) => {
 
 // === List Parsing Tests ===
 
-test('parses unordered list', (t) => {
+test('parses unordered list', t => {
 	const text = '- Item 1\n- Item 2\n- Item 3';
 	const blocks = service.parse(text);
 
@@ -97,7 +100,7 @@ test('parses unordered list', (t) => {
 	t.is(blocks[0].items?.[2], 'Item 3');
 });
 
-test('parses list with asterisks', (t) => {
+test('parses list with asterisks', t => {
 	const text = '* First\n* Second';
 	const blocks = service.parse(text);
 
@@ -105,7 +108,7 @@ test('parses list with asterisks', (t) => {
 	t.is(blocks[0].items?.length, 2);
 });
 
-test('parses list with plus signs', (t) => {
+test('parses list with plus signs', t => {
 	const text = '+ Alpha\n+ Beta';
 	const blocks = service.parse(text);
 
@@ -115,7 +118,7 @@ test('parses list with plus signs', (t) => {
 
 // === Blockquote Parsing Tests ===
 
-test('parses single-line blockquote', (t) => {
+test('parses single-line blockquote', t => {
 	const text = '> This is a quote';
 	const blocks = service.parse(text);
 
@@ -124,7 +127,7 @@ test('parses single-line blockquote', (t) => {
 	t.is(blocks[0].content, 'This is a quote');
 });
 
-test('parses multi-line blockquote', (t) => {
+test('parses multi-line blockquote', t => {
 	const text = '> Line 1\n> Line 2\n> Line 3';
 	const blocks = service.parse(text);
 
@@ -136,7 +139,7 @@ test('parses multi-line blockquote', (t) => {
 
 // === Paragraph Parsing Tests ===
 
-test('parses simple paragraph', (t) => {
+test('parses simple paragraph', t => {
 	const text = 'This is a paragraph.';
 	const blocks = service.parse(text);
 
@@ -145,7 +148,7 @@ test('parses simple paragraph', (t) => {
 	t.is(blocks[0].content, 'This is a paragraph.');
 });
 
-test('parses multi-line paragraph', (t) => {
+test('parses multi-line paragraph', t => {
 	const text = 'Line 1\nLine 2\nLine 3';
 	const blocks = service.parse(text);
 
@@ -154,7 +157,7 @@ test('parses multi-line paragraph', (t) => {
 	t.is(blocks[0].type, BlockType.PARAGRAPH);
 });
 
-test('separates paragraphs by empty lines', (t) => {
+test('separates paragraphs by empty lines', t => {
 	const text = 'Para 1\n\nPara 2';
 	const blocks = service.parse(text);
 
@@ -165,7 +168,7 @@ test('separates paragraphs by empty lines', (t) => {
 
 // === Inline Formatting Tests ===
 
-test('parses inline code', (t) => {
+test('parses inline code', t => {
 	const tokens = service['parseInlineFormatting']('Use `const` for constants');
 
 	const codeToken = tokens.find(t => t.type === 'code');
@@ -173,7 +176,7 @@ test('parses inline code', (t) => {
 	t.is(codeToken?.content, 'const');
 });
 
-test('parses bold text with **', (t) => {
+test('parses bold text with **', t => {
 	const tokens = service['parseInlineFormatting']('This is **bold** text');
 
 	const boldToken = tokens.find(t => t.type === 'bold');
@@ -181,7 +184,7 @@ test('parses bold text with **', (t) => {
 	t.is(boldToken?.content, 'bold');
 });
 
-test('parses bold text with __', (t) => {
+test('parses bold text with __', t => {
 	const tokens = service['parseInlineFormatting']('This is __bold__ text');
 
 	const boldToken = tokens.find(t => t.type === 'bold');
@@ -189,7 +192,7 @@ test('parses bold text with __', (t) => {
 	t.is(boldToken?.content, 'bold');
 });
 
-test('parses italic text with *', (t) => {
+test('parses italic text with *', t => {
 	const tokens = service['parseInlineFormatting']('This is *italic* text');
 
 	const italicToken = tokens.find(t => t.type === 'italic');
@@ -197,7 +200,7 @@ test('parses italic text with *', (t) => {
 	t.is(italicToken?.content, 'italic');
 });
 
-test('parses italic text with _', (t) => {
+test('parses italic text with _', t => {
 	const tokens = service['parseInlineFormatting']('This is _italic_ text');
 
 	const italicToken = tokens.find(t => t.type === 'italic');
@@ -205,8 +208,10 @@ test('parses italic text with _', (t) => {
 	t.is(italicToken?.content, 'italic');
 });
 
-test('parses mixed inline formatting', (t) => {
-	const tokens = service['parseInlineFormatting']('**bold** and *italic* and `code`');
+test('parses mixed inline formatting', t => {
+	const tokens = service['parseInlineFormatting'](
+		'**bold** and *italic* and `code`',
+	);
 
 	t.is(tokens.length, 5); // bold, text, italic, text, code
 	t.is(tokens.filter(t => t.type === 'bold').length, 1);
@@ -216,7 +221,7 @@ test('parses mixed inline formatting', (t) => {
 
 // === Complex Markdown Tests ===
 
-test('parses complex markdown with multiple block types', (t) => {
+test('parses complex markdown with multiple block types', t => {
 	const text = `# Title
 
 This is a paragraph.
@@ -253,19 +258,19 @@ Another paragraph.`;
 
 // === Edge Cases Tests ===
 
-test('handles empty string', (t) => {
+test('handles empty string', t => {
 	const blocks = service.parse('');
 
 	t.is(blocks.length, 0);
 });
 
-test('handles string with only whitespace', (t) => {
+test('handles string with only whitespace', t => {
 	const blocks = service.parse('   \n\n   ');
 
 	t.is(blocks.length, 0);
 });
 
-test('handles unclosed code block', (t) => {
+test('handles unclosed code block', t => {
 	const text = '```javascript\ncode without closing';
 	const blocks = service.parse(text);
 
@@ -273,7 +278,7 @@ test('handles unclosed code block', (t) => {
 	t.is(blocks[0].type, BlockType.CODE_BLOCK);
 });
 
-test('handles heading without space after #', (t) => {
+test('handles heading without space after #', t => {
 	const text = '#NoSpace';
 	const blocks = service.parse(text);
 
@@ -281,7 +286,7 @@ test('handles heading without space after #', (t) => {
 	t.not(blocks[0]?.type, BlockType.HEADING);
 });
 
-test('handles list items with extra spaces', (t) => {
+test('handles list items with extra spaces', t => {
 	const text = '-   Item with spaces\n-Item without';
 	const blocks = service.parse(text);
 

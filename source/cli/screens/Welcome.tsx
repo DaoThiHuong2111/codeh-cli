@@ -1,22 +1,18 @@
 import React from 'react';
-import { Box, Text } from 'ink';
-import { useNavigation } from '../contexts/NavigationContext';
-import { useWelcomeLogic } from '../hooks/useWelcomeLogic';
+import {Box, Text} from 'ink';
+import {useNavigation} from '../contexts/NavigationContext';
+import {useWelcomeLogic} from '../hooks/useWelcomeLogic';
 import Logo from '../components/atoms/Logo';
 
 export default function Welcome() {
-	const { navigateTo } = useNavigation();
+	const {navigateTo} = useNavigation();
 
 	// Business logic hook
-	const {
-		loading,
-		shouldShowWelcome,
-		displayMessage,
-		displayVersion,
-	} = useWelcomeLogic({
-		onNavigateHome: () => navigateTo('home'),
-		onNavigateConfig: () => navigateTo('config'),
-	});
+	const {loading, shouldShowWelcome, displayMessage, displayVersion} =
+		useWelcomeLogic({
+			onNavigateHome: () => navigateTo('home'),
+			onNavigateConfig: () => navigateTo('config'),
+		});
 
 	// Show loading state
 	if (loading) {
@@ -48,7 +44,10 @@ export default function Welcome() {
 			{displayVersion && (
 				<Box marginTop={1}>
 					<Text>
-						Version: <Text bold color="green">{displayVersion}</Text>
+						Version:{' '}
+						<Text bold color="green">
+							{displayVersion}
+						</Text>
 					</Text>
 				</Box>
 			)}

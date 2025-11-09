@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 import dotenv from 'dotenv';
 import React from 'react';
-import { render } from 'ink';
+import {render} from 'ink';
 import meow from 'meow';
 import App from './cli/app.js';
-import { setupContainer } from './core/di/setup.js';
+import {setupContainer} from './core/di/setup.js';
 
 // Load .env file
 dotenv.config();
@@ -29,7 +29,7 @@ const cli = meow(
 				shortFlag: 'v',
 			},
 		},
-	}
+	},
 );
 
 async function main() {

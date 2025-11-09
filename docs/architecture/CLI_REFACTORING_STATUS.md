@@ -8,6 +8,7 @@
 ## ✅ ĐÃ HOÀN THÀNH
 
 ### 1. **Atomic Design Structure** ✅
+
 Đã tạo cấu trúc Atomic Design pattern:
 
 ```
@@ -28,6 +29,7 @@ source/cli/components/
 ```
 
 ### 2. **TypeScript Conversion** ✅
+
 - ✅ Tất cả atoms converted sang TypeScript
 - ✅ Tất cả molecules converted sang TypeScript
 - ✅ Proper TypeScript interfaces & props
@@ -38,10 +40,12 @@ source/cli/components/
 ## ⏳ ĐANG LÀM / CÒN LẠI
 
 ### 1. **Organisms** (30 phút)
+
 - [ ] Card.tsx
 - [ ] Navigation.tsx
 
 ### 2. **Screens** (1-2 giờ)
+
 ```
 source/cli/screens/
 ├── Welcome.tsx      (todo)
@@ -50,12 +54,14 @@ source/cli/screens/
 ```
 
 **Cần làm:**
+
 - Convert sang TypeScript
 - Tách logic ra Presenters
 - Integrate với DI Container
 - Update imports
 
 ### 3. **Presenters** (1 giờ)
+
 ```
 source/cli/presenters/
 ├── HomePresenter.ts      (todo - critical)
@@ -65,11 +71,13 @@ source/cli/presenters/
 ```
 
 **Mục đích:**
+
 - Tách business logic khỏi UI
 - Connect với Core layer (CodehClient, CodehChat)
 - Manage state & side effects
 
 ### 4. **Custom Hooks** (1 giờ)
+
 ```
 source/cli/hooks/
 ├── useCodehClient.ts     (todo - critical)
@@ -79,6 +87,7 @@ source/cli/hooks/
 ```
 
 ### 5. **Entry Point** (30 phút)
+
 ```typescript
 // source/cli.tsx (todo)
 
@@ -98,6 +107,7 @@ main();
 ## 📊 PROGRESS METRICS
 
 ### Components Migration
+
 - **Atoms:** 4/4 (100%) ✅
 - **Molecules:** 4/4 (100%) ✅
 - **Organisms:** 0/2 (0%) ⏳
@@ -105,6 +115,7 @@ main();
 - **Total:** 8/13 (62%)
 
 ### Integration
+
 - **Presenters:** 0/3 (0%)
 - **Hooks:** 0/4 (0%)
 - **DI Setup:** 0/1 (0%)
@@ -117,17 +128,20 @@ main();
 ## 🎯 NEXT STEPS (PRIORITY ORDER)
 
 ### Priority 1: Critical Path (3-4 giờ)
+
 1. **HomePresenter** - Kết nối Home screen với CodehClient
 2. **useCodehClient Hook** - Access DI container
 3. **Home Screen Refactor** - Use presenter & hooks
 4. **Entry Point Update** - Setup container & inject
 
 ### Priority 2: Configuration (1-2 giờ)
+
 1. **ConfigPresenter** - Connect với ConfigLoader
 2. **useConfiguration Hook** - Config management
 3. **Config Screen Refactor** - Use new architecture
 
 ### Priority 3: Organisms & Other Screens (1-2 giờ)
+
 1. **Card.tsx** & **Navigation.tsx**
 2. **Welcome Screen** refactor
 3. **Cleanup & polish**
@@ -141,38 +155,38 @@ main();
 **File:** `source/cli/presenters/HomePresenter.ts`
 
 ```typescript
-import { CodehClient, CodehChat } from '../../core';
+import {CodehClient, CodehChat} from '../../core';
 
 export class HomePresenter {
-  constructor(
-    private client: CodehClient,
-    private chat: CodehChat
-  ) {}
+	constructor(
+		private client: CodehClient,
+		private chat: CodehChat,
+	) {}
 
-  async handleInput(input: string): Promise<{
-    output: string;
-    error?: string;
-  }> {
-    try {
-      const turn = await this.client.execute(input);
-      return {
-        output: turn.response?.content || '',
-      };
-    } catch (error: any) {
-      return {
-        output: '',
-        error: error.message,
-      };
-    }
-  }
+	async handleInput(input: string): Promise<{
+		output: string;
+		error?: string;
+	}> {
+		try {
+			const turn = await this.client.execute(input);
+			return {
+				output: turn.response?.content || '',
+			};
+		} catch (error: any) {
+			return {
+				output: '',
+				error: error.message,
+			};
+		}
+	}
 
-  getHistory() {
-    return this.chat.getHistory();
-  }
+	getHistory() {
+		return this.chat.getHistory();
+	}
 
-  getStats() {
-    return this.chat.getStats();
-  }
+	getStats() {
+		return this.chat.getStats();
+	}
 }
 ```
 
@@ -181,30 +195,31 @@ export class HomePresenter {
 **File:** `source/cli/hooks/useCodehClient.ts`
 
 ```typescript
-import { useEffect, useState } from 'react';
-import { Container, CodehClient } from '../../core';
+import {useEffect, useState} from 'react';
+import {Container, CodehClient} from '../../core';
 
 export function useCodehClient(container: Container) {
-  const [client, setClient] = useState<CodehClient | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+	const [client, setClient] = useState<CodehClient | null>(null);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadClient = async () => {
-      try {
-        const resolvedClient = await container.resolve<CodehClient>('CodehClient');
-        setClient(resolvedClient);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+	useEffect(() => {
+		const loadClient = async () => {
+			try {
+				const resolvedClient =
+					await container.resolve<CodehClient>('CodehClient');
+				setClient(resolvedClient);
+			} catch (err: any) {
+				setError(err.message);
+			} finally {
+				setLoading(false);
+			}
+		};
 
-    loadClient();
-  }, [container]);
+		loadClient();
+	}, [container]);
 
-  return { client, loading, error };
+	return {client, loading, error};
 }
 ```
 
@@ -280,16 +295,19 @@ export default function Home({ container }: HomeProps) {
 ## ⚠️ BLOCKERS & CHALLENGES
 
 ### 1. **Async Container Resolution**
+
 DI container resolution is async, need to handle in React properly.
 
 **Solution:** Use hooks với useEffect
 
 ### 2. **State Management**
+
 Complex state between screens & presenters.
 
 **Solution:** Use presenters as state managers, pass via context if needed
 
 ### 3. **Import Paths**
+
 Need to update all import paths from old structure.
 
 **Solution:** Use TypeScript path aliases (`@/cli`, `@/core`)
@@ -299,6 +317,7 @@ Need to update all import paths from old structure.
 ## 📖 REFERENCES
 
 ### Old Structure
+
 ```
 source/
 ├── components/    → source/cli/components/{atoms,molecules,organisms}/
@@ -308,6 +327,7 @@ source/
 ```
 
 ### New Structure
+
 ```
 source/
 ├── cli/
@@ -354,6 +374,7 @@ source/
 ## 📝 NOTES
 
 ### Files Created So Far (8 files)
+
 ```
 source/cli/components/
 ├── atoms/
@@ -369,6 +390,7 @@ source/cli/components/
 ```
 
 ### Still Using Old Files
+
 - source/components/ (old)
 - source/screens/ (old)
 - source/cli.js (old entry point)

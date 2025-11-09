@@ -102,13 +102,13 @@ graph TB
 ```javascript
 // Mount
 useEffect(() => {
-  presenter.setViewUpdateCallback(handleUpdate);
-  presenter.init();  // Load initial data
+	presenter.setViewUpdateCallback(handleUpdate);
+	presenter.init(); // Load initial data
 
-  return () => {
-    // Unmount
-    presenter.setViewUpdateCallback(null);
-  };
+	return () => {
+		// Unmount
+		presenter.setViewUpdateCallback(null);
+	};
 }, [presenter]);
 
 // Every render

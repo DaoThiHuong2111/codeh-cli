@@ -58,7 +58,7 @@ export class Command {
 		const normalized = input.toLowerCase();
 		return (
 			this.cmd.toLowerCase().startsWith(normalized) ||
-			this.aliases.some((alias) => alias.toLowerCase().startsWith(normalized))
+			this.aliases.some(alias => alias.toLowerCase().startsWith(normalized))
 		);
 	}
 

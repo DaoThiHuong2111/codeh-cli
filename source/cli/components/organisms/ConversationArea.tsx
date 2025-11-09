@@ -1,8 +1,8 @@
-import { Box, Text } from 'ink';
+import {Box, Text} from 'ink';
 import React from 'react';
-import type { Message } from '../../../core/domain/models/Message.js';
-import { MessageBubble } from '../molecules/MessageBubble.js';
-import { LoadingText } from '../atoms/Spinner.js';
+import type {Message} from '../../../core/domain/models/Message.js';
+import {MessageBubble} from '../molecules/MessageBubble.js';
+import {LoadingText} from '../atoms/Spinner.js';
 
 interface ConversationAreaProps {
 	messages: Message[];
@@ -29,7 +29,7 @@ export const ConversationArea: React.FC<ConversationAreaProps> = ({
 	return (
 		<Box flexDirection="column" marginY={1}>
 			{/* Render all messages */}
-			{messages.map((message) => (
+			{messages.map(message => (
 				<MessageBubble
 					key={message.id}
 					message={message}

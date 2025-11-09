@@ -9,6 +9,7 @@
 ## 📋 Tóm Tắt
 
 Phát hiện **5 nhóm lỗi** trong codebase:
+
 - ✅ **4 lỗi đã được sửa** trong commit 31d35c8
 - ⚠️ **1 nhóm lỗi mới phát hiện** cần sửa
 
@@ -22,38 +23,41 @@ Phát hiện **5 nhóm lỗi** trong codebase:
 Function `initializeClient()` return `Promise<boolean>` nhưng logic check không nhất quán.
 
 **Files bị ảnh hưởng**:
+
 1. `source/cli/hooks/useCodehClient.ts`
 2. `source/cli/hooks/useHomeLogic.ts`
 3. `source/cli/hooks/useHomeLogicNew.ts`
 
 **Code Lỗi**:
+
 ```typescript
 // useCodehClient.ts
 const initializeClient = useCallback(async (): Promise<boolean> => {
-  if (client) {
-    return true;  // ❌ Return boolean
-  }
+	if (client) {
+		return true; // ❌ Return boolean
+	}
 
-  try {
-    const newClient = await createCodehClient(container);
-    setClient(newClient);
-    return true;  // ❌ Return boolean
-  } catch (err: any) {
-    setError(errorMessage);
-    return false;  // ❌ Return boolean
-  }
+	try {
+		const newClient = await createCodehClient(container);
+		setClient(newClient);
+		return true; // ❌ Return boolean
+	} catch (err: any) {
+		setError(errorMessage);
+		return false; // ❌ Return boolean
+	}
 }, [client, container]);
 
 // useHomeLogic.ts - Caller code
 let success = true;
 if (!clientInitialized) {
-  success = await initializeClient();  // ❌ Get boolean
-  setClientInitialized(success);
+	success = await initializeClient(); // ❌ Get boolean
+	setClientInitialized(success);
 }
 
-if (!success || !client) {  // ❌ Check cả boolean VÀ object!
-  setOutput('Failed to connect...');
-  return;
+if (!success || !client) {
+	// ❌ Check cả boolean VÀ object!
+	setOutput('Failed to connect...');
+	return;
 }
 
 const presenter = usePresenter(HomePresenter, client, chat);
@@ -61,6 +65,7 @@ const presenter = usePresenter(HomePresenter, client, chat);
 ```
 
 **Vấn đề cụ thể**:
+
 - Return `boolean` nhưng caller vẫn cần access `client` object
 - Logic check `!success || !client` không nhất quán:
   - Nếu `success=true` nhưng `client=null` thì sao?
@@ -68,33 +73,35 @@ const presenter = usePresenter(HomePresenter, client, chat);
 - Phải maintain 2 nguồn truth: `success` boolean và `client` object
 
 **Sửa chữa** ✅:
+
 ```typescript
 // useCodehClient.ts
 const initializeClient = useCallback(async (): Promise<CodehClient | null> => {
-  if (client) {
-    return client;  // ✅ Return client thực tế
-  }
+	if (client) {
+		return client; // ✅ Return client thực tế
+	}
 
-  try {
-    const newClient = await createCodehClient(container);
-    setClient(newClient);
-    return newClient;  // ✅ Return client thực tế
-  } catch (err: any) {
-    setError(errorMessage);
-    return null;  // ✅ Return null khi lỗi
-  }
+	try {
+		const newClient = await createCodehClient(container);
+		setClient(newClient);
+		return newClient; // ✅ Return client thực tế
+	} catch (err: any) {
+		setError(errorMessage);
+		return null; // ✅ Return null khi lỗi
+	}
 }, [client, container]);
 
 // useHomeLogic.ts - Caller code
 let activeClient = client;
 if (!clientInitialized) {
-  activeClient = await initializeClient();  // ✅ Get client trực tiếp
-  setClientInitialized(!!activeClient);
+	activeClient = await initializeClient(); // ✅ Get client trực tiếp
+	setClientInitialized(!!activeClient);
 }
 
-if (!activeClient) {  // ✅ Check đơn giản, 1 nguồn truth
-  setOutput('Failed to connect...');
-  return;
+if (!activeClient) {
+	// ✅ Check đơn giản, 1 nguồn truth
+	setOutput('Failed to connect...');
+	return;
 }
 
 const presenter = usePresenter(HomePresenter, activeClient, chat);
@@ -102,6 +109,7 @@ const presenter = usePresenter(HomePresenter, activeClient, chat);
 ```
 
 **Lợi ích**:
+
 - Đơn giản hóa logic (1 check thay vì 2)
 - Type-safe: caller nhận được client hoặc null
 - Single source of truth: không cần track cả boolean và object
@@ -117,44 +125,49 @@ const presenter = usePresenter(HomePresenter, activeClient, chat);
 Interface `IApiClient.Message` thiếu role type so với domain model `Message`.
 
 **File bị ảnh hưởng**:
+
 - `source/core/domain/interfaces/IApiClient.ts`
 
 **Code Lỗi**:
+
 ```typescript
 // IApiClient.ts
 export interface Message {
-  role: 'user' | 'assistant' | 'system';  // ❌ Thiếu 'error'
-  content: string;
-  toolCalls?: ToolCall[];
+	role: 'user' | 'assistant' | 'system'; // ❌ Thiếu 'error'
+	content: string;
+	toolCalls?: ToolCall[];
 }
 
 // Message.ts (domain model)
-export type MessageRole = 'user' | 'assistant' | 'system' | 'error';  // ✅ Có 'error'
+export type MessageRole = 'user' | 'assistant' | 'system' | 'error'; // ✅ Có 'error'
 
 export class Message {
-  constructor(
-    public readonly role: MessageRole,  // ✅ Hỗ trợ 'error' role
-    // ...
-  ) {}
+	constructor(
+		public readonly role: MessageRole, // ✅ Hỗ trợ 'error' role
+		// ...
+	) {}
 
-  static error(error: Error | string): Message {  // ✅ Factory method cho error
-    // ...
-  }
+	static error(error: Error | string): Message {
+		// ✅ Factory method cho error
+		// ...
+	}
 }
 ```
 
 **Vấn đề cụ thể**:
+
 - Domain model hỗ trợ error messages
 - Interface không match → Type mismatch khi convert
 - Tests đã test error messages nhưng interface không support
 
 **Sửa chữa** ✅:
+
 ```typescript
 // IApiClient.ts
 export interface Message {
-  role: 'user' | 'assistant' | 'system' | 'error';  // ✅ Thêm 'error'
-  content: string;
-  toolCalls?: ToolCall[];
+	role: 'user' | 'assistant' | 'system' | 'error'; // ✅ Thêm 'error'
+	content: string;
+	toolCalls?: ToolCall[];
 }
 ```
 
@@ -169,48 +182,51 @@ export interface Message {
 **Vấn đề nghiêm trọng về Clean Architecture**:
 
 **Files bị ảnh hưởng**:
+
 1. `source/core/domain/interfaces/IHistoryRepository.ts` (line 5)
 2. `source/infrastructure/history/FileHistoryRepository.ts` (line 10)
 3. `source/infrastructure/history/InMemoryHistoryRepository.ts` (line 10)
 
 **Code Lỗi**:
+
 ```typescript
 // ❌ IHistoryRepository.ts (DOMAIN LAYER)
-import { Message } from './IApiClient';  // ❌ Import từ API interface!
+import {Message} from './IApiClient'; // ❌ Import từ API interface!
 
 export interface ConversationHistory {
-  id: string;
-  messages: Message[];  // ❌ Dùng interface Message, không phải domain model
-  // ...
+	id: string;
+	messages: Message[]; // ❌ Dùng interface Message, không phải domain model
+	// ...
 }
 
 export interface IHistoryRepository {
-  addMessage(message: Message): Promise<void>;  // ❌ Interface Message
-  getRecentMessages(limit: number): Promise<Message[]>;  // ❌ Interface Message
-  // ...
+	addMessage(message: Message): Promise<void>; // ❌ Interface Message
+	getRecentMessages(limit: number): Promise<Message[]>; // ❌ Interface Message
+	// ...
 }
 ```
 
 ```typescript
 // ❌ FileHistoryRepository.ts (INFRASTRUCTURE LAYER)
-import { Message } from '../../core/domain/interfaces/IApiClient';  // ❌ Import sai!
+import {Message} from '../../core/domain/interfaces/IApiClient'; // ❌ Import sai!
 
 export class FileHistoryRepository implements IHistoryRepository {
-  async addMessage(message: Message): Promise<void> {
-    // Nhận interface Message (không có id, timestamp, metadata)
-    // Nhưng cần persist đầy đủ thông tin!
-  }
+	async addMessage(message: Message): Promise<void> {
+		// Nhận interface Message (không có id, timestamp, metadata)
+		// Nhưng cần persist đầy đủ thông tin!
+	}
 
-  async getRecentMessages(limit: number): Promise<Message[]> {
-    // Return interface Message (thiếu id, timestamp)
-    // Nhưng caller expect domain model Message!
-  }
+	async getRecentMessages(limit: number): Promise<Message[]> {
+		// Return interface Message (thiếu id, timestamp)
+		// Nhưng caller expect domain model Message!
+	}
 }
 ```
 
 **Vấn đề cụ thể**:
 
 1. **Type Mismatch**:
+
    ```typescript
    // Interface Message (IApiClient)
    {
@@ -245,49 +261,53 @@ export class FileHistoryRepository implements IHistoryRepository {
 
 ```typescript
 // ✅ IHistoryRepository.ts (DOMAIN LAYER)
-import { Message } from '../models/Message';  // ✅ Import từ domain model!
+import {Message} from '../models/Message'; // ✅ Import từ domain model!
 
 export interface ConversationHistory {
-  id: string;
-  messages: Message[];  // ✅ Dùng domain model
-  // ...
+	id: string;
+	messages: Message[]; // ✅ Dùng domain model
+	// ...
 }
 
 export interface IHistoryRepository {
-  addMessage(message: Message): Promise<void>;  // ✅ Domain model
-  getRecentMessages(limit: number): Promise<Message[]>;  // ✅ Domain model
-  // ...
+	addMessage(message: Message): Promise<void>; // ✅ Domain model
+	getRecentMessages(limit: number): Promise<Message[]>; // ✅ Domain model
+	// ...
 }
 ```
 
 ```typescript
 // ✅ FileHistoryRepository.ts (INFRASTRUCTURE LAYER)
-import { Message } from '../../core/domain/models/Message';  // ✅ Import đúng!
-import { IHistoryRepository } from '../../core/domain/interfaces/IHistoryRepository';
+import {Message} from '../../core/domain/models/Message'; // ✅ Import đúng!
+import {IHistoryRepository} from '../../core/domain/interfaces/IHistoryRepository';
 
 export class FileHistoryRepository implements IHistoryRepository {
-  async addMessage(message: Message): Promise<void> {
-    // ✅ Nhận full domain model với id, timestamp, metadata
-    const json = message.toJSON();
-    await this.saveToFile(json);
-  }
+	async addMessage(message: Message): Promise<void> {
+		// ✅ Nhận full domain model với id, timestamp, metadata
+		const json = message.toJSON();
+		await this.saveToFile(json);
+	}
 
-  async getRecentMessages(limit: number): Promise<Message[]> {
-    const jsonArray = await this.loadFromFile();
-    // ✅ Reconstruct domain models
-    return jsonArray.map(json => new Message(
-      json.id,
-      json.role,
-      json.content,
-      new Date(json.timestamp),
-      json.toolCalls,
-      json.metadata
-    ));
-  }
+	async getRecentMessages(limit: number): Promise<Message[]> {
+		const jsonArray = await this.loadFromFile();
+		// ✅ Reconstruct domain models
+		return jsonArray.map(
+			json =>
+				new Message(
+					json.id,
+					json.role,
+					json.content,
+					new Date(json.timestamp),
+					json.toolCalls,
+					json.metadata,
+				),
+		);
+	}
 }
 ```
 
 **Tại sao lỗi này nguy hiểm**:
+
 1. **Silent Data Loss**: Mất dữ liệu (id, timestamp, metadata) mà không có warning
 2. **Runtime Errors**: Khi code gọi `message.hasToolCalls()` sẽ crash (method không tồn tại)
 3. **Type Safety False**: TypeScript không bắt lỗi vì cả 2 cùng tên "Message"
@@ -296,6 +316,7 @@ export class FileHistoryRepository implements IHistoryRepository {
 **Mức độ ưu tiên**: 🔴 **CRITICAL** - Cần sửa ngay!
 
 **Files cần sửa**:
+
 ```bash
 # 1. Update import trong IHistoryRepository
 source/core/domain/interfaces/IHistoryRepository.ts
@@ -313,24 +334,28 @@ source/infrastructure/history/InMemoryHistoryRepository.ts
 ## 📊 Tổng Kết
 
 ### Lỗi Đã Sửa (4 lỗi)
-| # | Loại Lỗi | Severity | Files | Status |
-|---|-----------|----------|-------|--------|
-| 1-3 | Return Type Mismatch | Medium | 3 files | ✅ Fixed |
-| 4 | Interface Mismatch | High | 1 file | ✅ Fixed |
+
+| #   | Loại Lỗi             | Severity | Files   | Status   |
+| --- | -------------------- | -------- | ------- | -------- |
+| 1-3 | Return Type Mismatch | Medium   | 3 files | ✅ Fixed |
+| 4   | Interface Mismatch   | High     | 1 file  | ✅ Fixed |
 
 ### Lỗi Cần Sửa (1 nhóm)
-| # | Loại Lỗi | Severity | Files | Priority |
-|---|-----------|----------|-------|----------|
-| 5 | Architecture Violation | **CRITICAL** | 3 files | 🔴 High |
+
+| #   | Loại Lỗi               | Severity     | Files   | Priority |
+| --- | ---------------------- | ------------ | ------- | -------- |
+| 5   | Architecture Violation | **CRITICAL** | 3 files | 🔴 High  |
 
 ---
 
 ## 🎯 Khuyến Nghị
 
 ### 1. Sửa Lỗi #5 Ngay Lập Tức
+
 **Impact**: Data loss, runtime errors, architecture debt
 
 **Action Items**:
+
 - [ ] Update `IHistoryRepository.ts` import
 - [ ] Update `FileHistoryRepository.ts` import
 - [ ] Update `InMemoryHistoryRepository.ts` import
@@ -338,6 +363,7 @@ source/infrastructure/history/InMemoryHistoryRepository.ts
 - [ ] Check if any code breaks (unlikely vì domain model is superset)
 
 ### 2. Thêm Linting Rules
+
 Để prevent tương lai:
 
 ```typescript
@@ -353,6 +379,7 @@ rules: {
 ```
 
 ### 3. Architecture Review Checklist
+
 Cho future PRs:
 
 - [ ] Domain layer chỉ depend vào domain types
@@ -366,7 +393,9 @@ Cho future PRs:
 ## 💡 Lessons Learned
 
 ### 1. Return Type Design
+
 **Bad**: Return boolean nhưng caller cần object
+
 ```typescript
 async init(): Promise<boolean> {
   // Caller phải access global state để lấy object
@@ -374,6 +403,7 @@ async init(): Promise<boolean> {
 ```
 
 **Good**: Return object trực tiếp
+
 ```typescript
 async init(): Promise<Client | null> {
   // Caller nhận được object ngay
@@ -381,26 +411,32 @@ async init(): Promise<Client | null> {
 ```
 
 ### 2. Layer Separation
+
 **Bad**: Domain depend vào infrastructure interface
+
 ```typescript
 // domain/interfaces/IRepo.ts
-import { Type } from './IApiClient';  // ❌
+import {Type} from './IApiClient'; // ❌
 ```
 
 **Good**: Domain tự định nghĩa types
+
 ```typescript
 // domain/interfaces/IRepo.ts
-import { Type } from '../models/Type';  // ✅
+import {Type} from '../models/Type'; // ✅
 ```
 
 ### 3. Interface vs Domain Model
+
 **Interface** (API contract):
+
 - Minimal fields
 - No methods
 - No business logic
 - For data transfer
 
 **Domain Model** (Business logic):
+
 - Rich with methods
 - Validation logic
 - Factory methods
@@ -413,6 +449,7 @@ import { Type } from '../models/Type';  // ✅
 ## 📈 Code Quality Impact
 
 ### Before Fixes
+
 - ❌ Inconsistent logic (boolean vs object checks)
 - ❌ Type mismatches between layers
 - ❌ Architecture violations
@@ -420,6 +457,7 @@ import { Type } from '../models/Type';  // ✅
 - ❌ Runtime error risks
 
 ### After Fixes (4/5 done)
+
 - ✅ Clear, single-purpose returns
 - ✅ Type consistency (MessageRole)
 - ⚠️ Architecture still violated (Lỗi #5)
@@ -427,6 +465,7 @@ import { Type } from '../models/Type';  // ✅
 - ⚠️ Still need to fix critical issue
 
 ### After All Fixes (5/5)
+
 - ✅ Clean architecture maintained
 - ✅ Type safety enforced
 - ✅ No data loss

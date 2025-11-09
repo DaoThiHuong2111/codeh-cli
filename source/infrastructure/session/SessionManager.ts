@@ -1,11 +1,11 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { homedir } from 'os';
+import {homedir} from 'os';
 import type {
 	ISessionManager,
 	SessionInfo,
 } from '../../core/domain/interfaces/ISessionManager.js';
-import { Session } from '../../core/domain/valueObjects/Session.js';
+import {Session} from '../../core/domain/valueObjects/Session.js';
 
 export class FileSessionManager implements ISessionManager {
 	private sessionsDir: string;
@@ -16,7 +16,7 @@ export class FileSessionManager implements ISessionManager {
 
 	async init(): Promise<void> {
 		try {
-			await fs.mkdir(this.sessionsDir, { recursive: true });
+			await fs.mkdir(this.sessionsDir, {recursive: true});
 		} catch (error) {
 			// Directory might already exist
 		}
@@ -60,7 +60,7 @@ export class FileSessionManager implements ISessionManager {
 			const files = await fs.readdir(this.sessionsDir);
 
 			// Filter .json files
-			const sessionFiles = files.filter((f) => f.endsWith('.json'));
+			const sessionFiles = files.filter(f => f.endsWith('.json'));
 
 			// Get info for each
 			const infos: SessionInfo[] = [];

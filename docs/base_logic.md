@@ -10,11 +10,11 @@
 - **Output classification layer**: định dạng và hiển thị các loại output khác nhau
 - **API management layer**: hooks, logging, error handling
 
-### 2. Configuration System (Unified CODEH_* Variables Only)
+### 2. Configuration System (Unified CODEH\_\* Variables Only)
 
 #### **Configuration Priority**:
 
-1. **Environment Variables (HIGHEST PRIORITY)** - CODEH_* prefix only:
+1. **Environment Variables (HIGHEST PRIORITY)** - CODEH\_\* prefix only:
 
    ```bash
    CODEH_PROVIDER=anthropic                    # Required: anthropic, openai, ollama, generic
@@ -29,7 +29,7 @@
    - Path: `~/.codeh/configs.json`
    - Format: `{"provider": "...", "model": "...", "baseUrl": "...", "apiKey": "...", "maxTokens": 4096, "temperature": 0.7}`
 
-**Note**: Legacy variables (ANTHROPIC_*, OPENAI_*, OLLAMA_*) are NO LONGER supported. Use CODEH_* prefix only.
+**Note**: Legacy variables (ANTHROPIC*\*, OPENAI*\_, OLLAMA\_\_) are NO LONGER supported. Use CODEH\_\* prefix only.
 
 #### **Configuration Flow Logic**:
 

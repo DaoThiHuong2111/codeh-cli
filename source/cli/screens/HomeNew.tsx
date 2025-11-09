@@ -1,23 +1,23 @@
 import React from 'react';
-import { Box, Text, useInput } from 'ink';
-import { Container } from '../../core/di/Container.js';
-import { useHomeLogicNew } from '../hooks/useHomeLogicNew.js';
+import {Box, Text, useInput} from 'ink';
+import {Container} from '../../core/di/Container.js';
+import {useHomeLogicNew} from '../hooks/useHomeLogicNew.js';
 import InputBox from '../components/molecules/InputBox.js';
 import InfoSection from '../components/molecules/InfoSection.js';
 import TipsSection from '../components/molecules/TipsSection.js';
 import Logo from '../components/atoms/Logo.js';
-import { ConversationArea } from '../components/organisms/ConversationArea.js';
-import { SlashSuggestions } from '../components/organisms/SlashSuggestions.js';
-import { HelpOverlay } from '../components/organisms/HelpOverlay.js';
-import { Footer } from '../components/organisms/Footer.js';
-import { TodosDisplay } from '../components/organisms/TodosDisplay.js';
+import {ConversationArea} from '../components/organisms/ConversationArea.js';
+import {SlashSuggestions} from '../components/organisms/SlashSuggestions.js';
+import {HelpOverlay} from '../components/organisms/HelpOverlay.js';
+import {Footer} from '../components/organisms/Footer.js';
+import {TodosDisplay} from '../components/organisms/TodosDisplay.js';
 
 interface HomeNewProps {
 	container: Container;
 }
 
-export default function HomeNew({ container }: HomeNewProps) {
-	const { presenter, loading, error } = useHomeLogicNew(container);
+export default function HomeNew({container}: HomeNewProps) {
+	const {presenter, loading, error} = useHomeLogicNew(container);
 
 	// Global keyboard shortcuts
 	useInput((input, key) => {
@@ -82,9 +82,7 @@ export default function HomeNew({ container }: HomeNewProps) {
 					<Text color="red">Error: {error || 'Failed to initialize'}</Text>
 				</Box>
 				<Box marginTop={1}>
-					<Text dimColor>
-						Please check your configuration and try again.
-					</Text>
+					<Text dimColor>Please check your configuration and try again.</Text>
 				</Box>
 			</Box>
 		);
@@ -155,9 +153,8 @@ export default function HomeNew({ container }: HomeNewProps) {
 			{/* Help Hint */}
 			<Box marginTop={1}>
 				<Text dimColor>
-					Press <Text color="green">?</Text> for help | <Text color="green">
-						Ctrl+C
-					</Text> to exit
+					Press <Text color="green">?</Text> for help |{' '}
+					<Text color="green">Ctrl+C</Text> to exit
 				</Text>
 			</Box>
 		</Box>

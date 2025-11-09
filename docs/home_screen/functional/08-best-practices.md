@@ -9,18 +9,22 @@
 ### Để Có Câu Trả Lời Tốt Nhất
 
 **1. Cụ thể trong câu hỏi**
+
 - ✅ "How to center a div in CSS using flexbox?"
 - ❌ "CSS help"
 
 **2. Cung cấp context**
+
 - ✅ "I'm using React 18, how to use Suspense for data fetching?"
 - ❌ "How to use Suspense?"
 
 **3. Liệt kê requirements**
+
 - ✅ "Create a button that: 1) Changes color on hover, 2) Shows tooltip, 3) Disabled state"
 - ❌ "Make a button"
 
 **4. Đính kèm code nếu debug**
+
 ```
 "Why does this throw error?
 
@@ -29,6 +33,7 @@ items.map(x => x * 2);
 ```
 
 **5. Follow up để làm rõ**
+
 - Đừng ngại hỏi thêm
 - "Can you explain step 2 in more detail?"
 - "Show example with TypeScript"
@@ -47,6 +52,7 @@ items.map(x => x * 2);
 ### Báo Lỗi
 
 Cung cấp:
+
 - Screenshot màn hình
 - Error message đầy đủ
 - Steps to reproduce

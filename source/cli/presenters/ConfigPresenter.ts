@@ -3,10 +3,10 @@
  * Handles business logic for Config screen
  */
 
-import { ConfigLoader } from '../../infrastructure/config/ConfigLoader';
-import { Configuration } from '../../core/domain/models/Configuration';
-import { Provider } from '../../core/domain/valueObjects/Provider';
-import { ConfigViewModel } from './types';
+import {ConfigLoader} from '../../infrastructure/config/ConfigLoader';
+import {Configuration} from '../../core/domain/models/Configuration';
+import {Provider} from '../../core/domain/valueObjects/Provider';
+import {ConfigViewModel} from './types';
 
 export class ConfigPresenter {
 	private loader: ConfigLoader;
@@ -57,7 +57,7 @@ export class ConfigPresenter {
 		apiKey?: string;
 		baseUrl?: string;
 		maxTokens?: number;
-	}): Promise<{ success: boolean; error?: string }> {
+	}): Promise<{success: boolean; error?: string}> {
 		try {
 			const config = Configuration.create(data);
 
@@ -70,7 +70,7 @@ export class ConfigPresenter {
 
 			await this.loader.save(config);
 
-			return { success: true };
+			return {success: true};
 		} catch (error: any) {
 			return {
 				success: false,
@@ -106,10 +106,10 @@ export class ConfigPresenter {
 	 */
 	getProviders() {
 		return [
-			{ value: Provider.ANTHROPIC, label: 'Anthropic (Claude)' },
-			{ value: Provider.OPENAI, label: 'OpenAI (GPT)' },
-			{ value: Provider.OLLAMA, label: 'Ollama (Local)' },
-			{ value: Provider.GENERIC, label: 'Generic API' },
+			{value: Provider.ANTHROPIC, label: 'Anthropic (Claude)'},
+			{value: Provider.OPENAI, label: 'OpenAI (GPT)'},
+			{value: Provider.OLLAMA, label: 'Ollama (Local)'},
+			{value: Provider.GENERIC, label: 'Generic API'},
 		];
 	}
 }

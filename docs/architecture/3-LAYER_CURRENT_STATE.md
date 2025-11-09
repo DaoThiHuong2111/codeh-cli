@@ -12,11 +12,11 @@
 
 ### Overall Progress
 
-| Layer | Status | Completion | Notes |
-|-------|--------|------------|-------|
-| **CLI Layer** | ✅ Complete | 100% | Atomic Design implemented |
-| **Core Layer** | 🟡 Partial | 70% | Domain models done, use cases pending |
-| **Infrastructure Layer** | 🟡 Partial | 80% | APIs done, integrations skeleton |
+| Layer                    | Status      | Completion | Notes                                 |
+| ------------------------ | ----------- | ---------- | ------------------------------------- |
+| **CLI Layer**            | ✅ Complete | 100%       | Atomic Design implemented             |
+| **Core Layer**           | 🟡 Partial  | 70%        | Domain models done, use cases pending |
+| **Infrastructure Layer** | 🟡 Partial  | 80%        | APIs done, integrations skeleton      |
 
 ---
 
@@ -72,6 +72,7 @@ source/
 **Status**: ✅ **100% Complete**
 
 #### Components (Atomic Design)
+
 - **Atoms** (7 components):
   - Logo, ProgressBar, Spinner, Button, etc.
 
@@ -82,28 +83,33 @@ source/
   - ConversationArea, Footer, HelpOverlay, TodosDisplay, SlashSuggestions, etc.
 
 #### Presenters (MVP Pattern)
+
 - `HomePresenter.ts` - Original MVP home
 - `HomePresenterNew.ts` - Enhanced with all Phase 1 & 2 features
 - `ConfigPresenter.ts` - Configuration screen
 - `WelcomePresenter.ts` - Welcome screen
 
 #### Screens
+
 - `Home.tsx` - Original home
 - `HomeNew.tsx` - Enhanced home (v1.2.0)
 - `Config.tsx` - Configuration
 - `Welcome.tsx` - Welcome
 
 #### Hooks
+
 - `useCodehClient.ts` - Client initialization
 - `useHomeLogic.ts` - Original home logic
 - `useHomeLogicNew.ts` - Enhanced home logic
 - `usePresenter.ts` - MVP presenter hook
 
 **Dependencies**: ✅
+
 - React, Ink framework
 - Core layer interfaces
 
 **Responsibilities**: ✅
+
 - ✅ UI rendering
 - ✅ User input handling
 - ✅ Navigation
@@ -118,6 +124,7 @@ source/
 **Status**: 🟡 **70% Complete**
 
 #### Domain Models ✅
+
 - `Message.ts` - Chat message entity (86 lines)
 - `Todo.ts` - Task entity (93 lines)
 - `Turn.ts` - Request-response cycle
@@ -125,6 +132,7 @@ source/
 - `Command.ts` - Slash command model
 
 #### Domain Interfaces ✅
+
 - `IApiClient.ts` - API client contract
 - `IConfigRepository.ts` - Config persistence
 - `IHistoryRepository.ts` - History persistence
@@ -132,22 +140,27 @@ source/
 - `IToolExecutor.ts` - Tool execution
 
 #### Value Objects ✅
+
 - `Provider.ts` - API provider enum
 - `Command.ts` - Command definition
 
 #### Application Services ✅
+
 - `MarkdownService.ts` - Markdown parsing (267 lines)
 - `CodehClient.ts` - Main orchestrator (199 lines)
 - `CodehChat.ts` - Conversation manager
 
 #### Tools ✅
+
 - Base tool interface
 - Tool registry
 
 #### Use Cases ⚠️
+
 **Status**: Skeleton created, needs implementation
 
 **Planned**:
+
 - ProcessUserInput.ts
 - ExecuteTool.ts
 - ManageHistory.ts
@@ -156,10 +169,12 @@ source/
 - LoadSession.ts
 
 **Dependencies**: ✅
+
 - Pure TypeScript
 - Infrastructure interfaces (DI)
 
 **Responsibilities**: ✅
+
 - ✅ Business rules
 - ✅ Domain models
 - ✅ Application orchestration
@@ -173,6 +188,7 @@ source/
 **Status**: 🟡 **80% Complete**
 
 #### API Clients ✅
+
 - `AnthropicClient.ts` - Anthropic API (streaming ✅)
 - `OpenAIClient.ts` - OpenAI API (streaming ✅)
 - `OllamaClient.ts` - Ollama local (streaming ✅)
@@ -181,35 +197,43 @@ source/
 - `ApiClientFactory.ts` - Factory pattern
 
 #### Configuration ✅
+
 - `FileConfigRepository.ts` - File-based config
 - `EnvConfigRepository.ts` - Environment variables
 - `ConfigLoader.ts` - Priority-based loading
 
 #### History ✅
+
 - `FileHistoryRepository.ts` - File persistence
 - `InMemoryHistoryRepository.ts` - In-memory (testing)
 
 #### Session ✅
+
 - `FileSessionManager.ts` - Session persistence
 - `InMemorySessionManager.ts` - In-memory sessions
 
 #### File System ✅
+
 - `FileOperations.ts` - File I/O
 - `PathResolver.ts` - Path handling
 
 #### Process ✅
+
 - `ShellExecutor.ts` - Command execution
 - `CommandValidator.ts` - Security validation
 
 #### Integrations ⚠️
+
 **Status**: Skeleton created, needs full implementation
 
 **Created**:
+
 - ⚠️ `vscode/VSCodeExtension.ts` - VS Code protocol (skeleton)
 - ⚠️ `mcp/MCPClient.ts` - MCP client (skeleton)
 - ⚠️ `a2a/A2AServer.ts` - Agent-to-Agent server (skeleton)
 
 **Responsibilities**: ✅
+
 - ✅ HTTP/API communication
 - ✅ File system operations
 - ✅ Process execution
@@ -223,6 +247,7 @@ source/
 ## 📝 Recent Additions (2025-01-08)
 
 ### New Folders Created
+
 ```bash
 source/core/application/usecases/          # Use cases skeleton
 source/infrastructure/integrations/        # Integrations root
@@ -233,12 +258,14 @@ source/infrastructure/integrations/a2a/    # Agent-to-Agent
 ```
 
 ### New Files Created (4)
+
 1. `VSCodeExtension.ts` (44 lines) - VS Code protocol skeleton
 2. `MCPClient.ts` (64 lines) - MCP client skeleton
 3. `A2AServer.ts` (59 lines) - A2A server skeleton
 4. `integrations/index.ts` (13 lines) - Integrations exports
 
 ### Updated Files (1)
+
 1. `GenericClient.ts` - Implemented streaming support
 
 ---

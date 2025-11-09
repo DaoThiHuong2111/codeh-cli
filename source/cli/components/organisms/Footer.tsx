@@ -3,7 +3,7 @@
  * Enhanced status bar showing session stats and information
  */
 
-import { Box, Text } from 'ink';
+import {Box, Text} from 'ink';
 import React from 'react';
 
 export interface FooterProps {
@@ -41,12 +41,7 @@ export const Footer: React.FC<FooterProps> = ({
 	};
 
 	return (
-		<Box
-			borderStyle="single"
-			borderColor="gray"
-			paddingX={1}
-			marginTop={1}
-		>
+		<Box borderStyle="single" borderColor="gray" paddingX={1} marginTop={1}>
 			<Box gap={2}>
 				{/* Model */}
 				<Box>

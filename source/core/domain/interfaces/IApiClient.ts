@@ -4,80 +4,80 @@
  */
 
 export interface ApiRequest {
-  messages: Message[];
-  model?: string;
-  temperature?: number;
-  maxTokens?: number;
-  stream?: boolean;
-  tools?: Tool[];
-  systemPrompt?: string;
+	messages: Message[];
+	model?: string;
+	temperature?: number;
+	maxTokens?: number;
+	stream?: boolean;
+	tools?: Tool[];
+	systemPrompt?: string;
 }
 
 export interface ApiResponse {
-  content: string;
-  model: string;
-  usage?: {
-    promptTokens: number;
-    completionTokens: number;
-    totalTokens: number;
-  };
-  finishReason?: 'stop' | 'length' | 'tool_calls' | 'error';
-  toolCalls?: ToolCall[];
+	content: string;
+	model: string;
+	usage?: {
+		promptTokens: number;
+		completionTokens: number;
+		totalTokens: number;
+	};
+	finishReason?: 'stop' | 'length' | 'tool_calls' | 'error';
+	toolCalls?: ToolCall[];
 }
 
 export interface Message {
-  role: 'user' | 'assistant' | 'system' | 'error';
-  content: string;
-  toolCalls?: ToolCall[];
+	role: 'user' | 'assistant' | 'system' | 'error';
+	content: string;
+	toolCalls?: ToolCall[];
 }
 
 export interface Tool {
-  name: string;
-  description: string;
-  parameters: Record<string, any>;
+	name: string;
+	description: string;
+	parameters: Record<string, any>;
 }
 
 export interface ToolCall {
-  id: string;
-  name: string;
-  arguments: Record<string, any>;
+	id: string;
+	name: string;
+	arguments: Record<string, any>;
 }
 
 export interface StreamChunk {
-  content?: string;
-  done: boolean;
-  usage?: ApiResponse['usage'];
+	content?: string;
+	done: boolean;
+	usage?: ApiResponse['usage'];
 }
 
 /**
  * Main API Client interface
  */
 export interface IApiClient {
-  /**
-   * Send a request to the AI API
-   */
-  chat(request: ApiRequest): Promise<ApiResponse>;
+	/**
+	 * Send a request to the AI API
+	 */
+	chat(request: ApiRequest): Promise<ApiResponse>;
 
-  /**
-   * Stream responses from the AI API
-   */
-  streamChat(
-    request: ApiRequest,
-    onChunk: (chunk: StreamChunk) => void
-  ): Promise<ApiResponse>;
+	/**
+	 * Stream responses from the AI API
+	 */
+	streamChat(
+		request: ApiRequest,
+		onChunk: (chunk: StreamChunk) => void,
+	): Promise<ApiResponse>;
 
-  /**
-   * Check if the API is available
-   */
-  healthCheck(): Promise<boolean>;
+	/**
+	 * Check if the API is available
+	 */
+	healthCheck(): Promise<boolean>;
 
-  /**
-   * Get provider name
-   */
-  getProviderName(): string;
+	/**
+	 * Get provider name
+	 */
+	getProviderName(): string;
 
-  /**
-   * Get available models
-   */
-  getAvailableModels(): Promise<string[]>;
+	/**
+	 * Get available models
+	 */
+	getAvailableModels(): Promise<string[]>;
 }

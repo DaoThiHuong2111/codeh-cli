@@ -6,6 +6,6 @@ Note: các chức năng được liệt kê bên dưới sẽ được sắp x�
 
 1. Kiểm tra phiên bản cập nhật
    - thực hiện call api checkVersion với các endpoint sau https://
-   .mockapi.io/api/v1/upgrade
+     .mockapi.io/api/v1/upgrade
    -
 2. ## Kiểm tra phiên bản cập nhật

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Text, useInput } from 'ink';
+import React, {useState, useEffect} from 'react';
+import {Box, Text, useInput} from 'ink';
 
 interface InputBoxProps {
 	value?: string;
@@ -61,7 +61,7 @@ export default function InputBox({
 				onChange?.(newInput);
 			}
 		},
-		{ isActive: enabled && isFocused },
+		{isActive: enabled && isFocused},
 	);
 
 	const displayText = input || placeholder;
@@ -113,7 +113,11 @@ export default function InputBox({
 					{charPercentage > 80 && (
 						<Text color={counterColor}>
 							{' '}
-							({charPercentage > 95 ? '⚠️ Limit reached!' : '⚠️ Approaching limit'})
+							(
+							{charPercentage > 95
+								? '⚠️ Limit reached!'
+								: '⚠️ Approaching limit'}
+							)
 						</Text>
 					)}
 				</Box>

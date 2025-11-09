@@ -43,15 +43,15 @@ class HomePresenter {
 
 ```typescript
 interface ViewState {
-  input: string
-  inputError: string
-  messages: Message[]
-  isLoading: boolean
-  todos: Todo[]
-  hasSuggestions: boolean
-  filteredSuggestions: Command[]
-  selectedSuggestionIndex: number
-  showHelp: boolean
+	input: string;
+	inputError: string;
+	messages: Message[];
+	isLoading: boolean;
+	todos: Todo[];
+	hasSuggestions: boolean;
+	filteredSuggestions: Command[];
+	selectedSuggestionIndex: number;
+	showHelp: boolean;
 }
 ```
 
@@ -61,19 +61,19 @@ interface ViewState {
 
 ```typescript
 interface Message {
-  id: string
-  role: 'user' | 'assistant' | 'system' | 'error'
-  content: string
-  timestamp: Date
-  metadata?: {
-    model?: string
-    usage?: {
-      promptTokens: number
-      completionTokens: number
-      totalTokens: number
-    }
-    toolCalls?: ToolCall[]
-  }
+	id: string;
+	role: 'user' | 'assistant' | 'system' | 'error';
+	content: string;
+	timestamp: Date;
+	metadata?: {
+		model?: string;
+		usage?: {
+			promptTokens: number;
+			completionTokens: number;
+			totalTokens: number;
+		};
+		toolCalls?: ToolCall[];
+	};
 }
 ```
 
@@ -83,9 +83,9 @@ interface Message {
 
 ```typescript
 interface Todo {
-  content: string              // "Fix bug in authentication"
-  status: 'pending' | 'in_progress' | 'completed'
-  activeForm: string           // "Fixing bug in authentication"
+	content: string; // "Fix bug in authentication"
+	status: 'pending' | 'in_progress' | 'completed';
+	activeForm: string; // "Fixing bug in authentication"
 }
 ```
 
@@ -95,10 +95,10 @@ interface Todo {
 
 ```typescript
 interface Command {
-  cmd: string                  // "/help"
-  desc: string                 // "Show help documentation"
-  category: CommandCategory    // CONVERSATION | CONFIGURATION | ...
-  aliases?: string[]           // ["/h", "/?"]
+	cmd: string; // "/help"
+	desc: string; // "Show help documentation"
+	category: CommandCategory; // CONVERSATION | CONFIGURATION | ...
+	aliases?: string[]; // ["/h", "/?"]
 }
 ```
 

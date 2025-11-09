@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Text } from 'ink';
+import {Box, Text} from 'ink';
 
 interface InfoSectionProps {
 	version?: string;
@@ -7,7 +7,11 @@ interface InfoSectionProps {
 	directory?: string;
 }
 
-export default function InfoSection({ version, model, directory }: InfoSectionProps) {
+export default function InfoSection({
+	version,
+	model,
+	directory,
+}: InfoSectionProps) {
 	return (
 		<Box flexDirection="column" marginTop={1} paddingLeft={2}>
 			{version && (

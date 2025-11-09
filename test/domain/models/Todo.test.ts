@@ -3,11 +3,11 @@
  */
 
 import test from 'ava';
-import { Todo } from '../../../source/core/domain/models/Todo.js';
+import {Todo} from '../../../source/core/domain/models/Todo.js';
 
 // === Factory Methods Tests ===
 
-test('Todo.create() creates todo with default pending status', (t) => {
+test('Todo.create() creates todo with default pending status', t => {
 	const todo = Todo.create('Write tests');
 
 	t.is(todo.content, 'Write tests');
@@ -16,27 +16,27 @@ test('Todo.create() creates todo with default pending status', (t) => {
 	t.truthy(todo.timestamp);
 });
 
-test('Todo.create() can specify initial status', (t) => {
-	const todo = Todo.create('In progress task', { status: 'in_progress' });
+test('Todo.create() can specify initial status', t => {
+	const todo = Todo.create('In progress task', {status: 'in_progress'});
 
 	t.is(todo.status, 'in_progress');
 });
 
-test('Todo.pending() creates pending todo', (t) => {
+test('Todo.pending() creates pending todo', t => {
 	const todo = Todo.pending('Pending task');
 
 	t.is(todo.status, 'pending');
 	t.is(todo.content, 'Pending task');
 });
 
-test('Todo.inProgress() creates in_progress todo', (t) => {
+test('Todo.inProgress() creates in_progress todo', t => {
 	const todo = Todo.inProgress('Active task');
 
 	t.is(todo.status, 'in_progress');
 	t.is(todo.content, 'Active task');
 });
 
-test('Todo.completed() creates completed todo', (t) => {
+test('Todo.completed() creates completed todo', t => {
 	const todo = Todo.completed('Done task');
 
 	t.is(todo.status, 'completed');
@@ -45,7 +45,7 @@ test('Todo.completed() creates completed todo', (t) => {
 
 // === ID Generation Tests ===
 
-test('Todo IDs are unique', (t) => {
+test('Todo IDs are unique', t => {
 	const todo1 = Todo.create('Task 1');
 	const todo2 = Todo.create('Task 2');
 
@@ -56,7 +56,7 @@ test('Todo IDs are unique', (t) => {
 
 // === Status Checker Methods Tests ===
 
-test('isPending() returns true for pending todos', (t) => {
+test('isPending() returns true for pending todos', t => {
 	const todo = Todo.pending('Task');
 
 	t.true(todo.isPending());
@@ -64,7 +64,7 @@ test('isPending() returns true for pending todos', (t) => {
 	t.false(todo.isCompleted());
 });
 
-test('isInProgress() returns true for in_progress todos', (t) => {
+test('isInProgress() returns true for in_progress todos', t => {
 	const todo = Todo.inProgress('Task');
 
 	t.true(todo.isInProgress());
@@ -72,7 +72,7 @@ test('isInProgress() returns true for in_progress todos', (t) => {
 	t.false(todo.isCompleted());
 });
 
-test('isCompleted() returns true for completed todos', (t) => {
+test('isCompleted() returns true for completed todos', t => {
 	const todo = Todo.completed('Task');
 
 	t.true(todo.isCompleted());
@@ -82,7 +82,7 @@ test('isCompleted() returns true for completed todos', (t) => {
 
 // === Immutability Tests ===
 
-test('withStatus() creates new todo with updated status', (t) => {
+test('withStatus() creates new todo with updated status', t => {
 	const todo = Todo.pending('Task');
 	const updated = todo.withStatus('in_progress');
 
@@ -96,7 +96,7 @@ test('withStatus() creates new todo with updated status', (t) => {
 	t.is(updated.timestamp, todo.timestamp);
 });
 
-test('complete() creates new todo with completed status', (t) => {
+test('complete() creates new todo with completed status', t => {
 	const todo = Todo.pending('Task');
 	const completed = todo.complete();
 
@@ -105,7 +105,7 @@ test('complete() creates new todo with completed status', (t) => {
 	t.is(completed.id, todo.id);
 });
 
-test('start() creates new todo with in_progress status', (t) => {
+test('start() creates new todo with in_progress status', t => {
 	const todo = Todo.pending('Task');
 	const started = todo.start();
 
@@ -116,22 +116,22 @@ test('start() creates new todo with in_progress status', (t) => {
 
 // === Metadata Tests ===
 
-test('Todo.create() can include metadata', (t) => {
-	const metadata = { priority: 'high', tags: ['urgent'] };
-	const todo = Todo.create('Important task', { metadata });
+test('Todo.create() can include metadata', t => {
+	const metadata = {priority: 'high', tags: ['urgent']};
+	const todo = Todo.create('Important task', {metadata});
 
 	t.deepEqual(todo.metadata, metadata);
 });
 
-test('Todo without metadata has undefined metadata', (t) => {
+test('Todo without metadata has undefined metadata', t => {
 	const todo = Todo.create('Task');
 
 	t.is(todo.metadata, undefined);
 });
 
-test('withStatus() preserves metadata', (t) => {
-	const metadata = { key: 'value' };
-	const todo = Todo.create('Task', { metadata });
+test('withStatus() preserves metadata', t => {
+	const metadata = {key: 'value'};
+	const todo = Todo.create('Task', {metadata});
 	const updated = todo.withStatus('completed');
 
 	t.deepEqual(updated.metadata, metadata);
@@ -139,7 +139,7 @@ test('withStatus() preserves metadata', (t) => {
 
 // === Timestamp Tests ===
 
-test('Todo timestamp is set to current time', (t) => {
+test('Todo timestamp is set to current time', t => {
 	const before = new Date();
 	const todo = Todo.create('Task');
 	const after = new Date();
@@ -150,7 +150,7 @@ test('Todo timestamp is set to current time', (t) => {
 
 // === toJSON Tests ===
 
-test('toJSON() returns serializable object', (t) => {
+test('toJSON() returns serializable object', t => {
 	const todo = Todo.create('Task');
 	const json = todo.toJSON();
 
@@ -161,9 +161,9 @@ test('toJSON() returns serializable object', (t) => {
 	t.is(json.timestamp, todo.timestamp.toISOString());
 });
 
-test('toJSON() includes metadata if present', (t) => {
-	const metadata = { key: 'value' };
-	const todo = Todo.create('Task', { metadata });
+test('toJSON() includes metadata if present', t => {
+	const metadata = {key: 'value'};
+	const todo = Todo.create('Task', {metadata});
 	const json = todo.toJSON();
 
 	t.deepEqual(json.metadata, metadata);
@@ -171,7 +171,7 @@ test('toJSON() includes metadata if present', (t) => {
 
 // === Status Transitions Tests ===
 
-test('Can transition from pending to in_progress to completed', (t) => {
+test('Can transition from pending to in_progress to completed', t => {
 	const todo = Todo.pending('Task');
 	const started = todo.start();
 	const completed = started.complete();
@@ -185,7 +185,7 @@ test('Can transition from pending to in_progress to completed', (t) => {
 	t.is(completed.id, todo.id);
 });
 
-test('Can complete a todo directly from pending', (t) => {
+test('Can complete a todo directly from pending', t => {
 	const todo = Todo.pending('Quick task');
 	const completed = todo.complete();
 

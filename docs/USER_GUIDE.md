@@ -74,6 +74,7 @@ Responses are streamed in real-time as the AI generates them:
 Enhanced input field with smart features:
 
 #### Character Counter
+
 - Shows `0/4000 characters` below input
 - **Gray**: Normal usage (< 80%)
 - **Yellow**: Approaching limit (80-95%) with ⚠️ warning
@@ -81,6 +82,7 @@ Enhanced input field with smart features:
 - Blocks input beyond 4000 characters
 
 #### Input Validation
+
 - Empty messages are rejected
 - Whitespace-only messages are rejected
 - Clear error messages displayed
@@ -89,14 +91,14 @@ Enhanced input field with smart features:
 
 Real-time statistics bar at the bottom:
 
-| Stat | Description | Example |
-|------|-------------|---------|
-| **Model** | Current AI model | claude-3-5-sonnet |
-| **Messages** | Total messages in session | 12 |
-| **Tokens** | Total tokens used | 1.5K |
-| **Cost** | Estimated cost | $0.008 |
-| **Duration** | Session time (MM:SS) | 05:32 |
-| **Branch** | Git branch (if in repo) | feature/new-ui |
+| Stat         | Description               | Example           |
+| ------------ | ------------------------- | ----------------- |
+| **Model**    | Current AI model          | claude-3-5-sonnet |
+| **Messages** | Total messages in session | 12                |
+| **Tokens**   | Total tokens used         | 1.5K              |
+| **Cost**     | Estimated cost            | $0.008            |
+| **Duration** | Session time (MM:SS)      | 05:32             |
+| **Branch**   | Git branch (if in repo)   | feature/new-ui    |
 
 ---
 
@@ -104,14 +106,14 @@ Real-time statistics bar at the bottom:
 
 ### Global Shortcuts
 
-| Key | Action | Description |
-|-----|--------|-------------|
-| **?** | Toggle Help | Show/hide help overlay |
-| **Esc** | Clear/Close | Clear input or close overlay |
-| **↑** | Previous Input | Navigate to previous message in history |
-| **↓** | Next Input | Navigate to next message in history |
-| **Enter** | Submit | Send message to AI |
-| **Tab** | Select Suggestion | Select slash command suggestion |
+| Key       | Action            | Description                             |
+| --------- | ----------------- | --------------------------------------- |
+| **?**     | Toggle Help       | Show/hide help overlay                  |
+| **Esc**   | Clear/Close       | Clear input or close overlay            |
+| **↑**     | Previous Input    | Navigate to previous message in history |
+| **↓**     | Next Input        | Navigate to next message in history     |
+| **Enter** | Submit            | Send message to AI                      |
+| **Tab**   | Select Suggestion | Select slash command suggestion         |
 
 ### Input History
 
@@ -123,6 +125,7 @@ Navigate through your last 50 inputs:
 4. Automatically saves all submitted messages
 
 **Example**:
+
 ```
 > Hello           (Submit)
 > How are you?    (Submit)
@@ -142,6 +145,7 @@ Start typing `/` to see available commands:
 ### Core Commands
 
 #### `/help`
+
 Show comprehensive help overlay
 
 ```
@@ -149,6 +153,7 @@ Show comprehensive help overlay
 ```
 
 #### `/clear`
+
 Clear conversation history
 
 ```
@@ -156,6 +161,7 @@ Clear conversation history
 ```
 
 #### `/model [name]`
+
 Switch AI model
 
 ```
@@ -164,6 +170,7 @@ Switch AI model
 ```
 
 #### `/session`
+
 Manage sessions (new, save, load)
 
 ```
@@ -188,19 +195,23 @@ Manage sessions (new, save, load)
 Assistant responses support rich markdown:
 
 #### Headings
+
 ```markdown
 # Heading 1
+
 ## Heading 2
+
 ### Heading 3
 ```
 
 **Rendered**: Color-coded headings (cyan, yellow, etc.)
 
 #### Code Blocks
+
 ````markdown
 ```javascript
 const hello = () => {
-  console.log("Hello, World!");
+	console.log('Hello, World!');
 };
 ```
 ````
@@ -208,6 +219,7 @@ const hello = () => {
 **Rendered**: Bordered code block with language label
 
 #### Lists
+
 ```markdown
 - Item 1
 - Item 2
@@ -218,18 +230,21 @@ const hello = () => {
 **Rendered**: Bulleted list with proper indentation
 
 #### Inline Formatting
+
 ```markdown
 **bold text**
-*italic text*
+_italic text_
 `inline code`
 ```
 
 **Rendered**:
+
 - **bold** (bright)
-- *italic* (dimmed)
+- _italic_ (dimmed)
 - `code` (gray background)
 
 #### Blockquotes
+
 ```markdown
 > Important note
 > Continues here
@@ -242,6 +257,7 @@ const hello = () => {
 Visual task list that can be populated by AI or manually:
 
 #### Display
+
 - **📋 Tasks** header with completion count
 - **Progress bar** showing % complete
 - **Grouped by status**:
@@ -250,11 +266,13 @@ Visual task list that can be populated by AI or manually:
   - ✓ Completed (green dimmed, shown last)
 
 #### Status Indicators
+
 - **○** Pending (gray circle)
 - **◐** In Progress (yellow half-circle)
 - **●** Completed (green filled circle)
 
 **Example**:
+
 ```
 ┌─ 📋 Tasks (2/4 completed) ───────┐
 │ ████████████░░░░░░░░░░░░ 50%    │
@@ -287,11 +305,13 @@ Press **?** to see full help:
 ### 1. Efficient Messaging
 
 ✅ **DO**:
+
 ```
 > Explain async/await in JavaScript with examples
 ```
 
 ❌ **DON'T**:
+
 ```
 > Can you help me?
 > I need to understand something
@@ -302,6 +322,7 @@ Press **?** to see full help:
 ### 2. Use Slash Commands
 
 Quick actions save time:
+
 ```
 > /clear              # Clear history
 > /model opus         # Switch to better model
@@ -311,6 +332,7 @@ Quick actions save time:
 ### 3. Leverage Input History
 
 Don't retype similar queries:
+
 1. Press **↑** to find previous similar query
 2. Edit it slightly
 3. Submit modified version
@@ -318,6 +340,7 @@ Don't retype similar queries:
 ### 4. Watch Token Usage
 
 Monitor footer stats to manage API costs:
+
 - **Tokens**: Track usage in real-time
 - **Cost**: See estimated cost
 - **Messages**: Know when to start new session
@@ -325,11 +348,13 @@ Monitor footer stats to manage API costs:
 ### 5. Markdown for Clarity
 
 Ask AI to use markdown:
+
 ```
 > Explain X with code examples (use markdown)
 ```
 
 You'll get nicely formatted responses with:
+
 - Syntax highlighted code blocks
 - Organized lists
 - Clear headings
@@ -337,6 +362,7 @@ You'll get nicely formatted responses with:
 ### 6. Character Limit Awareness
 
 Watch the character counter:
+
 - **Gray**: Keep typing
 - **Yellow**: Consider shortening or splitting
 - **Red**: Must shorten (hard limit 4000)
@@ -346,6 +372,7 @@ Watch the character counter:
 ### 7. Use Todos for Complex Tasks
 
 For multi-step tasks, ask AI to create todos:
+
 ```
 > Create a plan to implement feature X as a todo list
 ```
@@ -361,6 +388,7 @@ Track progress visually with the todos display.
 **Symptoms**: Message sent but no response
 
 **Solutions**:
+
 1. Check API key is set: `echo $ANTHROPIC_API_KEY`
 2. Verify internet connection
 3. Check error messages in conversation
@@ -371,6 +399,7 @@ Track progress visually with the todos display.
 **Symptoms**: AI takes long to respond
 
 **Solutions**:
+
 1. Check network speed
 2. Try smaller model: `/model sonnet`
 3. Shorter, more focused queries
@@ -381,6 +410,7 @@ Track progress visually with the todos display.
 **Symptoms**: Red warning, can't type more
 
 **Solutions**:
+
 1. Shorten message
 2. Split into multiple messages
 3. Remove unnecessary details
@@ -391,6 +421,7 @@ Track progress visually with the todos display.
 **Symptoms**: ↑↓ doesn't navigate history
 
 **Solutions**:
+
 1. Make sure you're not in slash command mode (`/...`)
 2. Make sure help overlay is not open
 3. Submit at least one message first
@@ -401,6 +432,7 @@ Track progress visually with the todos display.
 **Symptoms**: Seeing raw markdown instead of formatted
 
 **Solutions**:
+
 1. Only assistant messages render markdown
 2. User messages show literal text
 3. Check markdown syntax is correct
@@ -411,6 +443,7 @@ Track progress visually with the todos display.
 **Symptoms**: No todos display
 
 **Solutions**:
+
 1. Todos only show when list is non-empty
 2. Ask AI to create tasks
 3. Or use presenter methods (advanced)
@@ -420,6 +453,7 @@ Track progress visually with the todos display.
 **Symptoms**: Incorrect token/cost counts
 
 **Solutions**:
+
 1. Stats reset on new session
 2. Cost is estimated ($0.005 per 1K tokens average)
 3. Tokens track cumulative for session
@@ -449,7 +483,7 @@ Track progress visually with the todos display.
 
 ### Example 1: Code Review
 
-```
+````
 > Review this code and suggest improvements:
 
 ```typescript
@@ -462,7 +496,8 @@ function processData(data) {
   }
   return result
 }
-```
+````
+
 ```
 
 **AI Response**: Markdown-formatted review with code examples
@@ -470,7 +505,9 @@ function processData(data) {
 ### Example 2: Step-by-Step Tutorial
 
 ```
+
 > Teach me React hooks with examples, step by step
+
 ```
 
 **AI Response**: Multi-part tutorial with:
@@ -482,8 +519,10 @@ function processData(data) {
 ### Example 3: Complex Task Planning
 
 ```
+
 > Create a detailed plan to build a todo app with React and TypeScript.
 > Include it as a checklist I can track.
+
 ```
 
 **AI Response**: Checklist that populates the todos display
@@ -514,3 +553,4 @@ function processData(data) {
 ---
 
 **Made with ❤️ by the CODEH team**
+```

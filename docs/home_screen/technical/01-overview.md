@@ -7,9 +7,11 @@
 ## 🎯 Tổng Quan
 
 ### Mục đích
+
 Màn hình **Home** là màn hình chính của ứng dụng CODEH CLI, nơi người dùng tương tác với AI assistant thông qua giao diện command-line interface.
 
 ### Đặc điểm chính
+
 - ✅ **Pure UI Component**: Không chứa business logic
 - ✅ **MVP Pattern**: Logic xử lý qua `HomePresenter`
 - ✅ **Dependency Injection**: Presenter inject qua DI Container
@@ -17,6 +19,7 @@ Màn hình **Home** là màn hình chính của ứng dụng CODEH CLI, nơi ng�
 - ✅ **Responsive**: Adaptive layout dựa trên state
 
 ### File chính
+
 ```
 source/cli/screens/Home.js              # UI Component
 source/cli/presenters/HomePresenter.js  # Business Logic

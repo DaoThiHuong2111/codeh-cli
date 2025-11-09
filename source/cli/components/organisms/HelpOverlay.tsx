@@ -3,14 +3,14 @@
  * Shows keyboard shortcuts and available commands
  */
 
-import { Box, Text } from 'ink';
+import {Box, Text} from 'ink';
 import React from 'react';
 
 export interface HelpOverlayProps {
 	onClose: () => void;
 }
 
-export const HelpOverlay: React.FC<HelpOverlayProps> = ({ onClose }) => {
+export const HelpOverlay: React.FC<HelpOverlayProps> = ({onClose}) => {
 	return (
 		<Box
 			flexDirection="column"

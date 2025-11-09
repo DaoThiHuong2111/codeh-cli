@@ -1,9 +1,6 @@
-import {
-	Command,
-	CommandCategory,
-} from '../../domain/valueObjects/Command.js';
-import type { ICommandRegistry } from '../../domain/interfaces/ICommandRegistry.js';
-import { Message } from '../../domain/models/Message.js';
+import {Command, CommandCategory} from '../../domain/valueObjects/Command.js';
+import type {ICommandRegistry} from '../../domain/interfaces/ICommandRegistry.js';
+import {Message} from '../../domain/models/Message.js';
 
 export class CommandService implements ICommandRegistry {
 	private commands: Map<string, Command> = new Map();
@@ -52,7 +49,7 @@ export class CommandService implements ICommandRegistry {
 			return this.getAll();
 		}
 
-		return this.getAll().filter((cmd) => cmd.matches('/' + normalized));
+		return this.getAll().filter(cmd => cmd.matches('/' + normalized));
 	}
 
 	/**
@@ -66,7 +63,7 @@ export class CommandService implements ICommandRegistry {
 	 * Get commands by category
 	 */
 	getByCategory(category: string): Command[] {
-		return this.getAll().filter((cmd) => cmd.category === category);
+		return this.getAll().filter(cmd => cmd.category === category);
 	}
 
 	/**

@@ -7,6 +7,7 @@
 ## 📋 Mục Tiêu
 
 Implement và enhance tất cả UI components theo **Atomic Design** pattern:
+
 - **Atoms**: Logo (✅ đã có)
 - **Molecules**: InputBox, MessageBubble, TipsSection, InfoSection
 - **Organisms**: ConversationArea, SlashSuggestions, TodosDisplay, Footer, HelpOverlay
@@ -48,6 +49,7 @@ source/cli/components/
 **Location**: `source/cli/components/atoms/Logo.tsx`
 
 **Current Implementation**: ~30 lines
+
 ```typescript
 import { Text } from 'ink'
 import Gradient from 'ink-gradient'
@@ -71,14 +73,16 @@ export const Logo = () => (
 **Location**: `source/cli/components/atoms/Icon.tsx`
 
 **Props**:
+
 ```typescript
 interface IconProps {
-  type: 'pending' | 'in_progress' | 'completed' | 'error' | 'info' | 'warning'
-  color?: string
+	type: 'pending' | 'in_progress' | 'completed' | 'error' | 'info' | 'warning';
+	color?: string;
 }
 ```
 
 **Implementation**:
+
 ```typescript
 import { Text } from 'ink'
 import React from 'react'
@@ -121,13 +125,15 @@ export const Icon: React.FC<IconProps> = ({ type, color }) => (
 **Location**: `source/cli/components/atoms/Spinner.tsx`
 
 **Props**:
+
 ```typescript
 interface SpinnerProps {
-  type?: 'dots' | 'line' | 'pulse'
+	type?: 'dots' | 'line' | 'pulse';
 }
 ```
 
 **Implementation**:
+
 ```typescript
 import { Text } from 'ink'
 import Spinner from 'ink-spinner'
@@ -163,11 +169,13 @@ export const StreamingIndicator: React.FC = () => (
 **Location**: `source/cli/components/molecules/InputBox.tsx`
 
 **Current Features**:
+
 - Basic text input
 - Border decoration
 - Prefix "> "
 
 **New Features Cần Thêm**:
+
 1. Character counter (show when > 100 chars)
 2. Input validation error display
 3. Input history navigation (↑↓)
@@ -175,21 +183,23 @@ export const StreamingIndicator: React.FC = () => (
 5. Disable during loading
 
 **Enhanced Props**:
+
 ```typescript
 interface InputBoxProps {
-  value: string
-  onChange: (value: string) => void
-  onSubmit: (value: string) => void
-  error?: string
-  isDisabled?: boolean
-  showCharCount?: boolean
-  maxLength?: number
-  placeholder?: string
-  onHistoryNavigate?: (direction: 'up' | 'down') => void
+	value: string;
+	onChange: (value: string) => void;
+	onSubmit: (value: string) => void;
+	error?: string;
+	isDisabled?: boolean;
+	showCharCount?: boolean;
+	maxLength?: number;
+	placeholder?: string;
+	onHistoryNavigate?: (direction: 'up' | 'down') => void;
 }
 ```
 
 **Enhanced Implementation**:
+
 ```typescript
 import { Box, Text } from 'ink'
 import TextInput from 'ink-text-input'
@@ -265,6 +275,7 @@ export const InputBox: React.FC<InputBoxProps> = ({
 **Estimated Lines**: ~120 lines (enhance from 89)
 
 **Phase**:
+
 - Character counter: v1.2
 - Input history: v1.2
 - Basic enhancements: v1.1
@@ -278,29 +289,31 @@ export const InputBox: React.FC<InputBoxProps> = ({
 **Location**: `source/cli/components/molecules/MessageBubble.tsx`
 
 **Props**:
+
 ```typescript
 interface MessageBubbleProps {
-  message: Message
-  isStreaming?: boolean
+	message: Message;
+	isStreaming?: boolean;
 }
 
 interface Message {
-  id: string
-  role: 'user' | 'assistant' | 'error' | 'system'
-  content: string
-  timestamp: Date
-  metadata?: {
-    model?: string
-    usage?: {
-      promptTokens: number
-      completionTokens: number
-      totalTokens: number
-    }
-  }
+	id: string;
+	role: 'user' | 'assistant' | 'error' | 'system';
+	content: string;
+	timestamp: Date;
+	metadata?: {
+		model?: string;
+		usage?: {
+			promptTokens: number;
+			completionTokens: number;
+			totalTokens: number;
+		};
+	};
 }
 ```
 
 **Implementation**:
+
 ```typescript
 import { Box, Text } from 'ink'
 import React from 'react'
@@ -369,6 +382,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 ```
 
 **Phase 2 Enhancement** (v1.2 - Markdown):
+
 ```typescript
 import { renderMarkdown } from '../../utils/markdown'
 
@@ -380,6 +394,7 @@ import { renderMarkdown } from '../../utils/markdown'
 ```
 
 **Estimated Lines**:
+
 - Phase 1 (basic): ~80 lines
 - Phase 2 (markdown): ~120 lines
 
@@ -396,14 +411,15 @@ import { renderMarkdown } from '../../utils/markdown'
 **Current Implementation**: Working fine
 
 **Minor Enhancement**: Add more tips
+
 ```typescript
 const TIPS = [
-  'Type your question to start chatting',
-  'Use /help to see all available commands',
-  'Press ? to toggle help overlay',
-  'Use ↑↓ to navigate input history',
-  // Add more tips here
-]
+	'Type your question to start chatting',
+	'Use /help to see all available commands',
+	'Press ? to toggle help overlay',
+	'Use ↑↓ to navigate input history',
+	// Add more tips here
+];
 ```
 
 **Estimated Lines**: ~40 lines
@@ -421,12 +437,13 @@ const TIPS = [
 **Current Implementation**: Working fine (shows version, model, directory)
 
 **Minor Enhancement**: Add git branch info (Phase 2)
+
 ```typescript
 interface InfoSectionProps {
-  version: string
-  model: string
-  directory: string
-  gitBranch?: string  // NEW
+	version: string;
+	model: string;
+	directory: string;
+	gitBranch?: string; // NEW
 }
 ```
 
@@ -443,20 +460,22 @@ interface InfoSectionProps {
 **Location**: `source/cli/components/molecules/CommandMenuItem.tsx`
 
 **Props**:
+
 ```typescript
 interface CommandMenuItemProps {
-  command: Command
-  isSelected: boolean
+	command: Command;
+	isSelected: boolean;
 }
 
 interface Command {
-  cmd: string        // "/help"
-  desc: string       // "Show help documentation"
-  category: string   // "CONVERSATION"
+	cmd: string; // "/help"
+	desc: string; // "Show help documentation"
+	category: string; // "CONVERSATION"
 }
 ```
 
 **Implementation**:
+
 ```typescript
 import { Box, Text } from 'ink'
 import React from 'react'
@@ -495,15 +514,17 @@ export const CommandMenuItem: React.FC<CommandMenuItemProps> = ({
 **Location**: `source/cli/components/organisms/ConversationArea.tsx`
 
 **Props**:
+
 ```typescript
 interface ConversationAreaProps {
-  messages: Message[]
-  isLoading: boolean
-  streamingMessageId?: string
+	messages: Message[];
+	isLoading: boolean;
+	streamingMessageId?: string;
 }
 ```
 
 **Implementation**:
+
 ```typescript
 import { Box, Text } from 'ink'
 import React from 'react'
@@ -547,18 +568,20 @@ export const ConversationArea: React.FC<ConversationAreaProps> = ({
 ```
 
 **Phase 2 Enhancement** (v1.2 - Virtual Scrolling):
+
 ```typescript
 // For large conversations (> 40 messages)
-import { useVirtualScroll } from '../../hooks/useVirtualScroll'
+import {useVirtualScroll} from '../../hooks/useVirtualScroll';
 
 // Only render visible messages + buffer
-const { visibleMessages, scrollToBottom } = useVirtualScroll(messages, {
-  bufferSize: 5,
-  autoScroll: true
-})
+const {visibleMessages, scrollToBottom} = useVirtualScroll(messages, {
+	bufferSize: 5,
+	autoScroll: true,
+});
 ```
 
 **Estimated Lines**:
+
 - Phase 1: ~60 lines
 - Phase 2 (virtual scroll): ~100 lines
 
@@ -573,15 +596,17 @@ const { visibleMessages, scrollToBottom } = useVirtualScroll(messages, {
 **Location**: `source/cli/components/organisms/SlashSuggestions.tsx`
 
 **Props**:
+
 ```typescript
 interface SlashSuggestionsProps {
-  input: string
-  commands: Command[]
-  selectedIndex: number
+	input: string;
+	commands: Command[];
+	selectedIndex: number;
 }
 ```
 
 **Implementation**:
+
 ```typescript
 import { Box, Text } from 'ink'
 import React from 'react'
@@ -640,19 +665,21 @@ export const SlashSuggestions: React.FC<SlashSuggestionsProps> = ({
 **Location**: `source/cli/components/organisms/TodosDisplay.tsx`
 
 **Props**:
+
 ```typescript
 interface TodosDisplayProps {
-  todos: Todo[]
+	todos: Todo[];
 }
 
 interface Todo {
-  content: string
-  status: 'pending' | 'in_progress' | 'completed'
-  activeForm: string
+	content: string;
+	status: 'pending' | 'in_progress' | 'completed';
+	activeForm: string;
 }
 ```
 
 **Implementation**:
+
 ```typescript
 import { Box, Text } from 'ink'
 import React from 'react'
@@ -712,18 +739,20 @@ export const TodosDisplay: React.FC<TodosDisplayProps> = ({ todos }) => {
 **Location**: `source/cli/components/organisms/Footer.tsx`
 
 **Props**:
+
 ```typescript
 interface FooterProps {
-  model: string
-  messageCount: number
-  tokenCount?: number
-  estimatedCost?: number
-  sessionDuration?: number
-  gitBranch?: string
+	model: string;
+	messageCount: number;
+	tokenCount?: number;
+	estimatedCost?: number;
+	sessionDuration?: number;
+	gitBranch?: string;
 }
 ```
 
 **Implementation**:
+
 ```typescript
 import { Box, Text } from 'ink'
 import React from 'react'
@@ -802,13 +831,15 @@ export const Footer: React.FC<FooterProps> = ({
 **Location**: `source/cli/components/organisms/HelpOverlay.tsx`
 
 **Props**:
+
 ```typescript
 interface HelpOverlayProps {
-  onClose: () => void
+	onClose: () => void;
 }
 ```
 
 **Implementation**:
+
 ```typescript
 import { Box, Text } from 'ink'
 import React, { useEffect } from 'react'
@@ -882,31 +913,32 @@ export const HelpOverlay: React.FC<HelpOverlayProps> = ({ onClose }) => {
 
 ### Components to Create (Total: 8 new)
 
-| Component | Type | Lines | Phase | Priority |
-|-----------|------|-------|-------|----------|
-| Icon | Atom | ~30 | v1.2 | 🟡 |
-| Spinner | Atom | ~25 | v1.1 | 🔴 |
-| MessageBubble | Molecule | ~80 | v1.1 | 🔴 |
-| CommandMenuItem | Molecule | ~30 | v1.1 | 🔴 |
-| ConversationArea | Organism | ~60 | v1.1 | 🔴 |
-| SlashSuggestions | Organism | ~70 | v1.1 | 🔴 |
-| TodosDisplay | Organism | ~80 | v1.2 | 🟡 |
-| Footer | Organism | ~90 | v1.2 | 🟡 |
-| HelpOverlay | Organism | ~90 | v1.2 | 🟡 |
+| Component        | Type     | Lines | Phase | Priority |
+| ---------------- | -------- | ----- | ----- | -------- |
+| Icon             | Atom     | ~30   | v1.2  | 🟡       |
+| Spinner          | Atom     | ~25   | v1.1  | 🔴       |
+| MessageBubble    | Molecule | ~80   | v1.1  | 🔴       |
+| CommandMenuItem  | Molecule | ~30   | v1.1  | 🔴       |
+| ConversationArea | Organism | ~60   | v1.1  | 🔴       |
+| SlashSuggestions | Organism | ~70   | v1.1  | 🔴       |
+| TodosDisplay     | Organism | ~80   | v1.2  | 🟡       |
+| Footer           | Organism | ~90   | v1.2  | 🟡       |
+| HelpOverlay      | Organism | ~90   | v1.2  | 🟡       |
 
 ### Components to Enhance (Total: 2)
 
-| Component | Current Lines | New Lines | Changes |
-|-----------|---------------|-----------|---------|
-| InputBox | 89 | ~120 | +char counter, +history nav, +validation |
-| TipsSection | 32 | ~40 | +more tips |
-| InfoSection | 31 | ~40 | +git branch |
+| Component   | Current Lines | New Lines | Changes                                  |
+| ----------- | ------------- | --------- | ---------------------------------------- |
+| InputBox    | 89            | ~120      | +char counter, +history nav, +validation |
+| TipsSection | 32            | ~40       | +more tips                               |
+| InfoSection | 31            | ~40       | +git branch                              |
 
 ---
 
 ## 🎯 Implementation Order
 
 ### Phase 1 (v1.1) - Priority Order:
+
 1. **Spinner** (needed for streaming indicator)
 2. **MessageBubble** (core display component)
 3. **ConversationArea** (container for messages)
@@ -915,6 +947,7 @@ export const HelpOverlay: React.FC<HelpOverlayProps> = ({ onClose }) => {
 6. **InputBox** (enhance existing)
 
 ### Phase 2 (v1.2) - Priority Order:
+
 7. **Icon** (for todos)
 8. **TodosDisplay** (task tracking)
 9. **Footer** (stats display)
@@ -927,6 +960,7 @@ export const HelpOverlay: React.FC<HelpOverlayProps> = ({ onClose }) => {
 ## 📝 Testing Checklist
 
 ### For Each Component:
+
 - [ ] Props validation
 - [ ] Conditional rendering
 - [ ] Error states

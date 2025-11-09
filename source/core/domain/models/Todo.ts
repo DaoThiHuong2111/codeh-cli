@@ -31,15 +31,15 @@ export class Todo {
 	}
 
 	static pending(content: string): Todo {
-		return this.create(content, { status: 'pending' });
+		return this.create(content, {status: 'pending'});
 	}
 
 	static inProgress(content: string): Todo {
-		return this.create(content, { status: 'in_progress' });
+		return this.create(content, {status: 'in_progress'});
 	}
 
 	static completed(content: string): Todo {
-		return this.create(content, { status: 'completed' });
+		return this.create(content, {status: 'completed'});
 	}
 
 	private static generateId(): string {

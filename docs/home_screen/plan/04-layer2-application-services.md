@@ -36,6 +36,7 @@ source/core/application/
 **Current**: ~300 lines
 
 **New Features**:
+
 - Thêm `executeStream()` method cho streaming responses
 - Implement `IStreamHandler` interface
 
@@ -44,106 +45,108 @@ source/core/application/
 ### Enhanced Implementation
 
 **Add Streaming Method**:
+
 ```typescript
-import { IApiClient, IStreamHandler } from '@/core/domain/interfaces'
-import { StreamChunk, StreamOptions } from '@/core/domain/interfaces/IStreamHandler'
+import {IApiClient, IStreamHandler} from '@/core/domain/interfaces';
+import {
+	StreamChunk,
+	StreamOptions,
+} from '@/core/domain/interfaces/IStreamHandler';
 
 export class CodehClient implements IStreamHandler {
-  // Existing properties
-  private apiClient: IApiClient
-  private config: Config
-  private isStreamingActive: boolean = false
+	// Existing properties
+	private apiClient: IApiClient;
+	private config: Config;
+	private isStreamingActive: boolean = false;
 
-  // Existing methods...
+	// Existing methods...
 
-  /**
-   * Execute with streaming response
-   */
-  async *executeStream(
-    input: string,
-    options?: StreamOptions
-  ): AsyncGenerator<StreamChunk> {
-    this.isStreamingActive = true
+	/**
+	 * Execute with streaming response
+	 */
+	async *executeStream(
+		input: string,
+		options?: StreamOptions,
+	): AsyncGenerator<StreamChunk> {
+		this.isStreamingActive = true;
 
-    try {
-      // Validate input
-      if (!input.trim()) {
-        throw new Error('Input cannot be empty')
-      }
+		try {
+			// Validate input
+			if (!input.trim()) {
+				throw new Error('Input cannot be empty');
+			}
 
-      // Get streaming generator from API client
-      const stream = this.apiClient.executeStream(input)
+			// Get streaming generator from API client
+			const stream = this.apiClient.executeStream(input);
 
-      // Buffer for batching chunks
-      let buffer = ''
-      const bufferSize = options?.bufferSize || 10
-      const bufferDelay = options?.bufferDelay || 50
+			// Buffer for batching chunks
+			let buffer = '';
+			const bufferSize = options?.bufferSize || 10;
+			const bufferDelay = options?.bufferDelay || 50;
 
-      for await (const chunk of stream) {
-        if (!this.isStreamingActive) {
-          break
-        }
+			for await (const chunk of stream) {
+				if (!this.isStreamingActive) {
+					break;
+				}
 
-        buffer += chunk
+				buffer += chunk;
 
-        // Yield when buffer reaches size or after delay
-        if (buffer.length >= bufferSize) {
-          const chunkData: StreamChunk = {
-            type: 'content',
-            data: buffer
-          }
+				// Yield when buffer reaches size or after delay
+				if (buffer.length >= bufferSize) {
+					const chunkData: StreamChunk = {
+						type: 'content',
+						data: buffer,
+					};
 
-          yield chunkData
-          options?.onChunk?.(chunkData)
+					yield chunkData;
+					options?.onChunk?.(chunkData);
 
-          buffer = ''
-        }
-      }
+					buffer = '';
+				}
+			}
 
-      // Flush remaining buffer
-      if (buffer) {
-        const chunkData: StreamChunk = {
-          type: 'content',
-          data: buffer
-        }
-        yield chunkData
-        options?.onChunk?.(chunkData)
-      }
+			// Flush remaining buffer
+			if (buffer) {
+				const chunkData: StreamChunk = {
+					type: 'content',
+					data: buffer,
+				};
+				yield chunkData;
+				options?.onChunk?.(chunkData);
+			}
 
-      // Send done signal
-      const doneChunk: StreamChunk = {
-        type: 'done',
-        data: null
-      }
-      yield doneChunk
-      options?.onDone?.()
+			// Send done signal
+			const doneChunk: StreamChunk = {
+				type: 'done',
+				data: null,
+			};
+			yield doneChunk;
+			options?.onDone?.();
+		} catch (error) {
+			const errorChunk: StreamChunk = {
+				type: 'error',
+				data: error,
+			};
+			yield errorChunk;
+			options?.onError?.(error);
+		} finally {
+			this.isStreamingActive = false;
+		}
+	}
 
-    } catch (error) {
-      const errorChunk: StreamChunk = {
-        type: 'error',
-        data: error
-      }
-      yield errorChunk
-      options?.onError?.(error)
+	/**
+	 * Cancel ongoing stream
+	 */
+	cancel(): void {
+		this.isStreamingActive = false;
+	}
 
-    } finally {
-      this.isStreamingActive = false
-    }
-  }
-
-  /**
-   * Cancel ongoing stream
-   */
-  cancel(): void {
-    this.isStreamingActive = false
-  }
-
-  /**
-   * Check if currently streaming
-   */
-  isStreaming(): boolean {
-    return this.isStreamingActive
-  }
+	/**
+	 * Check if currently streaming
+	 */
+	isStreaming(): boolean {
+		return this.isStreamingActive;
+	}
 }
 ```
 
@@ -162,6 +165,7 @@ export class CodehClient implements IStreamHandler {
 **Current**: ~200 lines
 
 **Minor Enhancements**:
+
 - Add method để get conversation statistics
 - Add method để export conversation
 
@@ -171,82 +175,83 @@ export class CodehClient implements IStreamHandler {
 
 ```typescript
 export class CodehChat {
-  // Existing code...
+	// Existing code...
 
-  /**
-   * Get conversation statistics
-   */
-  getStatistics(): ConversationStats {
-    const messages = this.conversation.getMessages()
+	/**
+	 * Get conversation statistics
+	 */
+	getStatistics(): ConversationStats {
+		const messages = this.conversation.getMessages();
 
-    return {
-      messageCount: messages.length,
-      userMessageCount: messages.filter(m => m.role === 'user').length,
-      assistantMessageCount: messages.filter(m => m.role === 'assistant').length,
-      errorCount: messages.filter(m => m.role === 'error').length,
-      totalTokens: this.conversation.getMetadata().totalTokens,
-      estimatedCost: this.conversation.getMetadata().estimatedCost
-    }
-  }
+		return {
+			messageCount: messages.length,
+			userMessageCount: messages.filter(m => m.role === 'user').length,
+			assistantMessageCount: messages.filter(m => m.role === 'assistant')
+				.length,
+			errorCount: messages.filter(m => m.role === 'error').length,
+			totalTokens: this.conversation.getMetadata().totalTokens,
+			estimatedCost: this.conversation.getMetadata().estimatedCost,
+		};
+	}
 
-  /**
-   * Export conversation to different formats
-   */
-  exportConversation(format: 'json' | 'markdown' | 'text'): string {
-    const messages = this.conversation.getMessages()
+	/**
+	 * Export conversation to different formats
+	 */
+	exportConversation(format: 'json' | 'markdown' | 'text'): string {
+		const messages = this.conversation.getMessages();
 
-    switch (format) {
-      case 'json':
-        return JSON.stringify(this.conversation.toJSON(), null, 2)
+		switch (format) {
+			case 'json':
+				return JSON.stringify(this.conversation.toJSON(), null, 2);
 
-      case 'markdown':
-        return this.exportAsMarkdown(messages)
+			case 'markdown':
+				return this.exportAsMarkdown(messages);
 
-      case 'text':
-        return this.exportAsText(messages)
+			case 'text':
+				return this.exportAsText(messages);
 
-      default:
-        throw new Error(`Unsupported format: ${format}`)
-    }
-  }
+			default:
+				throw new Error(`Unsupported format: ${format}`);
+		}
+	}
 
-  private exportAsMarkdown(messages: Message[]): string {
-    let md = '# Conversation Export\n\n'
+	private exportAsMarkdown(messages: Message[]): string {
+		let md = '# Conversation Export\n\n';
 
-    for (const msg of messages) {
-      const role = msg.role.charAt(0).toUpperCase() + msg.role.slice(1)
-      const time = msg.timestamp.toLocaleString()
+		for (const msg of messages) {
+			const role = msg.role.charAt(0).toUpperCase() + msg.role.slice(1);
+			const time = msg.timestamp.toLocaleString();
 
-      md += `## ${role} (${time})\n\n`
-      md += `${msg.content}\n\n`
-      md += '---\n\n'
-    }
+			md += `## ${role} (${time})\n\n`;
+			md += `${msg.content}\n\n`;
+			md += '---\n\n';
+		}
 
-    return md
-  }
+		return md;
+	}
 
-  private exportAsText(messages: Message[]): string {
-    let text = 'Conversation Export\n\n'
+	private exportAsText(messages: Message[]): string {
+		let text = 'Conversation Export\n\n';
 
-    for (const msg of messages) {
-      const role = msg.role.toUpperCase()
-      const time = msg.timestamp.toLocaleString()
+		for (const msg of messages) {
+			const role = msg.role.toUpperCase();
+			const time = msg.timestamp.toLocaleString();
 
-      text += `[${time}] ${role}:\n`
-      text += `${msg.content}\n\n`
-    }
+			text += `[${time}] ${role}:\n`;
+			text += `${msg.content}\n\n`;
+		}
 
-    return text
-  }
+		return text;
+	}
 }
 
 interface ConversationStats {
-  messageCount: number
-  userMessageCount: number
-  assistantMessageCount: number
-  errorCount: number
-  totalTokens: number
-  estimatedCost: number
+	messageCount: number;
+	userMessageCount: number;
+	assistantMessageCount: number;
+	errorCount: number;
+	totalTokens: number;
+	estimatedCost: number;
 }
 ```
 
@@ -269,214 +274,224 @@ interface ConversationStats {
 ### Implementation
 
 ```typescript
-import { Command, CommandCategory } from '@/core/domain/valueObjects/Command'
-import { ICommandRegistry } from '@/core/domain/interfaces'
+import {Command, CommandCategory} from '@/core/domain/valueObjects/Command';
+import {ICommandRegistry} from '@/core/domain/interfaces';
 
 export class CommandService implements ICommandRegistry {
-  private commands: Map<string, Command> = new Map()
-  private aliases: Map<string, string> = new Map()
+	private commands: Map<string, Command> = new Map();
+	private aliases: Map<string, string> = new Map();
 
-  constructor() {
-    this.registerDefaultCommands()
-  }
+	constructor() {
+		this.registerDefaultCommands();
+	}
 
-  // === Registration ===
+	// === Registration ===
 
-  register(command: Command): void {
-    // Register main command
-    this.commands.set(command.cmd, command)
+	register(command: Command): void {
+		// Register main command
+		this.commands.set(command.cmd, command);
 
-    // Register aliases
-    for (const alias of command.aliases) {
-      this.aliases.set(alias, command.cmd)
-    }
-  }
+		// Register aliases
+		for (const alias of command.aliases) {
+			this.aliases.set(alias, command.cmd);
+		}
+	}
 
-  // === Retrieval ===
+	// === Retrieval ===
 
-  get(cmd: string): Command | null {
-    // Check aliases first
-    const mainCmd = this.aliases.get(cmd) || cmd
+	get(cmd: string): Command | null {
+		// Check aliases first
+		const mainCmd = this.aliases.get(cmd) || cmd;
 
-    return this.commands.get(mainCmd) || null
-  }
+		return this.commands.get(mainCmd) || null;
+	}
 
-  getAll(): Command[] {
-    return Array.from(this.commands.values())
-  }
+	getAll(): Command[] {
+		return Array.from(this.commands.values());
+	}
 
-  getByCategory(category: string): Command[] {
-    return this.getAll().filter(cmd => cmd.category === category)
-  }
+	getByCategory(category: string): Command[] {
+		return this.getAll().filter(cmd => cmd.category === category);
+	}
 
-  // === Filtering ===
+	// === Filtering ===
 
-  filter(input: string): Command[] {
-    const normalized = input.toLowerCase().replace(/^\//, '')
+	filter(input: string): Command[] {
+		const normalized = input.toLowerCase().replace(/^\//, '');
 
-    if (!normalized) {
-      return this.getAll()
-    }
+		if (!normalized) {
+			return this.getAll();
+		}
 
-    return this.getAll().filter(cmd =>
-      cmd.matches('/' + normalized)
-    )
-  }
+		return this.getAll().filter(cmd => cmd.matches('/' + normalized));
+	}
 
-  // === Queries ===
+	// === Queries ===
 
-  has(cmd: string): boolean {
-    return this.get(cmd) !== null
-  }
+	has(cmd: string): boolean {
+		return this.get(cmd) !== null;
+	}
 
-  // === Default Commands ===
+	// === Default Commands ===
 
-  private registerDefaultCommands(): void {
-    // /help command
-    this.register(new Command(
-      {
-        cmd: '/help',
-        desc: 'Show help documentation',
-        category: CommandCategory.SYSTEM,
-        aliases: ['/h', '/?']
-      },
-      {
-        execute: async (args, presenter) => {
-          presenter.toggleHelp()
-        }
-      }
-    ))
+	private registerDefaultCommands(): void {
+		// /help command
+		this.register(
+			new Command(
+				{
+					cmd: '/help',
+					desc: 'Show help documentation',
+					category: CommandCategory.SYSTEM,
+					aliases: ['/h', '/?'],
+				},
+				{
+					execute: async (args, presenter) => {
+						presenter.toggleHelp();
+					},
+				},
+			),
+		);
 
-    // /clear command
-    this.register(new Command(
-      {
-        cmd: '/clear',
-        desc: 'Clear conversation history',
-        category: CommandCategory.CONVERSATION,
-        aliases: ['/cls', '/reset']
-      },
-      {
-        execute: async (args, presenter) => {
-          await presenter.clearConversation()
+		// /clear command
+		this.register(
+			new Command(
+				{
+					cmd: '/clear',
+					desc: 'Clear conversation history',
+					category: CommandCategory.CONVERSATION,
+					aliases: ['/cls', '/reset'],
+				},
+				{
+					execute: async (args, presenter) => {
+						await presenter.clearConversation();
 
-          // Add system message
-          const msg = {
-            id: `msg_${Date.now()}`,
-            role: 'system',
-            content: 'Conversation cleared',
-            timestamp: new Date()
-          }
-          presenter.state.messages.push(msg)
-        }
-      }
-    ))
+						// Add system message
+						const msg = {
+							id: `msg_${Date.now()}`,
+							role: 'system',
+							content: 'Conversation cleared',
+							timestamp: new Date(),
+						};
+						presenter.state.messages.push(msg);
+					},
+				},
+			),
+		);
 
-    // /new command
-    this.register(new Command(
-      {
-        cmd: '/new',
-        desc: 'Start new conversation',
-        category: CommandCategory.CONVERSATION,
-        aliases: ['/n']
-      },
-      {
-        execute: async (args, presenter) => {
-          await presenter.startNewConversation()
+		// /new command
+		this.register(
+			new Command(
+				{
+					cmd: '/new',
+					desc: 'Start new conversation',
+					category: CommandCategory.CONVERSATION,
+					aliases: ['/n'],
+				},
+				{
+					execute: async (args, presenter) => {
+						await presenter.startNewConversation();
 
-          const msg = {
-            id: `msg_${Date.now()}`,
-            role: 'system',
-            content: 'New conversation started',
-            timestamp: new Date()
-          }
-          presenter.state.messages.push(msg)
-        }
-      }
-    ))
+						const msg = {
+							id: `msg_${Date.now()}`,
+							role: 'system',
+							content: 'New conversation started',
+							timestamp: new Date(),
+						};
+						presenter.state.messages.push(msg);
+					},
+				},
+			),
+		);
 
-    // /save command
-    this.register(new Command(
-      {
-        cmd: '/save',
-        desc: 'Save current session',
-        category: CommandCategory.SESSION,
-        argCount: 1,
-        argNames: ['name']
-      },
-      {
-        execute: async (args, presenter) => {
-          const name = args[0]
-          await presenter.saveSession(name)
+		// /save command
+		this.register(
+			new Command(
+				{
+					cmd: '/save',
+					desc: 'Save current session',
+					category: CommandCategory.SESSION,
+					argCount: 1,
+					argNames: ['name'],
+				},
+				{
+					execute: async (args, presenter) => {
+						const name = args[0];
+						await presenter.saveSession(name);
 
-          const msg = {
-            id: `msg_${Date.now()}`,
-            role: 'system',
-            content: `Session saved as "${name}"`,
-            timestamp: new Date()
-          }
-          presenter.state.messages.push(msg)
-        }
-      }
-    ))
+						const msg = {
+							id: `msg_${Date.now()}`,
+							role: 'system',
+							content: `Session saved as "${name}"`,
+							timestamp: new Date(),
+						};
+						presenter.state.messages.push(msg);
+					},
+				},
+			),
+		);
 
-    // /load command
-    this.register(new Command(
-      {
-        cmd: '/load',
-        desc: 'Load saved session',
-        category: CommandCategory.SESSION,
-        argCount: 1,
-        argNames: ['name']
-      },
-      {
-        execute: async (args, presenter) => {
-          const name = args[0]
-          await presenter.loadSession(name)
+		// /load command
+		this.register(
+			new Command(
+				{
+					cmd: '/load',
+					desc: 'Load saved session',
+					category: CommandCategory.SESSION,
+					argCount: 1,
+					argNames: ['name'],
+				},
+				{
+					execute: async (args, presenter) => {
+						const name = args[0];
+						await presenter.loadSession(name);
 
-          const msg = {
-            id: `msg_${Date.now()}`,
-            role: 'system',
-            content: `Session "${name}" loaded`,
-            timestamp: new Date()
-          }
-          presenter.state.messages.push(msg)
-        }
-      }
-    ))
+						const msg = {
+							id: `msg_${Date.now()}`,
+							role: 'system',
+							content: `Session "${name}" loaded`,
+							timestamp: new Date(),
+						};
+						presenter.state.messages.push(msg);
+					},
+				},
+			),
+		);
 
-    // /sessions command
-    this.register(new Command(
-      {
-        cmd: '/sessions',
-        desc: 'List all saved sessions',
-        category: CommandCategory.SESSION,
-        aliases: ['/ls']
-      },
-      {
-        execute: async (args, presenter) => {
-          const sessions = await presenter.sessionManager.list()
+		// /sessions command
+		this.register(
+			new Command(
+				{
+					cmd: '/sessions',
+					desc: 'List all saved sessions',
+					category: CommandCategory.SESSION,
+					aliases: ['/ls'],
+				},
+				{
+					execute: async (args, presenter) => {
+						const sessions = await presenter.sessionManager.list();
 
-          let content = 'Saved Sessions:\n\n'
-          for (const session of sessions) {
-            content += `- ${session.name} (${session.messageCount} messages, `
-            content += `${new Date(session.updatedAt).toLocaleDateString()})\n`
-          }
+						let content = 'Saved Sessions:\n\n';
+						for (const session of sessions) {
+							content += `- ${session.name} (${session.messageCount} messages, `;
+							content += `${new Date(session.updatedAt).toLocaleDateString()})\n`;
+						}
 
-          if (sessions.length === 0) {
-            content = 'No saved sessions found'
-          }
+						if (sessions.length === 0) {
+							content = 'No saved sessions found';
+						}
 
-          const msg = {
-            id: `msg_${Date.now()}`,
-            role: 'system',
-            content,
-            timestamp: new Date()
-          }
-          presenter.state.messages.push(msg)
-        }
-      }
-    ))
-  }
+						const msg = {
+							id: `msg_${Date.now()}`,
+							role: 'system',
+							content,
+							timestamp: new Date(),
+						};
+						presenter.state.messages.push(msg);
+					},
+				},
+			),
+		);
+	}
 }
 ```
 
@@ -496,7 +511,7 @@ export class CommandService implements ICommandRegistry {
 
 ### Implementation
 
-```typescript
+````typescript
 import { Text, Box } from 'ink'
 import React from 'react'
 
@@ -691,7 +706,7 @@ interface MarkdownBlock {
   language?: string
   level?: number
 }
-```
+````
 
 **Estimated Lines**: ~200 lines
 
@@ -703,17 +718,17 @@ interface MarkdownBlock {
 
 ### Files to Enhance (2)
 
-| File | Current | New | Changes | Phase |
-|------|---------|-----|---------|-------|
-| CodehClient.ts | ~300 | ~380 | +streaming support | v1.1 |
-| CodehChat.ts | ~200 | ~270 | +stats, +export | v1.1 |
+| File           | Current | New  | Changes            | Phase |
+| -------------- | ------- | ---- | ------------------ | ----- |
+| CodehClient.ts | ~300    | ~380 | +streaming support | v1.1  |
+| CodehChat.ts   | ~200    | ~270 | +stats, +export    | v1.1  |
 
 ### New Files (2)
 
-| File | Lines | Phase | Priority |
-|------|-------|-------|----------|
-| CommandService.ts | ~250 | v1.1 | 🔴 HIGH |
-| MarkdownService.ts | ~200 | v1.2 | 🟡 MEDIUM |
+| File               | Lines | Phase | Priority  |
+| ------------------ | ----- | ----- | --------- |
+| CommandService.ts  | ~250  | v1.1  | 🔴 HIGH   |
+| MarkdownService.ts | ~200  | v1.2  | 🟡 MEDIUM |
 
 **Total New Lines**: ~380 lines
 
@@ -722,11 +737,13 @@ interface MarkdownBlock {
 ## 🎯 Implementation Order
 
 ### Phase 1 (v1.1):
+
 1. **CommandService.ts** - Needed for slash commands
 2. **CodehClient.ts** - Add streaming method
 3. **CodehChat.ts** - Add statistics methods
 
 ### Phase 2 (v1.2):
+
 4. **MarkdownService.ts** - For markdown rendering
 
 ---

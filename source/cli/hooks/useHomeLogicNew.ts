@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
-import { Container } from '../../core/di/Container.js';
-import { HomePresenterNew } from '../presenters/HomePresenterNew.js';
-import { useCodehClient } from './useCodehClient.js';
-import { CommandService } from '../../core/application/services/CommandService.js';
-import { FileSessionManager } from '../../infrastructure/session/SessionManager.js';
+import {useState, useEffect} from 'react';
+import {Container} from '../../core/di/Container.js';
+import {HomePresenterNew} from '../presenters/HomePresenterNew.js';
+import {useCodehClient} from './useCodehClient.js';
+import {CommandService} from '../../core/application/services/CommandService.js';
+import {FileSessionManager} from '../../infrastructure/session/SessionManager.js';
 
 export interface UseHomeLogicNewReturn {
 	presenter: HomePresenterNew | null;
@@ -15,7 +15,12 @@ export interface UseHomeLogicNewReturn {
  * Custom hook for Home screen với HomePresenterNew
  */
 export function useHomeLogicNew(container: Container): UseHomeLogicNewReturn {
-	const { client, loading: clientLoading, error: clientError, initializeClient } = useCodehClient(container);
+	const {
+		client,
+		loading: clientLoading,
+		error: clientError,
+		initializeClient,
+	} = useCodehClient(container);
 	const [presenter, setPresenter] = useState<HomePresenterNew | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -28,7 +33,10 @@ export function useHomeLogicNew(container: Container): UseHomeLogicNewReturn {
 
 				// Initialize client if needed
 				const initializedClient = await initializeClient();
-				console.log('[DEBUG useHomeLogicNew] Initialized client:', initializedClient);
+				console.log(
+					'[DEBUG useHomeLogicNew] Initialized client:',
+					initializedClient,
+				);
 				console.log('[DEBUG useHomeLogicNew] clientError:', clientError);
 
 				if (!initializedClient) {
@@ -39,7 +47,9 @@ export function useHomeLogicNew(container: Container): UseHomeLogicNewReturn {
 				}
 
 				// Load config
-				const { ConfigLoader } = await import('../../infrastructure/config/ConfigLoader.js');
+				const {ConfigLoader} = await import(
+					'../../infrastructure/config/ConfigLoader.js'
+				);
 				const loader = new ConfigLoader();
 				const config = await loader.load();
 

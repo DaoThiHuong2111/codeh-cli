@@ -3,15 +3,20 @@
  */
 
 import test from 'ava';
-import { HomePresenterNew } from '../../source/cli/presenters/HomePresenterNew.js';
+import {HomePresenterNew} from '../../source/cli/presenters/HomePresenterNew.js';
 
 // === Mock Dependencies ===
 
 class MockCodehClient {
 	async execute(input: string) {
 		return {
-			response: { role: 'assistant', content: `Mock response to: ${input}` },
-			metadata: { duration: 100, tokenUsage: { total: 50 }, model: 'mock-model', finishReason: 'stop' },
+			response: {role: 'assistant', content: `Mock response to: ${input}`},
+			metadata: {
+				duration: 100,
+				tokenUsage: {total: 50},
+				model: 'mock-model',
+				finishReason: 'stop',
+			},
 		};
 	}
 
@@ -25,17 +30,17 @@ class MockCodehClient {
 		}
 
 		return {
-			request: { role: 'user', content: input },
-			response: { role: 'assistant', content: response },
+			request: {role: 'user', content: input},
+			response: {role: 'assistant', content: response},
 			metadata: {
 				duration: 100,
 				tokenUsage: {
 					prompt: 20,
 					completion: 30,
-					total: 50
+					total: 50,
 				},
 				model: 'mock-model',
-				finishReason: 'stop'
+				finishReason: 'stop',
 			},
 			isComplete: () => true,
 		};
@@ -45,15 +50,15 @@ class MockCodehClient {
 class MockCommandRegistry {
 	filter(query: string) {
 		if (query.startsWith('/help')) {
-			return [{ name: '/help', description: 'Show help' }];
+			return [{name: '/help', description: 'Show help'}];
 		}
 		return [];
 	}
 
 	getAll() {
 		return [
-			{ name: '/help', description: 'Show help' },
-			{ name: '/clear', description: 'Clear conversation' },
+			{name: '/help', description: 'Show help'},
+			{name: '/clear', description: 'Clear conversation'},
 		];
 	}
 }
@@ -82,7 +87,7 @@ function createMockPresenter() {
 
 // === Initialization Tests ===
 
-test('initializes with empty state', (t) => {
+test('initializes with empty state', t => {
 	const presenter = createMockPresenter();
 
 	t.is(presenter.input, '');
@@ -92,7 +97,7 @@ test('initializes with empty state', (t) => {
 	t.is(presenter.todos.length, 0);
 });
 
-test('initializes with config values', (t) => {
+test('initializes with config values', t => {
 	const presenter = createMockPresenter();
 
 	t.is(presenter.version, '1.0.0');
@@ -100,7 +105,7 @@ test('initializes with config values', (t) => {
 	t.truthy(presenter.directory);
 });
 
-test('initializes stats to zero', (t) => {
+test('initializes stats to zero', t => {
 	const presenter = createMockPresenter();
 
 	t.is(presenter.totalTokens, 0);
@@ -110,7 +115,7 @@ test('initializes stats to zero', (t) => {
 
 // === Input Handling Tests ===
 
-test('handleInputChange updates input', (t) => {
+test('handleInputChange updates input', t => {
 	const presenter = createMockPresenter();
 
 	presenter.handleInputChange('test input');
@@ -119,7 +124,7 @@ test('handleInputChange updates input', (t) => {
 	t.is(presenter.inputError, '');
 });
 
-test('handleInputChange clears error', (t) => {
+test('handleInputChange clears error', t => {
 	const presenter = createMockPresenter();
 
 	// Trigger error first
@@ -133,7 +138,7 @@ test('handleInputChange clears error', (t) => {
 	t.is(presenter.inputError, '');
 });
 
-test('handleInputChange filters slash commands', (t) => {
+test('handleInputChange filters slash commands', t => {
 	const presenter = createMockPresenter();
 
 	presenter.handleInputChange('/help');
@@ -142,7 +147,7 @@ test('handleInputChange filters slash commands', (t) => {
 	t.is(presenter.filteredSuggestions[0].name, '/help');
 });
 
-test('handleInputChange clears suggestions when not slash command', (t) => {
+test('handleInputChange clears suggestions when not slash command', t => {
 	const presenter = createMockPresenter();
 
 	presenter.handleInputChange('/help');
@@ -154,7 +159,7 @@ test('handleInputChange clears suggestions when not slash command', (t) => {
 
 // === Submit Handling Tests ===
 
-test('handleSubmit rejects empty input', async (t) => {
+test('handleSubmit rejects empty input', async t => {
 	const presenter = createMockPresenter();
 
 	await presenter.handleSubmit('');
@@ -163,7 +168,7 @@ test('handleSubmit rejects empty input', async (t) => {
 	t.is(presenter.messages.length, 0);
 });
 
-test('handleSubmit rejects whitespace-only input', async (t) => {
+test('handleSubmit rejects whitespace-only input', async t => {
 	const presenter = createMockPresenter();
 
 	await presenter.handleSubmit('   ');
@@ -172,7 +177,7 @@ test('handleSubmit rejects whitespace-only input', async (t) => {
 	t.is(presenter.messages.length, 0);
 });
 
-test('handleSubmit adds user message', async (t) => {
+test('handleSubmit adds user message', async t => {
 	const presenter = createMockPresenter();
 
 	await presenter.handleSubmit('Hello');
@@ -182,7 +187,7 @@ test('handleSubmit adds user message', async (t) => {
 	t.is(presenter.messages[0].content, 'Hello');
 });
 
-test('handleSubmit clears input after submission', async (t) => {
+test('handleSubmit clears input after submission', async t => {
 	const presenter = createMockPresenter();
 
 	presenter.handleInputChange('Hello');
@@ -191,7 +196,7 @@ test('handleSubmit clears input after submission', async (t) => {
 	t.is(presenter.input, '');
 });
 
-test('handleSubmit adds to input history', async (t) => {
+test('handleSubmit adds to input history', async t => {
 	const presenter = createMockPresenter();
 
 	await presenter.handleSubmit('First message');
@@ -207,7 +212,7 @@ test('handleSubmit adds to input history', async (t) => {
 
 // === Input History Tests ===
 
-test('navigateHistory with empty history does nothing', (t) => {
+test('navigateHistory with empty history does nothing', t => {
 	const presenter = createMockPresenter();
 
 	presenter.navigateHistory('up');
@@ -215,7 +220,7 @@ test('navigateHistory with empty history does nothing', (t) => {
 	t.is(presenter.input, '');
 });
 
-test('navigateHistory up shows previous input', async (t) => {
+test('navigateHistory up shows previous input', async t => {
 	const presenter = createMockPresenter();
 
 	await presenter.handleSubmit('Test 1');
@@ -226,7 +231,7 @@ test('navigateHistory up shows previous input', async (t) => {
 	t.is(presenter.input, 'Test 2');
 });
 
-test('navigateHistory down shows next input', async (t) => {
+test('navigateHistory down shows next input', async t => {
 	const presenter = createMockPresenter();
 
 	await presenter.handleSubmit('Test 1');
@@ -240,7 +245,7 @@ test('navigateHistory down shows next input', async (t) => {
 	t.is(presenter.input, 'Test 2');
 });
 
-test('navigateHistory down from newest returns to empty', async (t) => {
+test('navigateHistory down from newest returns to empty', async t => {
 	const presenter = createMockPresenter();
 
 	await presenter.handleSubmit('Test');
@@ -252,7 +257,7 @@ test('navigateHistory down from newest returns to empty', async (t) => {
 	t.is(presenter.input, '');
 });
 
-test('input history limited to 50 items', async (t) => {
+test('input history limited to 50 items', async t => {
 	const presenter = createMockPresenter();
 
 	// Add 60 items
@@ -273,7 +278,7 @@ test('input history limited to 50 items', async (t) => {
 
 // === Todos Management Tests ===
 
-test('addTodo adds todo to state', (t) => {
+test('addTodo adds todo to state', t => {
 	const presenter = createMockPresenter();
 
 	presenter.addTodo('New task');
@@ -283,7 +288,7 @@ test('addTodo adds todo to state', (t) => {
 	t.is(presenter.todos[0].status, 'pending');
 });
 
-test('addTodo with custom status', (t) => {
+test('addTodo with custom status', t => {
 	const presenter = createMockPresenter();
 
 	presenter.addTodo('Active task', 'in_progress');
@@ -291,7 +296,7 @@ test('addTodo with custom status', (t) => {
 	t.is(presenter.todos[0].status, 'in_progress');
 });
 
-test('updateTodoStatus updates correct todo', (t) => {
+test('updateTodoStatus updates correct todo', t => {
 	const presenter = createMockPresenter();
 
 	presenter.addTodo('Task 1');
@@ -304,7 +309,7 @@ test('updateTodoStatus updates correct todo', (t) => {
 	t.is(presenter.todos[1].status, 'pending'); // Others unchanged
 });
 
-test('updateTodoStatus preserves todo immutability', (t) => {
+test('updateTodoStatus preserves todo immutability', t => {
 	const presenter = createMockPresenter();
 
 	presenter.addTodo('Task');
@@ -322,7 +327,7 @@ test('updateTodoStatus preserves todo immutability', (t) => {
 	t.is(updatedTodo.status, 'completed');
 });
 
-test('clearTodos removes all todos', (t) => {
+test('clearTodos removes all todos', t => {
 	const presenter = createMockPresenter();
 
 	presenter.addTodo('Task 1');
@@ -336,7 +341,7 @@ test('clearTodos removes all todos', (t) => {
 
 // === Help Overlay Tests ===
 
-test('toggleHelp toggles help state', (t) => {
+test('toggleHelp toggles help state', t => {
 	const presenter = createMockPresenter();
 
 	t.false(presenter.showHelp);
@@ -350,13 +355,13 @@ test('toggleHelp toggles help state', (t) => {
 
 // === Suggestion Navigation Tests ===
 
-test('hasSuggestions returns false when no suggestions', (t) => {
+test('hasSuggestions returns false when no suggestions', t => {
 	const presenter = createMockPresenter();
 
 	t.false(presenter.hasSuggestions());
 });
 
-test('hasSuggestions returns true when has suggestions', (t) => {
+test('hasSuggestions returns true when has suggestions', t => {
 	const presenter = createMockPresenter();
 
 	presenter.handleInputChange('/help');
@@ -364,7 +369,7 @@ test('hasSuggestions returns true when has suggestions', (t) => {
 	t.true(presenter.hasSuggestions());
 });
 
-test('navigateSuggestions changes selected index', (t) => {
+test('navigateSuggestions changes selected index', t => {
 	const presenter = createMockPresenter();
 
 	presenter.handleInputChange('/');
@@ -377,7 +382,7 @@ test('navigateSuggestions changes selected index', (t) => {
 
 // === View Update Callback Tests ===
 
-test('setViewUpdateCallback registers callback', (t) => {
+test('setViewUpdateCallback registers callback', t => {
 	const presenter = createMockPresenter();
 	let callbackCalled = false;
 
@@ -390,7 +395,7 @@ test('setViewUpdateCallback registers callback', (t) => {
 	t.true(callbackCalled);
 });
 
-test('view callback called on state changes', (t) => {
+test('view callback called on state changes', t => {
 	const presenter = createMockPresenter();
 	let callCount = 0;
 
@@ -407,7 +412,7 @@ test('view callback called on state changes', (t) => {
 
 // === Cleanup Tests ===
 
-test('cleanup stops duration timer', async (t) => {
+test('cleanup stops duration timer', async t => {
 	const presenter = createMockPresenter();
 
 	const initialDuration = presenter.sessionDuration;
@@ -432,7 +437,7 @@ test('cleanup stops duration timer', async (t) => {
 
 // === Getter Tests ===
 
-test('messageCount returns correct count', (t) => {
+test('messageCount returns correct count', t => {
 	const presenter = createMockPresenter();
 
 	t.is(presenter.messageCount, 0);
@@ -447,7 +452,7 @@ test('messageCount returns correct count', (t) => {
 	t.is(presenter.messageCount, 1);
 });
 
-test('getters return current state values', (t) => {
+test('getters return current state values', t => {
 	const presenter = createMockPresenter();
 
 	t.is(presenter.input, '');
@@ -460,7 +465,7 @@ test('getters return current state values', (t) => {
 // === Issue Fix Tests ===
 
 // Test for Issue #1: Message metadata should be set without mutation
-test('handleSubmit creates message with metadata immutably', async (t) => {
+test('handleSubmit creates message with metadata immutably', async t => {
 	const presenter = createMockPresenter();
 
 	await presenter.handleSubmit('Test message');
@@ -477,9 +482,21 @@ test('handleSubmit creates message with metadata immutably', async (t) => {
 	// Check metadata exists and was set properly (not mutated)
 	t.truthy(assistantMessage!.metadata, 'Should have metadata');
 	t.truthy(assistantMessage!.metadata!.usage, 'Should have usage stats');
-	t.is(assistantMessage!.metadata!.usage.promptTokens, 20, 'Prompt tokens correct');
-	t.is(assistantMessage!.metadata!.usage.completionTokens, 30, 'Completion tokens correct');
-	t.is(assistantMessage!.metadata!.usage.totalTokens, 50, 'Total tokens correct');
+	t.is(
+		assistantMessage!.metadata!.usage.promptTokens,
+		20,
+		'Prompt tokens correct',
+	);
+	t.is(
+		assistantMessage!.metadata!.usage.completionTokens,
+		30,
+		'Completion tokens correct',
+	);
+	t.is(
+		assistantMessage!.metadata!.usage.totalTokens,
+		50,
+		'Total tokens correct',
+	);
 
 	// Verify immutability: all Message properties are readonly
 	// TypeScript will catch if we try: assistantMessage.metadata = {}
@@ -488,7 +505,7 @@ test('handleSubmit creates message with metadata immutably', async (t) => {
 });
 
 // Test for Issue #2: Streaming message ID should be consistent across chunks
-test('handleSubmit maintains consistent message ID during streaming', async (t) => {
+test('handleSubmit maintains consistent message ID during streaming', async t => {
 	const presenter = createMockPresenter();
 	const capturedMessageIds: string[] = [];
 
@@ -514,7 +531,7 @@ test('handleSubmit maintains consistent message ID during streaming', async (t) 
 });
 
 // Test streaming message ID consistency - detailed version
-test('streaming chunks use same message ID', async (t) => {
+test('streaming chunks use same message ID', async t => {
 	const presenter = createMockPresenter();
 	const messageIds: string[] = [];
 	let updateCount = 0;
@@ -540,12 +557,15 @@ test('streaming chunks use same message ID', async (t) => {
 	if (messageIds.length > 1) {
 		const firstId = messageIds[0];
 		const allSame = messageIds.every(id => id === firstId);
-		t.true(allSame, `All message IDs should be ${firstId}, but got: ${messageIds.join(', ')}`);
+		t.true(
+			allSame,
+			`All message IDs should be ${firstId}, but got: ${messageIds.join(', ')}`,
+		);
 	}
 });
 
 // Test that final message replaces streaming message (same ID check)
-test('final message replaces streaming message at correct index', async (t) => {
+test('final message replaces streaming message at correct index', async t => {
 	const presenter = createMockPresenter();
 
 	await presenter.handleSubmit('Test replacement');
@@ -554,8 +574,14 @@ test('final message replaces streaming message at correct index', async (t) => {
 	await new Promise(resolve => setTimeout(resolve, 100));
 
 	// Should have exactly 2 messages: user + final assistant (not duplicated)
-	const assistantMessages = presenter.messages.filter(m => m.role === 'assistant');
-	t.is(assistantMessages.length, 1, 'Should have exactly 1 assistant message (not duplicated)');
+	const assistantMessages = presenter.messages.filter(
+		m => m.role === 'assistant',
+	);
+	t.is(
+		assistantMessages.length,
+		1,
+		'Should have exactly 1 assistant message (not duplicated)',
+	);
 
 	// Final message should have metadata from turn
 	const finalMsg = assistantMessages[0];
@@ -564,7 +590,7 @@ test('final message replaces streaming message at correct index', async (t) => {
 });
 
 // Test token stats are updated from metadata
-test('handleSubmit updates token stats from metadata', async (t) => {
+test('handleSubmit updates token stats from metadata', async t => {
 	const presenter = createMockPresenter();
 
 	const initialTokens = presenter.totalTokens;
@@ -577,15 +603,26 @@ test('handleSubmit updates token stats from metadata', async (t) => {
 
 	// Tokens should be updated
 	t.true(presenter.totalTokens > initialTokens, 'Total tokens should increase');
-	t.is(presenter.totalTokens, initialTokens + 50, 'Should add 50 tokens from mock');
+	t.is(
+		presenter.totalTokens,
+		initialTokens + 50,
+		'Should add 50 tokens from mock',
+	);
 
 	// Cost should be updated
-	t.true(presenter.estimatedCost > initialCost, 'Estimated cost should increase');
-	t.is(presenter.estimatedCost, (50 / 1000) * 0.005, 'Cost should be calculated correctly');
+	t.true(
+		presenter.estimatedCost > initialCost,
+		'Estimated cost should increase',
+	);
+	t.is(
+		presenter.estimatedCost,
+		(50 / 1000) * 0.005,
+		'Cost should be calculated correctly',
+	);
 });
 
 // Test message immutability - no 'as any' cast used
-test('message objects are not mutated after creation', async (t) => {
+test('message objects are not mutated after creation', async t => {
 	const presenter = createMockPresenter();
 
 	await presenter.handleSubmit('Immutability test');
@@ -599,7 +636,11 @@ test('message objects are not mutated after creation', async (t) => {
 
 	// Try to access again - should be same reference (not mutated)
 	const sameMsg = presenter.messages.find(m => m.role === 'assistant');
-	t.is(sameMsg!.metadata, originalMetadata, 'Metadata reference should not change');
+	t.is(
+		sameMsg!.metadata,
+		originalMetadata,
+		'Metadata reference should not change',
+	);
 
 	// Metadata properties should be readonly (TypeScript enforces this)
 	// Runtime check: metadata object is frozen or sealed (depending on implementation)

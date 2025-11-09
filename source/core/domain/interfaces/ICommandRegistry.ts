@@ -1,4 +1,4 @@
-import { Command } from '../valueObjects/Command.js';
+import {Command} from '../valueObjects/Command.js';
 
 export interface ICommandRegistry {
 	/**

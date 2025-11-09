@@ -8,7 +8,7 @@ Codeh-cli is an interactive CLI application for AI chat interactions, built with
 
 - **Language**: TypeScript 5.x
 - **UI Framework**: React 18.2.0 + Ink 4.1.0 (Terminal UI)
-- **Build Tools**: 
+- **Build Tools**:
   - TypeScript Compiler (tsc)
   - Babel 7.x (with TypeScript preset)
 - **Testing**: AVA + ink-testing-library
@@ -121,6 +121,7 @@ source/
 ### 1. Multi-Provider Support
 
 Supports multiple AI providers:
+
 - **Anthropic** (Claude)
 - **OpenAI** (GPT)
 - **Ollama** (Local models)
@@ -129,12 +130,14 @@ Supports multiple AI providers:
 ### 2. Configuration System
 
 Two-tier config with priority:
+
 1. **Environment variables** (runtime override)
 2. **File config** (`~/.codeh/configs.json`)
 
 ### 3. Auto-Navigation
 
 Smart startup flow:
+
 - Checks for config automatically
 - Navigates to Home if config exists
 - Shows Config screen if no config
@@ -143,6 +146,7 @@ Smart startup flow:
 ### 4. Tool System
 
 Extensible tool architecture:
+
 - Shell command execution
 - File operations
 - More tools can be added via registry
@@ -150,6 +154,7 @@ Extensible tool architecture:
 ### 5. Session Management
 
 Persistent sessions:
+
 - Saves conversation history
 - Resumes previous sessions
 - File-based storage
@@ -181,7 +186,7 @@ codeh                    # Run globally
 ### Build Process
 
 1. **TypeScript compilation** (`tsc`)
-   - Compiles `.ts` → `.js` 
+   - Compiles `.ts` → `.js`
    - Generates `.d.ts` type definitions
    - Output: `dist/` directory
 
@@ -233,6 +238,7 @@ codeh                    # Run globally
 ### 1. Lazy Initialization
 
 API client created only when needed:
+
 ```typescript
 const client = await initializeClient(); // Returns client directly
 ```
@@ -240,17 +246,19 @@ const client = await initializeClient(); // Returns client directly
 ### 2. Repository Pattern
 
 Data access abstraction:
+
 ```typescript
 interface IConfigRepository {
-  getAll(): Promise<ConfigData | null>;
-  save(config: ConfigData): Promise<void>;
-  exists(): Promise<boolean>;
+	getAll(): Promise<ConfigData | null>;
+	save(config: ConfigData): Promise<void>;
+	exists(): Promise<boolean>;
 }
 ```
 
 ### 3. Factory Pattern
 
 Create instances based on config:
+
 ```typescript
 const apiClient = factory.create(configuration);
 ```
@@ -258,6 +266,7 @@ const apiClient = factory.create(configuration);
 ### 4. Provider Pattern
 
 React context for global state:
+
 ```typescript
 <NavigationProvider container={container}>
   {children}
@@ -267,8 +276,9 @@ React context for global state:
 ### 5. Hook Pattern
 
 Encapsulate business logic:
+
 ```typescript
-const { presenter, loading, error } = useHomeLogicNew(container);
+const {presenter, loading, error} = useHomeLogicNew(container);
 ```
 
 ## Critical Implementation Details
@@ -284,7 +294,7 @@ const { presenter, loading, error } = useHomeLogicNew(container);
 const success = await initializeClient();
 if (!success || !client) { ... } // client state not updated yet
 
-// ✅ Good  
+// ✅ Good
 const client = await initializeClient();
 if (!client) { ... } // use returned value
 ```
@@ -292,6 +302,7 @@ if (!client) { ... } // use returned value
 ### ES Module Extensions
 
 **Important:** In source TypeScript:
+
 - ✅ Import without `.js`: `from './Container'`
 - ❌ Don't add `.ts`: `from './Container.ts'`
 
@@ -300,6 +311,7 @@ TypeScript compiler automatically adds `.js` when compiling.
 ### Dependency Injection
 
 All dependencies injected via Container:
+
 ```typescript
 container.register('ConfigLoader', () => new ConfigLoader(), true);
 const loader = container.resolve<ConfigLoader>('ConfigLoader');
@@ -339,6 +351,7 @@ CODEH_TEMPERATURE=0.7          # Temperature (default: 0.7)
 ### Unit Tests
 
 Located in `test/` directory:
+
 ```bash
 npm test                # Run all tests
 npm run test:watch      # Watch mode
@@ -354,6 +367,7 @@ node dist/cli.js        # Run CLI
 ## Distribution
 
 Package published to npm as `codeh-cli`:
+
 ```bash
 npm install -g codeh-cli
 codeh                    # Run globally

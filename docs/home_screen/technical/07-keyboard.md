@@ -6,44 +6,44 @@
 
 ## Global Shortcuts
 
-| Key | Action | Context |
-|-----|--------|---------|
-| `?` | Toggle help overlay | Any |
-| `Ctrl+C` | Exit application | Any |
-| `Esc` | Clear input / Close overlay | Input focused |
+| Key      | Action                      | Context       |
+| -------- | --------------------------- | ------------- |
+| `?`      | Toggle help overlay         | Any           |
+| `Ctrl+C` | Exit application            | Any           |
+| `Esc`    | Clear input / Close overlay | Input focused |
 
 ---
 
 ## Input Mode (Normal)
 
-| Key | Action |
-|-----|--------|
-| `Enter` | Submit message |
-| `↑` | Previous message in history |
-| `↓` | Next message in history |
-| `Backspace` | Delete character |
+| Key         | Action                      |
+| ----------- | --------------------------- |
+| `Enter`     | Submit message              |
+| `↑`         | Previous message in history |
+| `↓`         | Next message in history     |
+| `Backspace` | Delete character            |
 
 ---
 
 ## Input Mode (Suggestion Active)
 
-| Key | Action |
-|-----|--------|
-| `↑` | Navigate up in suggestions |
-| `↓` | Navigate down in suggestions |
-| `Enter` | Select suggestion |
-| `Tab` | Select suggestion |
-| `Esc` | Cancel suggestions |
+| Key     | Action                       |
+| ------- | ---------------------------- |
+| `↑`     | Navigate up in suggestions   |
+| `↓`     | Navigate down in suggestions |
+| `Enter` | Select suggestion            |
+| `Tab`   | Select suggestion            |
+| `Esc`   | Cancel suggestions           |
 
 ---
 
 ## Future Shortcuts (Planned)
 
-| Key | Action |
-|-----|--------|
-| `Ctrl+L` | Clear conversation |
-| `Ctrl+K` | Focus input |
-| `Ctrl+/` | Show command palette |
+| Key      | Action                 |
+| -------- | ---------------------- |
+| `Ctrl+L` | Clear conversation     |
+| `Ctrl+K` | Focus input            |
+| `Ctrl+/` | Show command palette   |
 | `Ctrl+H` | Toggle history sidebar |
 
 ---

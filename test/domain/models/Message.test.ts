@@ -3,11 +3,11 @@
  */
 
 import test from 'ava';
-import { Message } from '../../../source/core/domain/models/Message.js';
+import {Message} from '../../../source/core/domain/models/Message.js';
 
 // === Factory Methods Tests ===
 
-test('Message.user() creates user message with correct role', (t) => {
+test('Message.user() creates user message with correct role', t => {
 	const message = Message.user('Hello');
 
 	t.is(message.role, 'user');
@@ -16,7 +16,7 @@ test('Message.user() creates user message with correct role', (t) => {
 	t.truthy(message.timestamp);
 });
 
-test('Message.assistant() creates assistant message with correct role', (t) => {
+test('Message.assistant() creates assistant message with correct role', t => {
 	const message = Message.assistant('Hi there');
 
 	t.is(message.role, 'assistant');
@@ -25,14 +25,14 @@ test('Message.assistant() creates assistant message with correct role', (t) => {
 	t.truthy(message.timestamp);
 });
 
-test('Message.system() creates system message with correct role', (t) => {
+test('Message.system() creates system message with correct role', t => {
 	const message = Message.system('System message');
 
 	t.is(message.role, 'system');
 	t.is(message.content, 'System message');
 });
 
-test('Message.error() creates error message from Error object', (t) => {
+test('Message.error() creates error message from Error object', t => {
 	const error = new Error('Something went wrong');
 	const message = Message.error(error);
 
@@ -40,7 +40,7 @@ test('Message.error() creates error message from Error object', (t) => {
 	t.is(message.content, 'Something went wrong');
 });
 
-test('Message.error() creates error message from string', (t) => {
+test('Message.error() creates error message from string', t => {
 	const message = Message.error('Error text');
 
 	t.is(message.role, 'error');
@@ -49,7 +49,7 @@ test('Message.error() creates error message from string', (t) => {
 
 // === ID Generation Tests ===
 
-test('Message IDs are unique', (t) => {
+test('Message IDs are unique', t => {
 	const msg1 = Message.user('Test 1');
 	const msg2 = Message.user('Test 2');
 
@@ -60,9 +60,9 @@ test('Message IDs are unique', (t) => {
 
 // === Tool Calls Tests ===
 
-test('Message.assistant() can include tool calls', (t) => {
+test('Message.assistant() can include tool calls', t => {
 	const toolCalls = [
-		{ id: 'call_1', name: 'search', arguments: { query: 'test' } },
+		{id: 'call_1', name: 'search', arguments: {query: 'test'}},
 	];
 	const message = Message.assistant('Result', toolCalls);
 
@@ -70,13 +70,13 @@ test('Message.assistant() can include tool calls', (t) => {
 	t.true(message.hasToolCalls());
 });
 
-test('hasToolCalls() returns false when no tool calls', (t) => {
+test('hasToolCalls() returns false when no tool calls', t => {
 	const message = Message.user('Test');
 
 	t.false(message.hasToolCalls());
 });
 
-test('hasToolCalls() returns false when tool calls is empty array', (t) => {
+test('hasToolCalls() returns false when tool calls is empty array', t => {
 	const message = Message.assistant('Test', []);
 
 	t.false(message.hasToolCalls());
@@ -84,7 +84,7 @@ test('hasToolCalls() returns false when tool calls is empty array', (t) => {
 
 // === Role Checker Methods Tests ===
 
-test('isUser() returns true for user messages', (t) => {
+test('isUser() returns true for user messages', t => {
 	const message = Message.user('Test');
 
 	t.true(message.isUser());
@@ -92,7 +92,7 @@ test('isUser() returns true for user messages', (t) => {
 	t.false(message.isSystem());
 });
 
-test('isAssistant() returns true for assistant messages', (t) => {
+test('isAssistant() returns true for assistant messages', t => {
 	const message = Message.assistant('Test');
 
 	t.true(message.isAssistant());
@@ -100,7 +100,7 @@ test('isAssistant() returns true for assistant messages', (t) => {
 	t.false(message.isSystem());
 });
 
-test('isSystem() returns true for system messages', (t) => {
+test('isSystem() returns true for system messages', t => {
 	const message = Message.system('Test');
 
 	t.true(message.isSystem());
@@ -110,14 +110,14 @@ test('isSystem() returns true for system messages', (t) => {
 
 // === Metadata Tests ===
 
-test('Message.create() can include metadata', (t) => {
-	const metadata = { tokens: 100, model: 'gpt-4' };
-	const message = Message.create('user', 'Test', { metadata });
+test('Message.create() can include metadata', t => {
+	const metadata = {tokens: 100, model: 'gpt-4'};
+	const message = Message.create('user', 'Test', {metadata});
 
 	t.deepEqual(message.metadata, metadata);
 });
 
-test('Message without metadata has undefined metadata', (t) => {
+test('Message without metadata has undefined metadata', t => {
 	const message = Message.user('Test');
 
 	t.is(message.metadata, undefined);
@@ -125,7 +125,7 @@ test('Message without metadata has undefined metadata', (t) => {
 
 // === Timestamp Tests ===
 
-test('Message timestamp is set to current time', (t) => {
+test('Message timestamp is set to current time', t => {
 	const before = new Date();
 	const message = Message.user('Test');
 	const after = new Date();
@@ -136,7 +136,7 @@ test('Message timestamp is set to current time', (t) => {
 
 // === toJSON Tests ===
 
-test('toJSON() returns serializable object', (t) => {
+test('toJSON() returns serializable object', t => {
 	const message = Message.user('Test');
 	const json = message.toJSON();
 
@@ -147,17 +147,17 @@ test('toJSON() returns serializable object', (t) => {
 	t.is(json.timestamp, message.timestamp.toISOString());
 });
 
-test('toJSON() includes tool calls if present', (t) => {
-	const toolCalls = [{ id: 'call_1', name: 'test', arguments: {} }];
+test('toJSON() includes tool calls if present', t => {
+	const toolCalls = [{id: 'call_1', name: 'test', arguments: {}}];
 	const message = Message.assistant('Test', toolCalls);
 	const json = message.toJSON();
 
 	t.deepEqual(json.toolCalls, toolCalls);
 });
 
-test('toJSON() includes metadata if present', (t) => {
-	const metadata = { key: 'value' };
-	const message = Message.create('user', 'Test', { metadata });
+test('toJSON() includes metadata if present', t => {
+	const metadata = {key: 'value'};
+	const message = Message.create('user', 'Test', {metadata});
 	const json = message.toJSON();
 
 	t.deepEqual(json.metadata, metadata);
@@ -165,7 +165,7 @@ test('toJSON() includes metadata if present', (t) => {
 
 // === Immutability Tests ===
 
-test('Message properties are readonly', (t) => {
+test('Message properties are readonly', t => {
 	const message = Message.user('Test');
 
 	// TypeScript will prevent this at compile time,

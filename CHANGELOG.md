@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added - Phase 2: Advanced UX
 
 #### Streaming Support
+
 - **Real-time streaming responses** for all AI providers (Anthropic, OpenAI, Ollama)
 - Word-by-word response display with streaming indicator
 - Interrupt-safe streaming that preserves message integrity
@@ -17,11 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Provider-specific streaming handlers with unified interface
 
 #### Markdown Rendering
+
 - **Rich markdown rendering** for assistant messages
 - Supported elements:
   - Headings (H1-H6) with color-coding
   - Code blocks with language labels and borders
-  - Lists (unordered with -, *, +)
+  - Lists (unordered with -, \*, +)
   - Blockquotes with special styling
   - Paragraphs with proper spacing
   - Inline formatting (bold, italic, inline code)
@@ -29,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MarkdownText component with sub-components for each block type
 
 #### Keyboard Shortcuts & Input History
+
 - **Input history navigation** with ↑↓ keys
 - History stores last 50 inputs with automatic management
 - **Global keyboard shortcuts**:
@@ -39,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Smart history management (no duplicates, newest first)
 
 #### Enhanced Footer
+
 - **Real-time statistics bar** with 6 metrics:
   - Model name
   - Message count
@@ -50,6 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Color-coded stats for readability
 
 #### Character Counter
+
 - **Smart character limit** for input (4000 chars default)
 - Real-time count display below input
 - Color-coded warnings:
@@ -60,6 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Optional props: `maxLength`, `showCounter`
 
 #### Task Tracking (Todos)
+
 - **Visual task list** with progress tracking
 - Todo domain model with immutable design
 - TodosDisplay component with:
@@ -73,6 +79,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added - Testing
 
 #### Comprehensive Test Suite (200+ tests)
+
 - **Domain Models**: 100% coverage
   - Message.test.ts (40+ tests)
   - Todo.test.ts (30+ tests)
@@ -91,6 +98,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Comprehensive edge case coverage
 
 #### Documentation
+
 - Complete USER_GUIDE.md with:
   - Feature explanations and examples
   - Keyboard shortcuts reference
@@ -103,18 +111,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 #### Home Screen
+
 - Replaced simple Home screen with HomeNew (MVP pattern)
 - HomePresenterNew manages all state and business logic
 - Improved component organization (atoms/molecules/organisms)
 - Better separation of concerns (presentation vs logic)
 
 #### Message Handling
+
 - Messages are now immutable domain objects
 - Streaming updates create new Message instances
 - Proper state management with callbacks
 - Better error handling and validation
 
 #### API Clients
+
 - All API clients now support streaming
 - Unified streaming interface across providers
 - Better error handling for network issues
@@ -132,6 +143,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.0] - Previous Version
 
 ### Added
+
 - Basic conversation history
 - Slash commands (/help, /clear, /model, /session)
 - Session management
@@ -141,6 +153,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Basic MVP Home screen
 
 ### Core Features
+
 - Message domain model
 - Turn-based conversation tracking
 - API client abstraction
@@ -150,6 +163,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - Initial Release
 
 ### Added
+
 - Initial CLI structure
 - Basic AI interaction
 - Simple text-based interface
@@ -165,24 +179,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 This release focuses on **Advanced UX** and brings CODEH CLI to production-ready quality:
 
 **🎨 Rich User Experience**
+
 - Real-time streaming responses
 - Beautiful markdown rendering
 - Smart input management with history
 - Visual task tracking
 
 **📊 Enhanced Visibility**
+
 - Real-time stats (tokens, cost, duration)
 - Progress tracking for todos
 - Clear status indicators
 - Git branch awareness
 
 **✅ Quality & Reliability**
+
 - 200+ comprehensive tests
-- >70% code coverage achieved
+- > 70% code coverage achieved
 - Extensive documentation
 - Edge case handling
 
 **⚡ Performance**
+
 - Efficient streaming without blocking
 - Smart state management
 - Optimized rendering
@@ -256,6 +274,7 @@ None reported for v1.2.0
 ## Contribution Guidelines
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines on:
+
 - Bug reports
 - Feature requests
 - Pull requests

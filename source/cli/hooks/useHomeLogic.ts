@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
-import { Container } from '../../core/di/Container';
-import { useCodehClient } from './useCodehClient';
-import { useCodehChat } from './useCodehChat';
-import { usePresenter } from './usePresenter';
-import { HomePresenter } from '../presenters/HomePresenter';
+import {useState, useEffect} from 'react';
+import {Container} from '../../core/di/Container';
+import {useCodehClient} from './useCodehClient';
+import {useCodehChat} from './useCodehChat';
+import {usePresenter} from './usePresenter';
+import {HomePresenter} from '../presenters/HomePresenter';
 
 export interface UseHomeLogicReturn {
 	// State
@@ -24,8 +24,17 @@ export interface UseHomeLogicReturn {
  * Custom hook for Home screen business logic
  */
 export function useHomeLogic(container: Container): UseHomeLogicReturn {
-	const { client, loading: clientLoading, error: clientError, initializeClient } = useCodehClient(container);
-	const { chat, loading: chatLoading, error: chatError } = useCodehChat(container);
+	const {
+		client,
+		loading: clientLoading,
+		error: clientError,
+		initializeClient,
+	} = useCodehClient(container);
+	const {
+		chat,
+		loading: chatLoading,
+		error: chatError,
+	} = useCodehChat(container);
 
 	const [output, setOutput] = useState('');
 	const [processing, setProcessing] = useState(false);
@@ -38,7 +47,9 @@ export function useHomeLogic(container: Container): UseHomeLogicReturn {
 	useEffect(() => {
 		const loadModel = async () => {
 			try {
-				const { ConfigLoader } = await import('../../infrastructure/config/ConfigLoader.js');
+				const {ConfigLoader} = await import(
+					'../../infrastructure/config/ConfigLoader.js'
+				);
 				const loader = new ConfigLoader();
 				const config = await loader.load();
 				if (config) {
@@ -70,7 +81,9 @@ export function useHomeLogic(container: Container): UseHomeLogicReturn {
 			}
 
 			if (!activeClient) {
-				setOutput('❌ Failed to connect to API. Please check your configuration (/config).');
+				setOutput(
+					'❌ Failed to connect to API. Please check your configuration (/config).',
+				);
 				return;
 			}
 
@@ -90,7 +103,9 @@ export function useHomeLogic(container: Container): UseHomeLogicReturn {
 			}
 		} catch (error: any) {
 			if (error.message?.includes('API key is required')) {
-				setOutput('❌ API key required. Please configure your API key (press Ctrl+C, then run "codeh config").');
+				setOutput(
+					'❌ API key required. Please configure your API key (press Ctrl+C, then run "codeh config").',
+				);
 			} else {
 				setOutput(`❌ Error: ${error.message}`);
 			}

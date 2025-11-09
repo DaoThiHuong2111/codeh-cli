@@ -8,7 +8,9 @@
 ## 📊 Tổng Quan
 
 ### Thực Trạng Implementation
+
 Home Screen hiện tại là **MVP cơ bản** với các tính năng nền tảng:
+
 - ✅ UI Component đơn giản
 - ✅ Basic input/output
 - ✅ MVP pattern với HomePresenter
@@ -19,23 +21,26 @@ Home Screen hiện tại là **MVP cơ bản** với các tính năng nền tả
 ## ✅ Đã Có (Implemented)
 
 ### 1. **Components**
-| Component | File | Lines | Status |
-|-----------|------|-------|--------|
-| Home | `source/cli/screens/Home.tsx` | 64 | ✅ Working |
-| Logo | `source/cli/components/atoms/Logo.tsx` | ~30 | ✅ Working |
-| InfoSection | `source/cli/components/molecules/InfoSection.tsx` | 31 | ✅ Working |
-| TipsSection | `source/cli/components/molecules/TipsSection.tsx` | 32 | ✅ Working |
-| InputBox | `source/cli/components/molecules/InputBox.tsx` | 89 | ✅ Working |
+
+| Component   | File                                              | Lines | Status     |
+| ----------- | ------------------------------------------------- | ----- | ---------- |
+| Home        | `source/cli/screens/Home.tsx`                     | 64    | ✅ Working |
+| Logo        | `source/cli/components/atoms/Logo.tsx`            | ~30   | ✅ Working |
+| InfoSection | `source/cli/components/molecules/InfoSection.tsx` | 31    | ✅ Working |
+| TipsSection | `source/cli/components/molecules/TipsSection.tsx` | 32    | ✅ Working |
+| InputBox    | `source/cli/components/molecules/InputBox.tsx`    | 89    | ✅ Working |
 
 ### 2. **Business Logic**
-| Feature | File | Status |
-|---------|------|--------|
-| HomePresenter | `source/cli/presenters/HomePresenter.ts` | ✅ MVP |
-| useHomeLogic Hook | `source/cli/hooks/useHomeLogic.ts` | ✅ Working |
-| CodehClient | `source/core/application/CodehClient.ts` | ✅ Working |
-| CodehChat | `source/core/application/CodehChat.ts` | ✅ Working |
+
+| Feature           | File                                     | Status     |
+| ----------------- | ---------------------------------------- | ---------- |
+| HomePresenter     | `source/cli/presenters/HomePresenter.ts` | ✅ MVP     |
+| useHomeLogic Hook | `source/cli/hooks/useHomeLogic.ts`       | ✅ Working |
+| CodehClient       | `source/core/application/CodehClient.ts` | ✅ Working |
+| CodehChat         | `source/core/application/CodehChat.ts`   | ✅ Working |
 
 ### 3. **Features Hoạt Động**
+
 - ✅ Hiển thị Logo với branding
 - ✅ Hiển thị version, model, directory
 - ✅ Static tips khi start
@@ -51,6 +56,7 @@ Home Screen hiện tại là **MVP cơ bản** với các tính năng nền tả
 ## ❌ Chưa Có (Not Implemented)
 
 ### 1. **UI Components Chưa Có**
+
 - ❌ ConversationArea - Hiển thị lịch sử chat
 - ❌ Message component - Format tin nhắn theo role
 - ❌ TodosDisplay - Hiển thị task list
@@ -60,26 +66,29 @@ Home Screen hiện tại là **MVP cơ bản** với các tính năng nền tả
 - ❌ FileAttachments - Upload files
 
 ### 2. **Features Chưa Có**
-| Feature | Docs | Implementation | Gap |
-|---------|------|----------------|-----|
-| **Conversation History** | ✅ Mô tả | ❌ Chưa có | HIGH |
-| **Multi-turn Dialogue** | ✅ Mô tả | ❌ Chỉ hiện output cuối | HIGH |
-| **Slash Commands** | ✅ Mô tả 6 commands | ❌ Chưa có | HIGH |
-| **Todos Management** | ✅ Mô tả 3 states | ❌ Chưa có | MEDIUM |
-| **Tips Display** | ✅ Có | ✅ Static only | LOW |
-| **Keyboard Shortcuts** | ✅ Mô tả ? Esc ↑↓ | ❌ Chưa có | MEDIUM |
-| **Help Overlay** | ✅ Mô tả | ❌ Chưa có | LOW |
-| **Input History** | ✅ Mô tả ↑↓ | ❌ Chưa có | MEDIUM |
-| **Character Counter** | ✅ Mô tả | ❌ Chưa có | LOW |
-| **Loading Indicator** | ✅ Mô tả | ⚠️ Text only | LOW |
-| **Error Display** | ✅ Mô tả 2 types | ⚠️ Basic only | LOW |
-| **Markdown Support** | ✅ Mô tả | ❌ Plain text | MEDIUM |
-| **Virtual Scrolling** | ✅ Mô tả | ❌ Chưa cần | LOW |
-| **Streaming Response** | ❌ Chưa mô tả | ❌ Chưa có | HIGH |
-| **Session Save/Load** | ❌ Chưa mô tả | ❌ Chưa có | HIGH |
+
+| Feature                  | Docs                | Implementation          | Gap    |
+| ------------------------ | ------------------- | ----------------------- | ------ |
+| **Conversation History** | ✅ Mô tả            | ❌ Chưa có              | HIGH   |
+| **Multi-turn Dialogue**  | ✅ Mô tả            | ❌ Chỉ hiện output cuối | HIGH   |
+| **Slash Commands**       | ✅ Mô tả 6 commands | ❌ Chưa có              | HIGH   |
+| **Todos Management**     | ✅ Mô tả 3 states   | ❌ Chưa có              | MEDIUM |
+| **Tips Display**         | ✅ Có               | ✅ Static only          | LOW    |
+| **Keyboard Shortcuts**   | ✅ Mô tả ? Esc ↑↓   | ❌ Chưa có              | MEDIUM |
+| **Help Overlay**         | ✅ Mô tả            | ❌ Chưa có              | LOW    |
+| **Input History**        | ✅ Mô tả ↑↓         | ❌ Chưa có              | MEDIUM |
+| **Character Counter**    | ✅ Mô tả            | ❌ Chưa có              | LOW    |
+| **Loading Indicator**    | ✅ Mô tả            | ⚠️ Text only            | LOW    |
+| **Error Display**        | ✅ Mô tả 2 types    | ⚠️ Basic only           | LOW    |
+| **Markdown Support**     | ✅ Mô tả            | ❌ Plain text           | MEDIUM |
+| **Virtual Scrolling**    | ✅ Mô tả            | ❌ Chưa cần             | LOW    |
+| **Streaming Response**   | ❌ Chưa mô tả       | ❌ Chưa có              | HIGH   |
+| **Session Save/Load**    | ❌ Chưa mô tả       | ❌ Chưa có              | HIGH   |
 
 ### 3. **State Management Gap**
+
 **Docs nói:**
+
 ```javascript
 {
   input: string
@@ -93,14 +102,15 @@ Home Screen hiện tại là **MVP cơ bản** với các tính năng nền tả
 ```
 
 **Thực tế:**
+
 ```typescript
 {
-  output: string            // ✅ Chỉ output cuối
-  processing: boolean       // ✅ Loading state
-  version: string           // ✅
-  model: string            // ✅
-  directory: string        // ✅
-  chatError: string | null // ✅
+	output: string; // ✅ Chỉ output cuối
+	processing: boolean; // ✅ Loading state
+	version: string; // ✅
+	model: string; // ✅
+	directory: string; // ✅
+	chatError: string | null; // ✅
 }
 ```
 
@@ -109,6 +119,7 @@ Home Screen hiện tại là **MVP cơ bản** với các tính năng nền tả
 ## 📐 Kiến Trúc
 
 ### Hiện Tại (Simple MVP)
+
 ```
 Home Screen
   ├── Logo
@@ -119,6 +130,7 @@ Home Screen
 ```
 
 ### Theo Docs (Advanced)
+
 ```
 Home Screen
   ├── Logo
@@ -138,6 +150,7 @@ Home Screen
 ## 🎯 Gap Analysis Summary
 
 ### Critical Gaps (Ưu tiên cao)
+
 1. **Conversation History Display**
    - Docs: Multi-turn dialogue với timestamps, role distinction
    - Reality: Chỉ hiển thị output cuối cùng
@@ -154,11 +167,13 @@ Home Screen
    - Impact: HIGH - Foundation cho features khác
 
 ### Medium Gaps
+
 4. **Todos Display** - Được mô tả nhưng chưa có
 5. **Markdown Rendering** - Plain text only
 6. **Input History Navigation** - Chưa có ↑↓
 
 ### Low Priority Gaps
+
 7. **Character Counter** - Nice to have
 8. **Help Overlay** - Có thể dùng external help
 9. **Virtual Scrolling** - Chưa cần (ít messages)
@@ -168,16 +183,19 @@ Home Screen
 ## 💡 Recommendations
 
 ### Phase 1: Align với Docs (Làm match với docs hiện tại)
+
 1. Implement ConversationArea để hiển thị messages
 2. Add messages array vào state
 3. Format messages theo role (user/assistant/error/system)
 
 ### Phase 2: Core UX
+
 4. Implement slash commands basic (/help, /clear)
 5. Add keyboard shortcuts (?, Esc)
 6. Add markdown rendering
 
 ### Phase 3: Advanced (Học từ Gemini CLI)
+
 7. Streaming responses
 8. Session save/load
 9. Multi-modal input (files)

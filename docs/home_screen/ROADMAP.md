@@ -8,6 +8,7 @@
 ## 🎯 Vision
 
 Tạo ra **AI CLI tốt nhất** bằng cách kết hợp:
+
 - ✅ **Gemini CLI's** proven UX patterns (conversation, streaming, commands)
 - ✅ **CODEH's** superior architecture & documentation
 - ✅ **Unique features** tạo sự khác biệt (todos, analytics, branding)
@@ -30,6 +31,7 @@ Priority:       ✅ Done          🔴 Critical      🟡 Important     🟢 Nic
 ## ✅ Current State (v1.0.0)
 
 ### Đã Có
+
 - [x] MVP Home Screen (64 lines)
 - [x] Logo component
 - [x] InfoSection (version, model, directory)
@@ -41,6 +43,7 @@ Priority:       ✅ Done          🔴 Critical      🟡 Important     🟢 Nic
 - [x] CLAUDE.md context file support
 
 ### Limitations
+
 - ❌ Chỉ hiển thị output cuối cùng
 - ❌ Không có conversation history
 - ❌ Không có slash commands
@@ -50,23 +53,28 @@ Priority:       ✅ Done          🔴 Critical      🟡 Important     🟢 Nic
 ---
 
 ## 🔴 Phase 1: Core Features (v1.1.0)
+
 > **Timeline**: 2-3 weeks | **Priority**: CRITICAL | **Học từ**: Gemini CLI + Docs hiện tại
 
 ### Objectives
+
 Implement các tính năng **thiết yếu** để match với docs và Gemini CLI core features.
 
 ### Features
 
 #### 1.1 Conversation History Display 🔴
+
 **From:** Docs + Gemini CLI
 **Effort:** 3-4 days
 **Files:**
+
 - Create `ConversationArea.tsx`
 - Create `Message.tsx` component
 - Update `HomePresenter.ts` - Add messages array
 - Update `useHomeLogic.ts` - Track messages
 
 **Acceptance Criteria:**
+
 - [ ] Display all messages in conversation
 - [ ] Distinguish user/assistant/error/system with colors
 - [ ] Show timestamps for each message
@@ -74,6 +82,7 @@ Implement các tính năng **thiết yếu** để match với docs và Gemini C
 - [ ] Support scrolling to view history
 
 **UI Mockup:**
+
 ```
 ┌─────────────────────────────────────┐
 │ > You: How to use async?  (10:30)  │
@@ -91,9 +100,11 @@ Implement các tính năng **thiết yếu** để match với docs và Gemini C
 ---
 
 #### 1.2 Slash Commands Implementation 🔴
+
 **From:** Docs + Gemini CLI
 **Effort:** 2-3 days
 **Files:**
+
 - Create `SlashSuggestions.tsx`
 - Create `CommandRegistry.ts`
 - Update `InputBox.tsx` - Detect `/` prefix
@@ -110,6 +121,7 @@ Implement các tính năng **thiết yếu** để match với docs và Gemini C
 | `/sessions` | List sessions | `/ls` |
 
 **Acceptance Criteria:**
+
 - [ ] Typing `/` shows suggestions
 - [ ] Filter suggestions as user types
 - [ ] Navigate with ↑↓ keys
@@ -118,6 +130,7 @@ Implement các tính năng **thiết yếu** để match với docs và Gemini C
 - [ ] Show command results
 
 **UI Mockup:**
+
 ```
 ┌─────────────────────────────────────┐
 │ > /he_                              │
@@ -131,15 +144,18 @@ Implement các tính năng **thiết yếu** để match với docs và Gemini C
 ---
 
 #### 1.3 Streaming Response Support 🔴
+
 **From:** Gemini CLI (new feature)
 **Effort:** 3-4 days
 **Files:**
+
 - Update `CodehClient.ts` - Add `executeStream()` method
 - Update `HomePresenter.ts` - Handle streaming
 - Update `useHomeLogic.ts` - Stream state updates
 - Update `Message.tsx` - Show streaming indicator
 
 **Acceptance Criteria:**
+
 - [ ] Text appears progressively (not all at once)
 - [ ] Show streaming indicator (▌)
 - [ ] Update UI as chunks arrive
@@ -147,6 +163,7 @@ Implement các tính năng **thiết yếu** để match với docs và Gemini C
 - [ ] Disable input during streaming
 
 **Technical Notes:**
+
 ```typescript
 // In CodehClient
 async *executeStream(input: string): AsyncGenerator<string> {
@@ -169,14 +186,17 @@ async handleInputWithStream(input: string, onChunk: (text: string) => void) {
 ---
 
 #### 1.4 Session Persistence 🔴
+
 **From:** Gemini CLI (new feature)
 **Effort:** 2-3 days
 **Files:**
+
 - Create `SessionManager.ts`
 - Create storage in `~/.codeh/sessions/`
 - Update commands: `/save`, `/load`, `/sessions`
 
 **Acceptance Criteria:**
+
 - [ ] `/save [name]` saves current conversation
 - [ ] `/load [name]` restores conversation
 - [ ] `/sessions` lists saved sessions
@@ -184,6 +204,7 @@ async handleInputWithStream(input: string, onChunk: (text: string) => void) {
 - [ ] Auto-save on exit (optional)
 
 **Session Format:**
+
 ```json
 {
   "name": "debug-session",
@@ -201,6 +222,7 @@ async handleInputWithStream(input: string, onChunk: (text: string) => void) {
 ---
 
 ### Phase 1 Deliverables
+
 - ✅ Conversation history như Gemini CLI
 - ✅ 6 slash commands hoạt động
 - ✅ Streaming responses realtime
@@ -208,6 +230,7 @@ async handleInputWithStream(input: string, onChunk: (text: string) => void) {
 - ✅ Match với docs đã viết
 
 ### Phase 1 Metrics
+
 - **Lines of Code**: ~300-400 new lines
 - **New Components**: 4 components
 - **New Files**: 6-8 files
@@ -216,15 +239,18 @@ async handleInputWithStream(input: string, onChunk: (text: string) => void) {
 ---
 
 ## 🟡 Phase 2: Advanced UX (v1.2.0)
+
 > **Timeline**: 3-4 weeks | **Priority**: IMPORTANT | **Học từ**: Docs + UX improvements
 
 ### Features
 
 #### 2.1 Keyboard Shortcuts & Input History 🟡
+
 **From:** Docs
 **Effort:** 2 days
 
 **Shortcuts:**
+
 - `?` - Toggle help overlay
 - `Esc` - Clear input / Close overlay
 - `↑` / `↓` - Navigate input history
@@ -232,6 +258,7 @@ async handleInputWithStream(input: string, onChunk: (text: string) => void) {
 - `Ctrl+R` - Reload session
 
 **Input History:**
+
 - Track last 50 inputs
 - Navigate with ↑↓
 - Persist across sessions
@@ -239,32 +266,38 @@ async handleInputWithStream(input: string, onChunk: (text: string) => void) {
 ---
 
 #### 2.2 Markdown & Code Rendering 🟡
+
 **From:** Docs + Gemini CLI
 **Effort:** 3-4 days
 
 **Features:**
+
 - Syntax highlighting for code blocks
 - Formatted markdown (bold, italic, lists)
 - Collapsible code blocks
 - Copy code button
 
 **Libraries:**
+
 - `ink-markdown` or custom renderer
 - `highlight.js` for syntax highlighting
 
 ---
 
 #### 2.3 Todos Display 🟡
+
 **From:** Docs (unique to CODEH)
 **Effort:** 2-3 days
 
 **Features:**
+
 - Display task list from AI
 - 3 states: pending/in-progress/completed
 - Progress bar
 - Auto-update on status change
 
 **UI:**
+
 ```
 ┌─────────────────────────────────────┐
 │ Tasks: 2/5 completed                │
@@ -279,10 +312,12 @@ async handleInputWithStream(input: string, onChunk: (text: string) => void) {
 ---
 
 #### 2.4 Enhanced Footer & Stats 🟡
+
 **From:** Gemini CLI idea + new
 **Effort:** 1-2 days
 
 **Display:**
+
 - Token usage (input/output)
 - Message count
 - Estimated cost
@@ -290,6 +325,7 @@ async handleInputWithStream(input: string, onChunk: (text: string) => void) {
 - Git branch (if in repo)
 
 **UI:**
+
 ```
 ┌─────────────────────────────────────┐
 │ 🤖 claude-3-5-sonnet | 💬 15 msgs  │
@@ -301,10 +337,12 @@ async handleInputWithStream(input: string, onChunk: (text: string) => void) {
 ---
 
 #### 2.5 Help Overlay 🟡
+
 **From:** Docs
 **Effort:** 1-2 days
 
 **Content:**
+
 - Keyboard shortcuts table
 - Slash commands list
 - Quick tips
@@ -313,10 +351,12 @@ async handleInputWithStream(input: string, onChunk: (text: string) => void) {
 ---
 
 #### 2.6 Character Counter & Validation 🟢
+
 **From:** Docs
 **Effort:** 1 day
 
 **Features:**
+
 - Show counter when > 100 chars
 - Yellow warning at 80%
 - Red warning at 100%
@@ -325,6 +365,7 @@ async handleInputWithStream(input: string, onChunk: (text: string) => void) {
 ---
 
 ### Phase 2 Deliverables
+
 - ✅ Rich UX với keyboard shortcuts
 - ✅ Beautiful markdown rendering
 - ✅ Todos tracking (unique feature!)
@@ -335,21 +376,25 @@ async handleInputWithStream(input: string, onChunk: (text: string) => void) {
 ---
 
 ## 🟢 Phase 3: Extensions (v1.3.0)
+
 > **Timeline**: 4-5 weeks | **Priority**: NICE-TO-HAVE | **Học từ**: Gemini CLI advanced
 
 ### Features
 
 #### 3.1 Multi-modal Input 🟠
+
 **From:** Gemini CLI
 **Effort:** 4-5 days
 
 **Support:**
+
 - File attachments
 - Image uploads
 - PDF documents
 - Drag & drop
 
 **Use Cases:**
+
 - "Review this code: [app.ts]"
 - "Analyze: [screenshot.png]"
 - "Summarize: [design.pdf]"
@@ -357,15 +402,18 @@ async handleInputWithStream(input: string, onChunk: (text: string) => void) {
 ---
 
 #### 3.2 Output Format Options 🟢
+
 **From:** Gemini CLI
 **Effort:** 2-3 days
 
 **Formats:**
+
 - `text` (default)
 - `json` (structured)
 - `markdown` (raw)
 
 **CLI:**
+
 ```bash
 codeh -p "list files" --format json | jq
 ```
@@ -373,10 +421,12 @@ codeh -p "list files" --format json | jq
 ---
 
 #### 3.3 Virtual Scrolling 🟢
+
 **From:** Docs
 **Effort:** 2-3 days
 
 **When:**
+
 - > 40 messages
 - Render only visible + buffer
 - Smooth performance với 1000+ messages
@@ -384,10 +434,12 @@ codeh -p "list files" --format json | jq
 ---
 
 #### 3.4 Context Menu & Quick Actions 🟢
+
 **New feature**
 **Effort:** 3-4 days
 
 **Actions:**
+
 - Copy message
 - Edit & resend
 - Delete message
@@ -397,6 +449,7 @@ codeh -p "list files" --format json | jq
 ---
 
 ### Phase 3 Deliverables
+
 - ✅ Multi-modal capabilities
 - ✅ Flexible output formats
 - ✅ Performance optimizations
@@ -405,13 +458,16 @@ codeh -p "list files" --format json | jq
 ---
 
 ## 🚀 Future Vision (v2.0.0+)
+
 > **Timeline**: TBD | **Priority**: INNOVATION | **Beyond current scope**
 
 ### Ideas
 
 #### 4.1 MCP Server Integration
+
 **From:** Gemini CLI
 **Features:**
+
 - Plugin system
 - Custom tools
 - External integrations (GitHub, Slack, etc.)
@@ -419,8 +475,10 @@ codeh -p "list files" --format json | jq
 ---
 
 #### 4.2 Collaborative Sessions
+
 **New concept**
 **Features:**
+
 - Share session URL
 - Real-time collaboration
 - Comments & annotations
@@ -428,8 +486,10 @@ codeh -p "list files" --format json | jq
 ---
 
 #### 4.3 AI Model Switching
+
 **New concept**
 **Features:**
+
 - Switch between Claude/GPT/Gemini
 - Compare responses
 - Model-specific features
@@ -437,8 +497,10 @@ codeh -p "list files" --format json | jq
 ---
 
 #### 4.4 Advanced Analytics
+
 **New concept**
 **Features:**
+
 - Token usage trends
 - Cost tracking over time
 - Productivity metrics
@@ -447,8 +509,10 @@ codeh -p "list files" --format json | jq
 ---
 
 #### 4.5 Voice Input/Output
+
 **New concept**
 **Features:**
+
 - Speech-to-text input
 - Text-to-speech output
 - Voice commands
@@ -482,6 +546,7 @@ Priority: Start from bottom-right, move to top-left
 ## 🎯 Success Metrics
 
 ### v1.1.0 (Phase 1)
+
 - [ ] Users can view full conversation history
 - [ ] 6 slash commands working
 - [ ] Streaming response < 100ms latency
@@ -489,6 +554,7 @@ Priority: Start from bottom-right, move to top-left
 - [ ] 0 critical bugs
 
 ### v1.2.0 (Phase 2)
+
 - [ ] Markdown rendering for 100% of responses
 - [ ] Todos tracking for AI-generated tasks
 - [ ] Help accessible within 1 keystroke
@@ -496,6 +562,7 @@ Priority: Start from bottom-right, move to top-left
 - [ ] User satisfaction > 8/10
 
 ### v1.3.0 (Phase 3)
+
 - [ ] File upload success rate > 95%
 - [ ] Virtual scrolling handles 1000+ messages
 - [ ] JSON output parseable by tools
@@ -508,6 +575,7 @@ Priority: Start from bottom-right, move to top-left
 Sau mỗi phase, cập nhật:
 
 ### Phase 1
+
 - [x] `CURRENT_STATE.md` - Update implemented features
 - [ ] `functional/01-overview.md` - Add conversation area
 - [ ] `functional/02-main-features.md` - Add streaming, sessions
@@ -515,11 +583,13 @@ Sau mỗi phase, cập nhật:
 - [ ] `quick-reference.md` - Update with commands
 
 ### Phase 2
+
 - [ ] `functional/04-detailed-features.md` - Markdown, todos
 - [ ] `technical/07-keyboard.md` - Full shortcuts table
 - [ ] `functional/06-error-handling.md` - Enhanced errors
 
 ### Phase 3
+
 - [ ] `functional/02-main-features.md` - Multi-modal
 - [ ] `technical/09-best-practices.md` - Performance tips
 
@@ -528,6 +598,7 @@ Sau mỗi phase, cập nhật:
 ## 🤝 Contributing
 
 ### For Each Feature
+
 1. Create feature branch: `feature/conversation-history`
 2. Update docs FIRST
 3. Implement with tests
@@ -539,6 +610,7 @@ Sau mỗi phase, cập nhật:
    - Screenshots/demos
 
 ### Code Standards
+
 - TypeScript strict mode
 - MVP pattern compliance
 - Component size < 200 lines
@@ -549,12 +621,14 @@ Sau mỗi phase, cập nhật:
 ## 📊 Progress Tracking
 
 ### Phase 1 Progress: 0% (0/4)
+
 - [ ] 1.1 Conversation History
 - [ ] 1.2 Slash Commands
 - [ ] 1.3 Streaming Response
 - [ ] 1.4 Session Persistence
 
 ### Phase 2 Progress: 0% (0/6)
+
 - [ ] 2.1 Keyboard Shortcuts
 - [ ] 2.2 Markdown Rendering
 - [ ] 2.3 Todos Display
@@ -563,6 +637,7 @@ Sau mỗi phase, cập nhật:
 - [ ] 2.6 Character Counter
 
 ### Phase 3 Progress: 0% (0/4)
+
 - [ ] 3.1 Multi-modal Input
 - [ ] 3.2 Output Formats
 - [ ] 3.3 Virtual Scrolling
@@ -571,6 +646,7 @@ Sau mỗi phase, cập nhật:
 ---
 
 **Related Documents:**
+
 - [CURRENT_STATE.md](./CURRENT_STATE.md) - Current implementation status
 - [GEMINI_COMPARISON.md](./GEMINI_COMPARISON.md) - Comparison with Gemini CLI
 - [README.md](./README.md) - Documentation index

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Text } from 'ink';
+import {Box, Text} from 'ink';
 
 interface ProgressBarProps {
 	current: number;
@@ -31,11 +31,7 @@ export default function ProgressBar({
 				<Text color={color}>{filledBar}</Text>
 				<Text dimColor>{emptyBar}</Text>
 			</Box>
-			{showPercentage && (
-				<Text color={color}>
-					{percentage}%
-				</Text>
-			)}
+			{showPercentage && <Text color={color}>{percentage}%</Text>}
 			{total && (
 				<Box marginLeft={1}>
 					<Text dimColor>

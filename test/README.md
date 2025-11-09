@@ -85,7 +85,7 @@ npx ava --watch
 - ✅ **MarkdownService.test.ts** - 50+ tests
   - Heading parsing (H1-H6)
   - Code block parsing (with/without language)
-  - List parsing (-, *, +)
+  - List parsing (-, \*, +)
   - Blockquote parsing
   - Paragraph handling
   - Inline formatting (bold, italic, code)
@@ -140,13 +140,13 @@ npx ava --watch
 
 ```typescript
 import test from 'ava';
-import { Component } from '../source/component.js';
+import {Component} from '../source/component.js';
 
-test('descriptive test name', (t) => {
-  const result = Component.method();
+test('descriptive test name', t => {
+	const result = Component.method();
 
-  t.is(result, expectedValue);
-  t.truthy(condition);
+	t.is(result, expectedValue);
+	t.truthy(condition);
 });
 ```
 
@@ -172,18 +172,18 @@ test('renders correctly', (t) => {
 import test from 'ava';
 
 class MockDependency {
-  async method() {
-    return 'mock result';
-  }
+	async method() {
+		return 'mock result';
+	}
 }
 
-test('integration test', async (t) => {
-  const mock = new MockDependency();
-  const presenter = new Presenter(mock as any);
+test('integration test', async t => {
+	const mock = new MockDependency();
+	const presenter = new Presenter(mock as any);
 
-  await presenter.doSomething();
+	await presenter.doSomething();
 
-  t.is(presenter.state, expectedState);
+	t.is(presenter.state, expectedState);
 });
 ```
 
@@ -203,7 +203,7 @@ test/components/atoms/MyComponent.test.tsx
 ```typescript
 import test from 'ava';
 import React from 'react'; // For component tests
-import { render } from 'ink-testing-library'; // For Ink components
+import {render} from 'ink-testing-library'; // For Ink components
 ```
 
 ### 3. Write Tests
@@ -211,15 +211,15 @@ import { render } from 'ink-testing-library'; // For Ink components
 Follow AAA pattern (Arrange, Act, Assert):
 
 ```typescript
-test('does something', (t) => {
-  // Arrange
-  const input = 'test';
+test('does something', t => {
+	// Arrange
+	const input = 'test';
 
-  // Act
-  const result = doSomething(input);
+	// Act
+	const result = doSomething(input);
 
-  // Assert
-  t.is(result, expected);
+	// Assert
+	t.is(result, expected);
 });
 ```
 
@@ -292,9 +292,9 @@ const mock = new MockClass(); // Type error if doesn't match interface
 Use async/await for async operations:
 
 ```typescript
-test('async operation', async (t) => {
-  const result = await asyncFunction();
-  t.is(result, expected);
+test('async operation', async t => {
+	const result = await asyncFunction();
+	t.is(result, expected);
 });
 ```
 

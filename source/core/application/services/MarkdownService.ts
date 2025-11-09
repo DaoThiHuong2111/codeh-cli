@@ -33,7 +33,7 @@ export class MarkdownService {
 
 			// Code block (```)
 			if (line.trim().startsWith('```')) {
-				const { block, nextIndex } = this.parseCodeBlock(lines, i);
+				const {block, nextIndex} = this.parseCodeBlock(lines, i);
 				blocks.push(block);
 				i = nextIndex;
 				continue;
@@ -55,7 +55,7 @@ export class MarkdownService {
 
 			// List (-, *, 1.)
 			if (line.trim().match(/^[-*]\s/) || line.trim().match(/^\d+\.\s/)) {
-				const { block, nextIndex } = this.parseList(lines, i);
+				const {block, nextIndex} = this.parseList(lines, i);
 				blocks.push(block);
 				i = nextIndex;
 				continue;
@@ -68,7 +68,7 @@ export class MarkdownService {
 			}
 
 			// Paragraph
-			const { block, nextIndex } = this.parseParagraph(lines, i);
+			const {block, nextIndex} = this.parseParagraph(lines, i);
 			blocks.push(block);
 			i = nextIndex;
 		}
@@ -79,7 +79,7 @@ export class MarkdownService {
 	private parseCodeBlock(
 		lines: string[],
 		startIndex: number,
-	): { block: MarkdownBlock; nextIndex: number } {
+	): {block: MarkdownBlock; nextIndex: number} {
 		const startLine = lines[startIndex].trim();
 		const language = startLine.slice(3).trim() || 'text';
 
@@ -135,7 +135,7 @@ export class MarkdownService {
 	private parseList(
 		lines: string[],
 		startIndex: number,
-	): { block: MarkdownBlock; nextIndex: number } {
+	): {block: MarkdownBlock; nextIndex: number} {
 		const items: string[] = [];
 		let i = startIndex;
 
@@ -165,7 +165,7 @@ export class MarkdownService {
 	private parseParagraph(
 		lines: string[],
 		startIndex: number,
-	): { block: MarkdownBlock; nextIndex: number } {
+	): {block: MarkdownBlock; nextIndex: number} {
 		const paragraphLines: string[] = [];
 		let i = startIndex;
 
@@ -176,8 +176,7 @@ export class MarkdownService {
 			if (line.trim().startsWith('```')) break;
 			if (line.trim().match(/^#{1,6}\s/)) break;
 			if (line.trim().startsWith('>')) break;
-			if (line.trim().match(/^[-*]\s/) || line.trim().match(/^\d+\.\s/))
-				break;
+			if (line.trim().match(/^[-*]\s/) || line.trim().match(/^\d+\.\s/)) break;
 
 			paragraphLines.push(line);
 			i++;
@@ -195,8 +194,8 @@ export class MarkdownService {
 	/**
 	 * Parse inline markdown (bold, italic, code, links)
 	 */
-	parseInline(text: string): Array<{ type: string; content: string }> {
-		const tokens: Array<{ type: string; content: string }> = [];
+	parseInline(text: string): Array<{type: string; content: string}> {
+		const tokens: Array<{type: string; content: string}> = [];
 		let current = '';
 		let i = 0;
 
@@ -204,13 +203,13 @@ export class MarkdownService {
 			// Bold (**text**)
 			if (text.slice(i, i + 2) === '**') {
 				if (current) {
-					tokens.push({ type: 'text', content: current });
+					tokens.push({type: 'text', content: current});
 					current = '';
 				}
 				i += 2;
 				const end = text.indexOf('**', i);
 				if (end !== -1) {
-					tokens.push({ type: 'bold', content: text.slice(i, end) });
+					tokens.push({type: 'bold', content: text.slice(i, end)});
 					i = end + 2;
 					continue;
 				}
@@ -220,13 +219,13 @@ export class MarkdownService {
 			if (text[i] === '*' || text[i] === '_') {
 				const char = text[i];
 				if (current) {
-					tokens.push({ type: 'text', content: current });
+					tokens.push({type: 'text', content: current});
 					current = '';
 				}
 				i++;
 				const end = text.indexOf(char, i);
 				if (end !== -1) {
-					tokens.push({ type: 'italic', content: text.slice(i, end) });
+					tokens.push({type: 'italic', content: text.slice(i, end)});
 					i = end + 1;
 					continue;
 				}
@@ -235,13 +234,13 @@ export class MarkdownService {
 			// Inline code (`code`)
 			if (text[i] === '`') {
 				if (current) {
-					tokens.push({ type: 'text', content: current });
+					tokens.push({type: 'text', content: current});
 					current = '';
 				}
 				i++;
 				const end = text.indexOf('`', i);
 				if (end !== -1) {
-					tokens.push({ type: 'code', content: text.slice(i, end) });
+					tokens.push({type: 'code', content: text.slice(i, end)});
 					i = end + 1;
 					continue;
 				}
@@ -252,7 +251,7 @@ export class MarkdownService {
 		}
 
 		if (current) {
-			tokens.push({ type: 'text', content: current });
+			tokens.push({type: 'text', content: current});
 		}
 
 		return tokens;

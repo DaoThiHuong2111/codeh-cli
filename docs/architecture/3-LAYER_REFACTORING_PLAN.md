@@ -9,6 +9,7 @@
 ## 📋 MỤC TIÊU
 
 Tái cấu trúc codebase từ kiến trúc hỗn hợp hiện tại sang kiến trúc 3-layer rõ ràng:
+
 - **LAYER 1:** CLI Layer (Presentation/User Interface)
 - **LAYER 2:** Core Layer (Business Logic/Domain)
 - **LAYER 3:** External Services Layer (Infrastructure)
@@ -18,11 +19,13 @@ Tái cấu trúc codebase từ kiến trúc hỗn hợp hiện tại sang kiến
 ## 🎯 NGUYÊN TẮC THIẾT KẾ
 
 ### 1. Separation of Concerns
+
 - Mỗi layer có trách nhiệm riêng biệt, không chồng chéo
 - Layer trên chỉ phụ thuộc vào layer dưới (Dependency Rule)
 - Infrastructure details không ảnh hưởng đến business logic
 
 ### 2. Dependency Direction
+
 ```
 LAYER 1 (CLI)
     ↓ depends on
@@ -32,6 +35,7 @@ LAYER 3 (External Services)
 ```
 
 ### 3. Clean Architecture Principles
+
 - **Independence of Frameworks:** Business logic không phụ thuộc Ink/React
 - **Testability:** Core logic có thể test mà không cần UI hay external services
 - **Independence of UI:** Có thể thay Ink bằng web UI mà không đổi core
@@ -42,6 +46,7 @@ LAYER 3 (External Services)
 ## 🏗️ KIẾN TRÚC 3-LAYER CHI TIẾT
 
 ### LAYER 1: CLI LAYER (Presentation/User Interface)
+
 **Vai trò:** Tương tác với người dùng, hiển thị thông tin, nhận input
 
 ```
@@ -79,6 +84,7 @@ source/cli/
 ```
 
 **Responsibilities:**
+
 - ✅ Render UI với Ink framework
 - ✅ Handle keyboard events
 - ✅ Display data (formatted từ Core layer)
@@ -88,12 +94,14 @@ source/cli/
 - ❌ **KHÔNG gọi trực tiếp external APIs**
 
 **Dependencies:**
+
 - `ink`, `react` (UI framework)
 - `LAYER 2` interfaces (Core layer)
 
 ---
 
 ### LAYER 2: CORE LAYER (Business Logic/Domain)
+
 **Vai trò:** Chứa toàn bộ business logic, domain models, use cases
 
 ```
@@ -140,6 +148,7 @@ source/core/
 ```
 
 **Responsibilities:**
+
 - ✅ Business rules & validation
 - ✅ Domain models & entities
 - ✅ Use cases (application logic)
@@ -149,12 +158,14 @@ source/core/
 - ❌ **KHÔNG implement infrastructure details**
 
 **Dependencies:**
+
 - Pure TypeScript/JavaScript
 - `LAYER 3` interfaces (dependency injection)
 
 ---
 
 ### LAYER 3: EXTERNAL SERVICES LAYER (Infrastructure)
+
 **Vai trò:** Implement infrastructure, external integrations, data persistence
 
 ```
@@ -197,6 +208,7 @@ source/infrastructure/
 ```
 
 **Responsibilities:**
+
 - ✅ API communication (HTTP requests)
 - ✅ File system operations
 - ✅ Process execution
@@ -206,6 +218,7 @@ source/infrastructure/
 - ❌ **KHÔNG chứa business logic**
 
 **Dependencies:**
+
 - `node-fetch`, `axios` (HTTP)
 - `fs`, `path` (File system)
 - `child_process` (Shell commands)
@@ -216,6 +229,7 @@ source/infrastructure/
 ## 📊 SO SÁNH: HIỆN TẠI vs MỚI
 
 ### Hiện Tại (Structure cũ)
+
 ```
 source/
 ├── cli.js                    # Entry + setup
@@ -238,6 +252,7 @@ source/
 ```
 
 ### Mới (3-Layer Architecture)
+
 ```
 source/
 ├── cli/                      # LAYER 1: Presentation
@@ -267,9 +282,11 @@ source/
 ## 🔄 MIGRATION PLAN (Chi Tiết)
 
 ### PHASE 1: Chuẩn Bị (Preparation)
+
 **Timeline:** 1-2 hours
 
 #### Step 1.1: Tạo cấu trúc thư mục mới
+
 ```bash
 mkdir -p source/cli/{components/{atoms,molecules,organisms},screens,hooks,presenters}
 mkdir -p source/core/{domain/{models,valueObjects,interfaces},application/{usecases,services},tools/base}
@@ -277,11 +294,13 @@ mkdir -p source/infrastructure/{api/clients,config,history,integrations/{vscode,
 ```
 
 #### Step 1.2: Tạo base interfaces & types
+
 - `source/core/domain/interfaces/` - Domain interfaces
 - `source/core/domain/valueObjects/` - Value objects
 - `source/cli/presenters/types.ts` - View models
 
 #### Step 1.3: Tạo index files
+
 - `source/cli/index.ts`
 - `source/core/index.ts`
 - `source/infrastructure/index.ts`
@@ -289,11 +308,14 @@ mkdir -p source/infrastructure/{api/clients,config,history,integrations/{vscode,
 ---
 
 ### PHASE 2: Refactor LAYER 3 (Infrastructure)
+
 **Timeline:** 3-4 hours
 **Priority:** HIGH (Dependencies của layers khác)
 
 #### Step 2.1: API Clients
+
 **Di chuyển:**
+
 ```
 source/services/api/manager.js
     → source/infrastructure/api/ApiClientFactory.ts
@@ -304,13 +326,16 @@ source/services/api/manager.js
 ```
 
 **Refactor:**
+
 - Tách provider-specific logic thành separate clients
 - Implement `IApiClient` interface từ LAYER 2
 - Di chuyển HTTP logic vào `HttpClient.ts`
 - Hooks → Event system hoặc Observers
 
 #### Step 2.2: Configuration
+
 **Di chuyển:**
+
 ```
 source/services/config/manager.js
     → source/infrastructure/config/FileConfigRepository.ts
@@ -321,12 +346,15 @@ source/utils/configChecker.js
 ```
 
 **Refactor:**
+
 - Implement `IConfigRepository` interface
 - Tách file operations khỏi business logic
 - Priority strategy trong `ConfigLoader`
 
 #### Step 2.3: File System & Process
+
 **Tạo mới:**
+
 ```
 source/infrastructure/filesystem/FileOperations.ts
 source/infrastructure/process/ShellExecutor.ts
@@ -334,11 +362,14 @@ source/infrastructure/process/CommandValidator.ts
 ```
 
 **Extract từ:**
+
 - `services/input/handler.js` (shell execution)
 - Utilities hiện tại
 
 #### Step 2.4: External Integrations (Skeleton)
+
 **Tạo:**
+
 ```
 source/infrastructure/integrations/vscode/VSCodeExtension.ts
 source/infrastructure/integrations/mcp/MCPClient.ts
@@ -348,11 +379,14 @@ source/infrastructure/integrations/a2a/A2AClient.ts
 ---
 
 ### PHASE 3: Refactor LAYER 2 (Core/Business Logic)
+
 **Timeline:** 4-5 hours
 **Priority:** CRITICAL
 
 #### Step 3.1: Domain Models
+
 **Tạo models:**
+
 ```typescript
 // source/core/domain/models/Message.ts
 export class Message {
@@ -385,7 +419,9 @@ export class Turn {
 ```
 
 #### Step 3.2: Application Services
+
 **Di chuyển & Refactor:**
+
 ```
 source/services/input/handler.js + validator.js
     → source/core/application/services/InputClassifier.ts
@@ -396,6 +432,7 @@ source/services/output/classifier.js
 ```
 
 **Tạo orchestrators:**
+
 ```typescript
 // source/core/application/CodehClient.ts
 export class CodehClient {
@@ -419,13 +456,15 @@ export class CodehChat {
 ```
 
 #### Step 3.3: Tools
+
 **Tạo tool system:**
+
 ```typescript
 // source/core/tools/base/Tool.ts
 export interface Tool {
-  name: string;
-  description: string;
-  execute(params: any): Promise<any>;
+	name: string;
+	description: string;
+	execute(params: any): Promise<any>;
 }
 
 // source/core/tools/Shell.ts
@@ -435,7 +474,9 @@ export interface Tool {
 ```
 
 #### Step 3.4: Services
+
 **Tạo các services:**
+
 ```
 source/core/application/services/LoopDetector.ts
 source/core/application/services/CompressionService.ts
@@ -445,11 +486,14 @@ source/core/application/services/RoutingService.ts
 ---
 
 ### PHASE 4: Refactor LAYER 1 (CLI/Presentation)
+
 **Timeline:** 2-3 hours
 **Priority:** MEDIUM
 
 #### Step 4.1: Reorganize Components
+
 **Di chuyển theo Atomic Design:**
+
 ```
 source/components/Button.js
     → source/cli/components/atoms/Button.tsx
@@ -462,24 +506,28 @@ source/components/Navigation.js
 ```
 
 #### Step 4.2: Create Presenters
+
 **Tách logic khỏi components:**
+
 ```typescript
 // source/cli/presenters/HomePresenter.ts
 export class HomePresenter {
-  constructor(
-    private codehClient: CodehClient,
-    private codehChat: CodehChat
-  ) {}
+	constructor(
+		private codehClient: CodehClient,
+		private codehChat: CodehChat,
+	) {}
 
-  async handleUserInput(input: string): Promise<ViewModel> {
-    const turn = await this.codehClient.execute(input);
-    return this.formatForView(turn);
-  }
+	async handleUserInput(input: string): Promise<ViewModel> {
+		const turn = await this.codehClient.execute(input);
+		return this.formatForView(turn);
+	}
 }
 ```
 
 #### Step 4.3: Update Screens
+
 **Refactor screens để dùng presenters:**
+
 ```typescript
 // source/cli/screens/Home.tsx
 const Home = () => {
@@ -496,7 +544,9 @@ const Home = () => {
 ```
 
 #### Step 4.4: Create Custom Hooks
+
 **Tạo hooks cho state management:**
+
 ```
 source/cli/hooks/useGeminiStream.ts
 source/cli/hooks/useHistoryManager.ts
@@ -507,10 +557,13 @@ source/cli/hooks/useConfig.ts
 ---
 
 ### PHASE 5: Integration & Testing
+
 **Timeline:** 2-3 hours
 
 #### Step 5.1: Dependency Injection Setup
+
 **Tạo DI container:**
+
 ```typescript
 // source/core/di/container.ts
 export class Container {
@@ -540,7 +593,9 @@ export function setupContainer(): Container {
 ```
 
 #### Step 5.2: Update Entry Point
+
 **Refactor cli.tsx:**
+
 ```typescript
 // source/cli/cli.tsx
 import { setupContainer } from '../core/di/setup';
@@ -552,7 +607,9 @@ render(<App container={container} />);
 ```
 
 #### Step 5.3: Update Imports
+
 **Mass update imports:**
+
 ```bash
 # Replace old imports
 @/services/api → @/infrastructure/api
@@ -561,6 +618,7 @@ render(<App container={container} />);
 ```
 
 #### Step 5.4: Testing
+
 - Unit tests cho Core layer
 - Integration tests cho API clients
 - E2E tests cho major flows
@@ -568,15 +626,18 @@ render(<App container={container} />);
 ---
 
 ### PHASE 6: Cleanup & Documentation
+
 **Timeline:** 1-2 hours
 
 #### Step 6.1: Remove Old Code
+
 ```bash
 rm -rf source/services/
 rm -rf source/utils/
 ```
 
 #### Step 6.2: Update Documentation
+
 ```
 docs/architecture/
 ├── 3-LAYER_REFACTORING_PLAN.md (this file)
@@ -587,13 +648,14 @@ docs/architecture/
 ```
 
 #### Step 6.3: Update package.json scripts
+
 ```json
 {
-  "scripts": {
-    "build:cli": "babel source/cli -d dist/cli",
-    "build:core": "babel source/core -d dist/core",
-    "build:infra": "babel source/infrastructure -d dist/infrastructure"
-  }
+	"scripts": {
+		"build:cli": "babel source/cli -d dist/cli",
+		"build:core": "babel source/core -d dist/core",
+		"build:infra": "babel source/infrastructure -d dist/infrastructure"
+	}
 }
 ```
 
@@ -602,18 +664,21 @@ docs/architecture/
 ## 🎯 IMPLEMENTATION CHECKLIST
 
 ### Pre-Refactoring
+
 - [ ] Backup current codebase
 - [ ] Create feature branch: `refactor/3-layer-architecture`
 - [ ] Review existing tests
 - [ ] Document current behavior
 
 ### PHASE 1: Preparation
+
 - [ ] Create folder structure
 - [ ] Create base interfaces
 - [ ] Create index files
 - [ ] Setup TypeScript configs
 
 ### PHASE 2: Layer 3 (Infrastructure)
+
 - [ ] Refactor API clients
 - [ ] Refactor configuration
 - [ ] Create file system operations
@@ -621,6 +686,7 @@ docs/architecture/
 - [ ] Create integration skeletons
 
 ### PHASE 3: Layer 2 (Core)
+
 - [ ] Create domain models
 - [ ] Create value objects
 - [ ] Create application services
@@ -629,6 +695,7 @@ docs/architecture/
 - [ ] Create orchestrators (CodehClient, CodehChat)
 
 ### PHASE 4: Layer 1 (CLI)
+
 - [ ] Reorganize components (Atomic Design)
 - [ ] Create presenters
 - [ ] Update screens
@@ -636,6 +703,7 @@ docs/architecture/
 - [ ] Update navigation
 
 ### PHASE 5: Integration
+
 - [ ] Setup DI container
 - [ ] Update entry point
 - [ ] Update all imports
@@ -643,6 +711,7 @@ docs/architecture/
 - [ ] Fix bugs
 
 ### PHASE 6: Cleanup
+
 - [ ] Remove old code
 - [ ] Update documentation
 - [ ] Update build scripts
@@ -653,6 +722,7 @@ docs/architecture/
 ## 📈 SUCCESS CRITERIA
 
 ### Technical Metrics
+
 - ✅ All layers are independent
 - ✅ No circular dependencies
 - ✅ Core layer has 0 external dependencies
@@ -660,12 +730,14 @@ docs/architecture/
 - ✅ All existing features work
 
 ### Code Quality
+
 - ✅ Clear separation of concerns
 - ✅ Consistent naming conventions
 - ✅ Comprehensive documentation
 - ✅ Type safety (TypeScript)
 
 ### Maintainability
+
 - ✅ Easy to add new features
 - ✅ Easy to change UI framework
 - ✅ Easy to swap API providers
@@ -675,34 +747,36 @@ docs/architecture/
 
 ## ⚠️ RISKS & MITIGATION
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Breaking changes | HIGH | Thorough testing, feature parity check |
-| Import path errors | MEDIUM | Automated find-replace, careful review |
-| Performance regression | LOW | Benchmark critical paths |
-| Missing functionality | HIGH | Feature checklist, user testing |
+| Risk                   | Impact | Mitigation                             |
+| ---------------------- | ------ | -------------------------------------- |
+| Breaking changes       | HIGH   | Thorough testing, feature parity check |
+| Import path errors     | MEDIUM | Automated find-replace, careful review |
+| Performance regression | LOW    | Benchmark critical paths               |
+| Missing functionality  | HIGH   | Feature checklist, user testing        |
 
 ---
 
 ## 📝 NOTES
 
 ### Naming Conventions
+
 - **Files:** PascalCase for classes/components (e.g., `CodehClient.ts`)
 - **Folders:** camelCase (e.g., `usecases/`)
 - **Interfaces:** Prefix với `I` (e.g., `IApiClient`)
 - **Types:** PascalCase (e.g., `InputType`)
 
 ### Import Aliases (tsconfig.json)
+
 ```json
 {
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@/cli/*": ["source/cli/*"],
-      "@/core/*": ["source/core/*"],
-      "@/infrastructure/*": ["source/infrastructure/*"]
-    }
-  }
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"@/cli/*": ["source/cli/*"],
+			"@/core/*": ["source/core/*"],
+			"@/infrastructure/*": ["source/infrastructure/*"]
+		}
+	}
 }
 ```
 

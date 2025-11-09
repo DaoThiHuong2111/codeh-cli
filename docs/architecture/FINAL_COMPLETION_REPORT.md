@@ -10,6 +10,7 @@ Dự án đã được tái cấu trúc hoàn toàn từ kiến trúc monolithic
 ## Thống Kê Dự Án
 
 ### Files và Code
+
 - **Tổng số files TypeScript**: 61 files (.ts, .tsx)
 - **Tổng số dòng code**: ~6,000+ dòng
 - **Documentation files**: 7 files markdown chi tiết
@@ -18,6 +19,7 @@ Dự án đã được tái cấu trúc hoàn toàn từ kiến trúc monolithic
 ### Phân Bổ Theo Layer
 
 #### LAYER 1: CLI Layer (22 files)
+
 ```
 source/cli/
 ├── components/
@@ -33,6 +35,7 @@ source/cli/
 ```
 
 #### LAYER 2: Core Layer (22 files)
+
 ```
 source/core/
 ├── domain/
@@ -54,6 +57,7 @@ source/core/
 ```
 
 #### LAYER 3: Infrastructure Layer (14 files)
+
 ```
 source/infrastructure/
 ├── api/
@@ -67,6 +71,7 @@ source/infrastructure/
 ```
 
 #### Entry Point (3 files)
+
 ```
 source/
 ├── cli.tsx              # Main CLI entry
@@ -76,6 +81,7 @@ source/
 ## Những Gì Đã Hoàn Thành
 
 ### ✅ Phase 1: Infrastructure Layer (100%)
+
 - [x] HTTP Client wrapper cho node-fetch
 - [x] 4 API Clients (Anthropic, OpenAI, Ollama, Generic)
 - [x] API Client Factory với provider detection
@@ -88,6 +94,7 @@ source/
 - [x] Command Validator (security checks)
 
 ### ✅ Phase 2: Core Layer (100%)
+
 - [x] Domain Models: Message, Conversation, Turn, Configuration
 - [x] Value Objects: Provider, ModelInfo, InputType
 - [x] Interfaces: IApiClient, IConfigRepository, IHistoryRepository, IToolExecutor
@@ -101,6 +108,7 @@ source/
 - [x] Container setup với all registrations
 
 ### ✅ Phase 3: CLI Layer (100%)
+
 - [x] Atomic Design Components:
   - [x] 4 Atoms (Logo, Button, StatusIndicator, ProgressBar)
   - [x] 4 Molecules (InputBox, Menu, TipsSection, InfoSection)
@@ -112,6 +120,7 @@ source/
 - [x] CLI Entry point với DI setup
 
 ### ✅ Phase 4: Configuration & Build (100%)
+
 - [x] TypeScript configuration (tsconfig.json)
 - [x] Path aliases (@/cli, @/core, @/infrastructure)
 - [x] Babel configuration với TypeScript preset
@@ -121,6 +130,7 @@ source/
 - [x] @types/react@19.2.0 (compatible với ink@6.4.0)
 
 ### ✅ Phase 5: Documentation (100%)
+
 - [x] 3-LAYER_REFACTORING_PLAN.md
 - [x] NEW_ARCHITECTURE.md
 - [x] MIGRATION_GUIDE.md
@@ -131,6 +141,7 @@ source/
 - [x] README.md (comprehensive)
 
 ### ✅ Phase 6: Cleanup (100%)
+
 - [x] Xóa source/components/ (old)
 - [x] Xóa source/screens/ (old)
 - [x] Xóa source/services/ (old)
@@ -142,6 +153,7 @@ source/
 ## Kiến Trúc Mới
 
 ### Dependency Flow
+
 ```
 CLI Layer (source/cli/)
     ↓ depends on
@@ -153,6 +165,7 @@ External Services (APIs, File System, etc.)
 ```
 
 ### Dependency Injection Flow
+
 ```
 1. CLI Entry Point (cli.tsx)
    ↓
@@ -192,11 +205,13 @@ External Services (APIs, File System, etc.)
 ## Công Nghệ Stack
 
 ### Runtime
+
 - **Node.js**: >=16
 - **React**: 19.2.0
 - **Ink**: 6.4.0 (Terminal UI framework)
 
 ### Development
+
 - **TypeScript**: 5.0.0
 - **Babel**: 7.21.0
 - **Prettier**: 3.6.2
@@ -204,6 +219,7 @@ External Services (APIs, File System, etc.)
 - **Ava**: 6.4.1 (Testing framework)
 
 ### Dependencies
+
 - **dotenv**: Environment variables
 - **meow**: CLI argument parsing
 - **node-fetch**: HTTP client
@@ -243,6 +259,7 @@ node dist/cli.js
 ## Configuration
 
 ### Environment Variables
+
 ```bash
 # Required Variables
 export CODEH_PROVIDER=anthropic  # anthropic | openai | ollama | generic
@@ -283,11 +300,13 @@ export CODEH_API_KEY=your-key
 ```
 
 ### Configuration File
+
 ```bash
 ~/.codeh/configs.json
 ```
 
 ### History Storage
+
 ```bash
 ~/.codeh/history/
 ```
@@ -295,18 +314,21 @@ export CODEH_API_KEY=your-key
 ## Testing Strategy
 
 ### Unit Tests
+
 - Core domain models (Message, Conversation, Turn)
 - Value objects (Provider, ModelInfo)
 - Services (InputClassifier, OutputFormatter)
 - Tools (Shell, FileOps)
 
 ### Integration Tests
+
 - API Clients (với mocked responses)
 - Repositories (với temporary files)
 - CodehClient orchestration
 - CodehChat conversation flow
 
 ### Component Tests
+
 - React components (với ink-testing-library)
 - Presenters (với mocked dependencies)
 - Hooks (với React Testing Library)
@@ -314,6 +336,7 @@ export CODEH_API_KEY=your-key
 ## Security Considerations
 
 ### Implemented
+
 - ✅ Command validation (CommandValidator)
 - ✅ Safe file operations (FileOperations)
 - ✅ Environment variable validation
@@ -322,6 +345,7 @@ export CODEH_API_KEY=your-key
 - ✅ Path traversal protection
 
 ### Recommendations
+
 - Use .env files for sensitive data
 - Never commit API keys
 - Validate all user inputs
@@ -331,16 +355,19 @@ export CODEH_API_KEY=your-key
 ## Performance Optimizations
 
 ### Code Splitting
+
 - Separate CLI, Core, Infrastructure layers
 - Lazy loading cho screens
 - Tree-shaking với ES modules
 
 ### Memory Management
+
 - Conversation compression khi cần
 - Stream processing cho large outputs
 - Cleanup trong useEffect hooks
 
 ### Build Optimization
+
 - TypeScript transpilation
 - Babel optimization
 - Module resolution caching
@@ -348,6 +375,7 @@ export CODEH_API_KEY=your-key
 ## Migration Path
 
 ### For Existing Users
+
 1. Backup configuration: `cp ~/.codeh/configs.json ~/.codeh/configs.json.backup`
 2. Pull latest code
 3. Install dependencies: `npm install`
@@ -356,6 +384,7 @@ export CODEH_API_KEY=your-key
 6. Configuration sẽ tự động migrate
 
 ### For Developers
+
 1. Đọc `docs/architecture/MIGRATION_GUIDE.md`
 2. Hiểu mô hình 3-layer architecture
 3. Sử dụng DI container cho dependencies
@@ -365,12 +394,14 @@ export CODEH_API_KEY=your-key
 ## Known Issues & Limitations
 
 ### Current Limitations
+
 - ❌ Chưa có streaming UI (preparing for future)
 - ❌ Chưa có tool execution visualization
 - ❌ Chưa có conversation export/import
 - ❌ Chưa có multi-session management
 
 ### Planned Improvements
+
 - [ ] Add streaming support trong UI
 - [ ] Tool execution progress indicators
 - [ ] Conversation export (JSON, Markdown)
@@ -381,18 +412,21 @@ export CODEH_API_KEY=your-key
 ## Next Steps
 
 ### Immediate (Priority 1)
+
 1. ✅ Build and test the application
 2. ✅ Verify all API clients work
 3. ✅ Test configuration wizard
 4. ✅ Validate conversation flow
 
 ### Short-term (Priority 2)
+
 1. Add comprehensive unit tests
 2. Add integration tests
 3. Setup CI/CD pipeline
 4. Add error monitoring
 
 ### Long-term (Priority 3)
+
 1. Implement streaming UI
 2. Add plugin system
 3. Create Web UI version
@@ -401,6 +435,7 @@ export CODEH_API_KEY=your-key
 ## Success Metrics
 
 ### Code Quality
+
 - ✅ 100% TypeScript coverage
 - ✅ SOLID principles followed
 - ✅ Clean Architecture implemented
@@ -408,6 +443,7 @@ export CODEH_API_KEY=your-key
 - ✅ Comprehensive documentation
 
 ### Architecture
+
 - ✅ 3-layer separation achieved
 - ✅ Dependency Injection implemented
 - ✅ Atomic Design for components
@@ -415,6 +451,7 @@ export CODEH_API_KEY=your-key
 - ✅ Repository pattern for data
 
 ### Developer Experience
+
 - ✅ Clear folder structure
 - ✅ Type-safe development
 - ✅ Easy to test

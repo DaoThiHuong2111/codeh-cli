@@ -10,6 +10,7 @@
 Hướng dẫn này giúp bạn di chuyển từ cấu trúc cũ sang kiến trúc 3-layer mới.
 
 ### Trước (Old Structure)
+
 ```
 source/
 ├── services/       # Mixed: Business + Infrastructure
@@ -19,6 +20,7 @@ source/
 ```
 
 ### Sau (New Structure)
+
 ```
 source/
 ├── core/           # LAYER 2: Business Logic
@@ -33,13 +35,15 @@ source/
 ### API Services
 
 **Trước:**
+
 ```javascript
-import { apiManager } from './services/api/manager.js';
+import {apiManager} from './services/api/manager.js';
 ```
 
 **Sau:**
+
 ```typescript
-import { setupContainer } from '@/core';
+import {setupContainer} from '@/core';
 
 const container = await setupContainer();
 const codehClient = await container.resolve('CodehClient');
@@ -50,21 +54,23 @@ const codehClient = await container.resolve('CodehClient');
 ### Configuration
 
 **Trước:**
+
 ```javascript
-import { configManager } from './services/config/manager.js';
-import { envManager } from './services/config/env.js';
-import { getModel, getProvider } from './services/config/getters.js';
+import {configManager} from './services/config/manager.js';
+import {envManager} from './services/config/env.js';
+import {getModel, getProvider} from './services/config/getters.js';
 ```
 
 **Sau:**
+
 ```typescript
-import { ConfigLoader, Configuration } from '@/infrastructure';
+import {ConfigLoader, Configuration} from '@/infrastructure';
 
 const loader = new ConfigLoader();
 const config = await loader.load();
 
 console.log(config.provider); // 'anthropic'
-console.log(config.model);    // 'claude-3-5-sonnet-20241022'
+console.log(config.model); // 'claude-3-5-sonnet-20241022'
 ```
 
 ---
@@ -72,23 +78,25 @@ console.log(config.model);    // 'claude-3-5-sonnet-20241022'
 ### Input Validation
 
 **Trước:**
+
 ```javascript
-import { inputValidator } from './services/input/validator.js';
+import {inputValidator} from './services/input/validator.js';
 
 const result = inputValidator.validate(input);
 const classification = inputValidator.classifyInput(input);
 ```
 
 **Sau:**
+
 ```typescript
-import { InputClassifier } from '@/core';
+import {InputClassifier} from '@/core';
 
 const classifier = new InputClassifier();
 const validation = classifier.validate(input);
 const classification = classifier.classify(input);
 
-console.log(classification.type);        // InputType.TEXT
-console.log(classification.confidence);  // 1.0
+console.log(classification.type); // InputType.TEXT
+console.log(classification.confidence); // 1.0
 ```
 
 ---
@@ -96,20 +104,22 @@ console.log(classification.confidence);  // 1.0
 ### Output Classification
 
 **Trước:**
+
 ```javascript
-import { outputClassifier } from './services/output/classifier.js';
+import {outputClassifier} from './services/output/classifier.js';
 
 const result = outputClassifier.classify(output);
 ```
 
 **Sau:**
+
 ```typescript
-import { OutputFormatter } from '@/core';
+import {OutputFormatter} from '@/core';
 
 const formatter = new OutputFormatter();
 const classification = formatter.classify(output);
 
-console.log(classification.type);  // OutputType.CODE
+console.log(classification.type); // OutputType.CODE
 ```
 
 ---
@@ -117,15 +127,17 @@ console.log(classification.type);  // OutputType.CODE
 ### Shell Commands
 
 **Trước:**
+
 ```javascript
-import { inputHandler } from './services/input/handler.js';
+import {inputHandler} from './services/input/handler.js';
 
 await inputHandler.handleCommand(command);
 ```
 
 **Sau:**
+
 ```typescript
-import { ShellExecutor, CommandValidator } from '@/infrastructure';
+import {ShellExecutor, CommandValidator} from '@/infrastructure';
 
 const executor = new ShellExecutor();
 const validator = new CommandValidator();
@@ -133,7 +145,7 @@ const validator = new CommandValidator();
 // Validate first
 const validation = validator.validate(command);
 if (!validation.valid) {
-  throw new Error(validation.reason);
+	throw new Error(validation.reason);
 }
 
 // Execute
@@ -146,6 +158,7 @@ console.log(result.stdout);
 ### File Operations
 
 **Trước:**
+
 ```javascript
 import fs from 'fs';
 
@@ -154,20 +167,21 @@ fs.writeFileSync(path, content);
 ```
 
 **Sau:**
+
 ```typescript
-import { FileOperations } from '@/infrastructure';
+import {FileOperations} from '@/infrastructure';
 
 const fileOps = new FileOperations();
 const content = fileOps.readFile(path);
 fileOps.writeFile(path, content);
 
 // Hoặc dùng Tool
-import { FileOpsTool } from '@/core';
+import {FileOpsTool} from '@/core';
 
 const tool = new FileOpsTool(fileOps);
 const result = await tool.execute({
-  operation: 'read',
-  path: './file.txt',
+	operation: 'read',
+	path: './file.txt',
 });
 ```
 
@@ -178,16 +192,18 @@ const result = await tool.execute({
 ### 1. Dependency Injection
 
 **Trước:** Singletons với imports trực tiếp
+
 ```javascript
-import { apiManager } from './services/api/manager.js';
+import {apiManager} from './services/api/manager.js';
 
 // Use directly
-await apiManager.callAI({ messages });
+await apiManager.callAI({messages});
 ```
 
 **Sau:** DI Container
+
 ```typescript
-import { setupContainer } from '@/core';
+import {setupContainer} from '@/core';
 
 const container = await setupContainer();
 const codehClient = await container.resolve('CodehClient');
@@ -199,63 +215,69 @@ const turn = await codehClient.execute(input);
 ### 2. Type Safety
 
 **Trước:** JavaScript với JSDoc comments
+
 ```javascript
 /**
  * @param {string} input
  * @returns {Promise<object>}
  */
 async function process(input) {
-  // ...
+	// ...
 }
 ```
 
 **Sau:** TypeScript với strict typing
+
 ```typescript
 async function process(input: string): Promise<Turn> {
-  const turn = await codehClient.execute(input);
-  return turn;
+	const turn = await codehClient.execute(input);
+	return turn;
 }
 ```
 
 ### 3. Domain Models
 
 **Trước:** Plain objects
+
 ```javascript
 const message = {
-  role: 'user',
-  content: 'Hello',
-  timestamp: new Date(),
+	role: 'user',
+	content: 'Hello',
+	timestamp: new Date(),
 };
 ```
 
 **Sau:** Rich domain models
+
 ```typescript
-import { Message } from '@/core';
+import {Message} from '@/core';
 
 const message = Message.user('Hello');
 
-console.log(message.isUser());      // true
-console.log(message.timestamp);     // Date
-console.log(message.toJSON());      // Serializable
+console.log(message.isUser()); // true
+console.log(message.timestamp); // Date
+console.log(message.toJSON()); // Serializable
 ```
 
 ### 4. Configuration
 
 **Trước:** Mixed env vars and file config
+
 ```javascript
-const provider = getProvider();  // Complex fallback logic
+const provider = getProvider(); // Complex fallback logic
 const model = getModel();
 ```
 
 **Sau:** Unified configuration model
+
 ```typescript
-import { ConfigLoader, Configuration } from '@/infrastructure';
+import {ConfigLoader, Configuration} from '@/infrastructure';
 
 const loader = new ConfigLoader();
-const config = await loader.load();  // Auto-merges env + file
+const config = await loader.load(); // Auto-merges env + file
 
 if (!config.isValid()) {
-  console.error(config.getValidationErrors());
+	console.error(config.getValidationErrors());
 }
 ```
 
@@ -266,19 +288,21 @@ if (!config.isValid()) {
 ### Example 1: Simple Chat Interaction
 
 **Cũ:**
+
 ```javascript
-import { apiManager } from './services/api/manager.js';
+import {apiManager} from './services/api/manager.js';
 
 const response = await apiManager.callAI({
-  messages: [{ role: 'user', content: 'Hello' }],
+	messages: [{role: 'user', content: 'Hello'}],
 });
 
 console.log(response.content);
 ```
 
 **Mới:**
+
 ```typescript
-import { setupContainer } from '@/core';
+import {setupContainer} from '@/core';
 
 const container = await setupContainer();
 const client = await container.resolve('CodehClient');
@@ -292,9 +316,10 @@ console.log(turn.getDuration());
 ### Example 2: Conversation Management
 
 **Mới:**
+
 ```typescript
-import { CodehChat } from '@/core';
-import { FileHistoryRepository } from '@/infrastructure';
+import {CodehChat} from '@/core';
+import {FileHistoryRepository} from '@/infrastructure';
 
 const historyRepo = new FileHistoryRepository();
 const chat = new CodehChat(historyRepo);
@@ -318,9 +343,10 @@ await chat.clear();
 ### Example 3: Using Tools
 
 **Mới:**
+
 ```typescript
-import { ToolRegistry, ShellTool, FileOpsTool } from '@/core';
-import { ShellExecutor, FileOperations } from '@/infrastructure';
+import {ToolRegistry, ShellTool, FileOpsTool} from '@/core';
+import {ShellExecutor, FileOperations} from '@/infrastructure';
 
 // Setup registry
 const registry = new ToolRegistry();
@@ -329,13 +355,13 @@ registry.register(new FileOpsTool(new FileOperations()));
 
 // Execute tool
 const result = await registry.execute('shell', {
-  command: 'git status',
+	command: 'git status',
 });
 
 if (result.success) {
-  console.log(result.output);
+	console.log(result.output);
 } else {
-  console.error(result.error);
+	console.error(result.error);
 }
 ```
 
@@ -344,10 +370,13 @@ if (result.success) {
 ## ⚠️ BREAKING CHANGES
 
 ### 1. **No More Global Singletons**
+
 Không còn `apiManager`, `configManager`, etc. singletons. Phải dùng DI Container.
 
 ### 2. **Async Configuration Loading**
+
 Configuration loading giờ là async:
+
 ```typescript
 // ❌ Wrong
 const config = configLoader.load();
@@ -357,17 +386,21 @@ const config = await configLoader.load();
 ```
 
 ### 3. **Message Format Changed**
+
 Messages giờ là domain models, không phải plain objects:
+
 ```typescript
 // ❌ Wrong
-const msg = { role: 'user', content: 'Hi' };
+const msg = {role: 'user', content: 'Hi'};
 
 // ✅ Correct
 const msg = Message.user('Hi');
 ```
 
 ### 4. **No Direct API Calls**
+
 Không gọi API trực tiếp, phải qua CodehClient:
+
 ```typescript
 // ❌ Wrong
 await apiManager.callAnthropic(data, config);
@@ -381,6 +414,7 @@ await codehClient.execute(input);
 ## 🔄 STEP-BY-STEP MIGRATION
 
 ### Phase 1: Add New Dependencies (Completed ✅)
+
 - [x] Install TypeScript (if not already)
 - [x] Create new folder structure
 - [x] Add all new files
@@ -388,6 +422,7 @@ await codehClient.execute(input);
 ### Phase 2: Update Entry Point
 
 **Cũ (`source/cli.js`):**
+
 ```javascript
 import {App} from './app.js';
 import {render} from 'ink';
@@ -396,6 +431,7 @@ render(<App />);
 ```
 
 **Mới:**
+
 ```typescript
 import { App } from './cli/app.tsx';
 import { render } from 'ink';
@@ -414,22 +450,24 @@ main().catch(console.error);
 **Example: Home Screen**
 
 **Cũ:**
+
 ```javascript
-import { apiManager } from '../services/api/manager.js';
+import {apiManager} from '../services/api/manager.js';
 
 const Home = () => {
-  const handleInput = async (input) => {
-    const response = await apiManager.callAI({
-      messages: [{ role: 'user', content: input }],
-    });
-    setOutput(response.content);
-  };
+	const handleInput = async input => {
+		const response = await apiManager.callAI({
+			messages: [{role: 'user', content: input}],
+		});
+		setOutput(response.content);
+	};
 
-  return <Box>...</Box>;
+	return <Box>...</Box>;
 };
 ```
 
 **Mới:**
+
 ```typescript
 import { Container } from '../../core';
 import { CodehClient } from '../../core';
@@ -468,38 +506,43 @@ rm -rf source/utils/
 ### TypeScript Configuration
 
 Cần thêm vào `tsconfig.json`:
+
 ```json
 {
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@/core/*": ["source/core/*"],
-      "@/infrastructure/*": ["source/infrastructure/*"],
-      "@/cli/*": ["source/cli/*"]
-    }
-  }
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"@/core/*": ["source/core/*"],
+			"@/infrastructure/*": ["source/infrastructure/*"],
+			"@/cli/*": ["source/cli/*"]
+		}
+	}
 }
 ```
 
 ### Babel Configuration
 
 Cần update `babel.config.json`:
+
 ```json
 {
-  "presets": [
-    ["@babel/preset-env", { "targets": { "node": "16" } }],
-    "@babel/preset-typescript",
-    "@babel/preset-react"
-  ],
-  "plugins": [
-    ["module-resolver", {
-      "alias": {
-        "@/core": "./source/core",
-        "@/infrastructure": "./source/infrastructure",
-        "@/cli": "./source/cli"
-      }
-    }]
-  ]
+	"presets": [
+		["@babel/preset-env", {"targets": {"node": "16"}}],
+		"@babel/preset-typescript",
+		"@babel/preset-react"
+	],
+	"plugins": [
+		[
+			"module-resolver",
+			{
+				"alias": {
+					"@/core": "./source/core",
+					"@/infrastructure": "./source/infrastructure",
+					"@/cli": "./source/cli"
+				}
+			}
+		]
+	]
 }
 ```
 
@@ -512,10 +555,11 @@ Cần update `babel.config.json`:
 **Cause:** Trying to resolve a dependency that hasn't been registered.
 
 **Solution:**
+
 ```typescript
 // Check if registered
 if (container.has('CodehClient')) {
-  const client = await container.resolve('CodehClient');
+	const client = await container.resolve('CodehClient');
 }
 ```
 
@@ -524,6 +568,7 @@ if (container.has('CodehClient')) {
 **Cause:** Missing environment variables or config file.
 
 **Solution:**
+
 ```typescript
 const loader = new ConfigLoader();
 const status = await loader.getStatus();
@@ -532,7 +577,7 @@ console.log('Has env config:', status.hasEnvConfig);
 console.log('Has file config:', status.hasFileConfig);
 
 if (!status.hasEnvConfig && !status.hasFileConfig) {
-  // Run config wizard
+	// Run config wizard
 }
 ```
 
@@ -541,6 +586,7 @@ if (!status.hasEnvConfig && !status.hasFileConfig) {
 **Cause:** Tool not registered in registry.
 
 **Solution:**
+
 ```typescript
 const registry = container.resolve<ToolRegistry>('ToolRegistry');
 console.log('Available tools:', registry.getAllNames());

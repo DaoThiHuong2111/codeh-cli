@@ -3,15 +3,15 @@
  * Handles business logic và state management cho Home screen
  */
 
-import { CodehClient } from '../../core/application/CodehClient.js';
-import type { Message } from '../../core/domain/models/Message.js';
-import { Message as MessageModel } from '../../core/domain/models/Message.js';
-import type { Todo } from '../../core/domain/models/Todo.js';
-import { Todo as TodoModel } from '../../core/domain/models/Todo.js';
-import type { Command } from '../../core/domain/valueObjects/Command.js';
-import type { ISessionManager } from '../../core/domain/interfaces/ISessionManager.js';
-import type { ICommandRegistry } from '../../core/domain/interfaces/ICommandRegistry.js';
-import { Session } from '../../core/domain/valueObjects/Session.js';
+import {CodehClient} from '../../core/application/CodehClient.js';
+import type {Message} from '../../core/domain/models/Message.js';
+import {Message as MessageModel} from '../../core/domain/models/Message.js';
+import type {Todo} from '../../core/domain/models/Todo.js';
+import {Todo as TodoModel} from '../../core/domain/models/Todo.js';
+import type {Command} from '../../core/domain/valueObjects/Command.js';
+import type {ISessionManager} from '../../core/domain/interfaces/ISessionManager.js';
+import type {ICommandRegistry} from '../../core/domain/interfaces/ICommandRegistry.js';
+import {Session} from '../../core/domain/valueObjects/Session.js';
 
 interface ViewState {
 	// Input
@@ -160,12 +160,12 @@ export class HomePresenterNew {
 
 					// Find existing message or create new one
 					const existingIndex = this.state.messages.findIndex(
-						(m) => m.id === assistantMessageId,
+						m => m.id === assistantMessageId,
 					);
 
 					// Create new message with updated content using consistent ID
 					const updatedMessage = new MessageModel(
-						assistantMessageId,  // Fixed ID for all chunks
+						assistantMessageId, // Fixed ID for all chunks
 						'assistant',
 						assistantContent,
 						new Date(),
@@ -191,13 +191,15 @@ export class HomePresenterNew {
 					turn.response.content,
 					{
 						toolCalls: turn.response.toolCalls,
-						metadata: turn.metadata?.tokenUsage ? {
-							usage: {
-								promptTokens: turn.metadata.tokenUsage.prompt,
-								completionTokens: turn.metadata.tokenUsage.completion,
-								totalTokens: turn.metadata.tokenUsage.total,
-							},
-						} : undefined,
+						metadata: turn.metadata?.tokenUsage
+							? {
+									usage: {
+										promptTokens: turn.metadata.tokenUsage.prompt,
+										completionTokens: turn.metadata.tokenUsage.completion,
+										totalTokens: turn.metadata.tokenUsage.total,
+									},
+								}
+							: undefined,
 					},
 				);
 
@@ -208,7 +210,7 @@ export class HomePresenterNew {
 
 				// Replace streaming message with final message
 				const index = this.state.messages.findIndex(
-					(m) => m.id === assistantMessageId,
+					m => m.id === assistantMessageId,
 				);
 				if (index >= 0) {
 					this.state.messages[index] = finalMessage;
@@ -221,7 +223,7 @@ export class HomePresenterNew {
 		} catch (error: any) {
 			// Remove the streaming message if exists
 			const index = this.state.messages.findIndex(
-				(m) => m.id === assistantMessageId,
+				m => m.id === assistantMessageId,
 			);
 			if (index >= 0) {
 				this.state.messages.splice(index, 1);
@@ -258,7 +260,9 @@ export class HomePresenterNew {
 		try {
 			await command.execute(args, this);
 		} catch (error: any) {
-			const errorMessage = MessageModel.error(`Command error: ${error.message}`);
+			const errorMessage = MessageModel.error(
+				`Command error: ${error.message}`,
+			);
 			this.state.messages.push(errorMessage);
 		}
 
@@ -439,13 +443,19 @@ export class HomePresenterNew {
 
 	// === Todos Management ===
 
-	addTodo = (content: string, status: 'pending' | 'in_progress' | 'completed' = 'pending'): void => {
-		const todo = TodoModel.create(content, { status });
+	addTodo = (
+		content: string,
+		status: 'pending' | 'in_progress' | 'completed' = 'pending',
+	): void => {
+		const todo = TodoModel.create(content, {status});
 		this.state.todos.push(todo);
 		this._notifyView();
 	};
 
-	updateTodoStatus = (todoId: string, status: 'pending' | 'in_progress' | 'completed'): void => {
+	updateTodoStatus = (
+		todoId: string,
+		status: 'pending' | 'in_progress' | 'completed',
+	): void => {
 		const index = this.state.todos.findIndex(t => t.id === todoId);
 		if (index >= 0) {
 			const updatedTodo = this.state.todos[index].withStatus(status);
@@ -481,7 +491,7 @@ export class HomePresenterNew {
 
 	private getGitBranch(): string | undefined {
 		try {
-			const { execSync } = require('child_process');
+			const {execSync} = require('child_process');
 			const branch = execSync('git rev-parse --abbrev-ref HEAD', {
 				encoding: 'utf8',
 				stdio: ['pipe', 'pipe', 'ignore'],

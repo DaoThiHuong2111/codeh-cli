@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Text } from 'ink';
+import {Box, Text} from 'ink';
 
 export interface MenuItem {
 	label: string;
@@ -13,7 +13,7 @@ interface MenuProps {
 	onSelect?: (item: MenuItem, index: number) => void;
 }
 
-export default function Menu({ items, selectedIndex, onSelect }: MenuProps) {
+export default function Menu({items, selectedIndex, onSelect}: MenuProps) {
 	return (
 		<Box flexDirection="column">
 			{items.map((item, index) => {

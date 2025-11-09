@@ -3,9 +3,9 @@
  * Manage configuration state
  */
 
-import { useState, useEffect } from 'react';
-import { ConfigLoader } from '../../infrastructure/config/ConfigLoader';
-import { Configuration } from '../../core/domain/models/Configuration';
+import {useState, useEffect} from 'react';
+import {ConfigLoader} from '../../infrastructure/config/ConfigLoader';
+import {Configuration} from '../../core/domain/models/Configuration';
 
 export function useConfiguration() {
 	const [config, setConfig] = useState<Configuration | null>(null);
@@ -35,7 +35,7 @@ export function useConfiguration() {
 		apiKey?: string;
 		baseUrl?: string;
 		maxTokens?: number;
-	}): Promise<{ success: boolean; error?: string }> => {
+	}): Promise<{success: boolean; error?: string}> => {
 		try {
 			const newConfig = Configuration.create(data);
 
@@ -49,7 +49,7 @@ export function useConfiguration() {
 			await loader.save(newConfig);
 			setConfig(newConfig);
 
-			return { success: true };
+			return {success: true};
 		} catch (err: any) {
 			return {
 				success: false,

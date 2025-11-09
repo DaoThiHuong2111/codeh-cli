@@ -1,4 +1,4 @@
-import type { Message } from '../models/Message.js';
+import type {Message} from '../models/Message.js';
 
 export interface SessionMetadata {
 	messageCount: number;
@@ -37,11 +37,7 @@ export class Session {
 	/**
 	 * Create a new session
 	 */
-	static create(
-		name: string,
-		messages: Message[],
-		model: string,
-	): Session {
+	static create(name: string, messages: Message[], model: string): Session {
 		const totalTokens = messages.reduce(
 			(sum, msg) => sum + (msg.metadata?.usage?.totalTokens || 0),
 			0,

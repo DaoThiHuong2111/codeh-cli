@@ -1,6 +1,6 @@
-import { Box, Text } from 'ink';
+import {Box, Text} from 'ink';
 import React from 'react';
-import type { Command } from '../../../core/domain/valueObjects/Command.js';
+import type {Command} from '../../../core/domain/valueObjects/Command.js';
 
 interface CommandMenuItemProps {
 	command: Command;
@@ -14,7 +14,7 @@ export const CommandMenuItem: React.FC<CommandMenuItemProps> = ({
 	return (
 		<Box>
 			{isSelected && <Text color="cyan">› </Text>}
-			{!isSelected && <Text>  </Text>}
+			{!isSelected && <Text> </Text>}
 
 			<Text color={isSelected ? 'cyan' : 'white'} bold={isSelected}>
 				{command.cmd}

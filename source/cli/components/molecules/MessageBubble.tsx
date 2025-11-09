@@ -1,8 +1,8 @@
-import { Box, Text } from 'ink';
+import {Box, Text} from 'ink';
 import React from 'react';
-import type { Message } from '../../../core/domain/models/Message.js';
-import { StreamingIndicator } from '../atoms/Spinner.js';
-import { MarkdownText } from './MarkdownText.js';
+import type {Message} from '../../../core/domain/models/Message.js';
+import {StreamingIndicator} from '../atoms/Spinner.js';
+import {MarkdownText} from './MarkdownText.js';
 
 interface MessageBubbleProps {
 	message: Message;

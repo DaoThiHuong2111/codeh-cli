@@ -50,6 +50,7 @@ Home (Screen)
 ## Chi Tiết Từng Component
 
 ### 1. Logo (Atom)
+
 ```javascript
 // File: cli/components/atoms/Logo.js
 // Hiển thị: "CODEH" với gradient color
@@ -57,6 +58,7 @@ Home (Screen)
 ```
 
 ### 2. InfoSection (Organism)
+
 ```javascript
 // File: cli/components/organisms/InfoSection.js
 // Props:
@@ -67,6 +69,7 @@ Home (Screen)
 ```
 
 ### 3. ConversationArea (Organism)
+
 ```javascript
 // File: cli/components/organisms/ConversationArea.js
 // Props:
@@ -82,6 +85,7 @@ Home (Screen)
 ```
 
 ### 4. MessageBubble (Molecule)
+
 ```javascript
 // File: cli/components/molecules/MessageBubble.js
 // Props: message { id, role, content, timestamp, metadata }
@@ -99,6 +103,7 @@ Home (Screen)
 ```
 
 ### 5. TodosDisplay (Organism)
+
 ```javascript
 // File: cli/components/organisms/TodosDisplay.js
 // Props: todos[]
@@ -114,6 +119,7 @@ Home (Screen)
 ```
 
 ### 6. TipsDisplay (Organism)
+
 ```javascript
 // File: cli/components/organisms/TipsDisplay.js
 // Random tips từ predefined array
@@ -121,6 +127,7 @@ Home (Screen)
 ```
 
 ### 7. InputPromptArea (Molecule)
+
 ```javascript
 // File: cli/components/molecules/InputPromptArea.js
 // Props:
@@ -142,6 +149,7 @@ Home (Screen)
 ```
 
 ### 8. SlashSuggestions (Organism)
+
 ```javascript
 // File: cli/components/organisms/SlashSuggestions.js
 // Props:
@@ -160,6 +168,7 @@ Home (Screen)
 ```
 
 ### 9. Footer (Organism)
+
 ```javascript
 // File: cli/components/organisms/Footer.js
 // Props:
@@ -173,6 +182,7 @@ Home (Screen)
 ```
 
 ### 10. HelpOverlay (Organism)
+
 ```javascript
 // File: cli/components/organisms/HelpOverlay.js
 // Hiển thị:

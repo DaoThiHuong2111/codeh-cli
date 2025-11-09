@@ -3,9 +3,9 @@
  * Shows task list with progress tracking
  */
 
-import { Box, Text } from 'ink';
+import {Box, Text} from 'ink';
 import React from 'react';
-import { Todo, TodoStatus } from '../../../core/domain/models/Todo.js';
+import {Todo, TodoStatus} from '../../../core/domain/models/Todo.js';
 import ProgressBar from '../atoms/ProgressBar.js';
 
 export interface TodosDisplayProps {
@@ -17,15 +17,15 @@ export interface TodosDisplayProps {
 // Status icon and color mapping
 const STATUS_CONFIG: Record<
 	TodoStatus,
-	{ icon: string; color: string; label: string }
+	{icon: string; color: string; label: string}
 > = {
-	pending: { icon: '○', color: 'gray', label: 'Pending' },
-	in_progress: { icon: '◐', color: 'yellow', label: 'In Progress' },
-	completed: { icon: '●', color: 'green', label: 'Completed' },
+	pending: {icon: '○', color: 'gray', label: 'Pending'},
+	in_progress: {icon: '◐', color: 'yellow', label: 'In Progress'},
+	completed: {icon: '●', color: 'green', label: 'Completed'},
 };
 
 // Single todo item component
-const TodoItem: React.FC<{ todo: Todo }> = ({ todo }) => {
+const TodoItem: React.FC<{todo: Todo}> = ({todo}) => {
 	const config = STATUS_CONFIG[todo.status];
 
 	return (
@@ -111,7 +111,10 @@ export const TodosDisplay: React.FC<TodosDisplayProps> = ({
 
 				{/* Pending */}
 				{pendingTodos.length > 0 && (
-					<Box flexDirection="column" marginTop={inProgressTodos.length > 0 ? 1 : 0}>
+					<Box
+						flexDirection="column"
+						marginTop={inProgressTodos.length > 0 ? 1 : 0}
+					>
 						<Text bold color="gray">
 							⏳ {STATUS_CONFIG.pending.label} ({pending})
 						</Text>

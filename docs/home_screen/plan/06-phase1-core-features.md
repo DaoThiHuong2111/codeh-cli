@@ -17,8 +17,11 @@
 ## 🎯 Phase 1 Features
 
 ### 1. Conversation History Display
+
 ### 2. Slash Commands System
+
 ### 3. Streaming Responses
+
 ### 4. Session Persistence
 
 ---
@@ -28,9 +31,11 @@
 **Priority**: 🔴 HIGH | **Effort**: 3-4 days
 
 ### Objective
+
 Hiển thị toàn bộ conversation history thay vì chỉ output cuối cùng.
 
 ### Components Required
+
 - ✅ MessageBubble component
 - ✅ ConversationArea component
 - ✅ Message model (enhanced)
@@ -39,6 +44,7 @@ Hiển thị toàn bộ conversation history thay vì chỉ output cuối cùng.
 ### Implementation Steps
 
 #### Step 1: Enhance Domain Models (Day 1)
+
 ```bash
 # Files to modify:
 - source/core/domain/models/Message.ts
@@ -46,12 +52,14 @@ Hiển thị toàn bộ conversation history thay vì chỉ output cuối cùng.
 ```
 
 **Tasks**:
+
 - [ ] Add MessageFactory to Message.ts
 - [ ] Add metadata support (tokens, duration)
 - [ ] Enhance Conversation with message management methods
 - [ ] Add serialization methods
 
 #### Step 2: Create UI Components (Day 2)
+
 ```bash
 # Files to create:
 - source/cli/components/molecules/MessageBubble.tsx
@@ -60,36 +68,42 @@ Hiển thị toàn bộ conversation history thay vì chỉ output cuối cùng.
 ```
 
 **Tasks**:
+
 - [ ] Create MessageBubble with role-based styling
 - [ ] Create ConversationArea container
 - [ ] Handle empty state
 - [ ] Add loading indicator
 
 #### Step 3: Update HomePresenter (Day 2-3)
+
 ```bash
 # File to modify:
 - source/cli/presenters/HomePresenter.ts
 ```
 
 **Tasks**:
+
 - [ ] Change state from `output: string` to `messages: Message[]`
 - [ ] Update handleSubmit để add messages
 - [ ] Track streaming message ID
 - [ ] Update getViewState()
 
 #### Step 4: Update Home Screen (Day 3)
+
 ```bash
 # File to modify:
 - source/cli/screens/Home.tsx
 ```
 
 **Tasks**:
+
 - [ ] Replace output display with ConversationArea
 - [ ] Pass messages array
 - [ ] Handle streaming state
 - [ ] Test full flow
 
 ### Testing Checklist
+
 - [ ] Messages hiển thị theo đúng order (oldest → newest)
 - [ ] Timestamps hiển thị chính xác
 - [ ] Colors đúng cho từng role
@@ -98,6 +112,7 @@ Hiển thị toàn bộ conversation history thay vì chỉ output cuối cùng.
 - [ ] Token count hiển thị (nếu có metadata)
 
 ### Success Criteria
+
 ✅ Users có thể xem full conversation history
 ✅ Messages phân biệt rõ ràng user vs assistant
 ✅ Timestamps hiển thị cho mỗi message
@@ -110,15 +125,18 @@ Hiển thị toàn bộ conversation history thay vì chỉ output cuối cùng.
 **Priority**: 🔴 HIGH | **Effort**: 2-3 days
 
 ### Objective
+
 Implement 6 slash commands với autocomplete suggestions.
 
 ### Components Required
+
 - ✅ Command value object
 - ✅ CommandService
 - ✅ SlashSuggestions component
 - ✅ CommandMenuItem component
 
 ### Commands to Implement
+
 1. `/help` - Show help overlay
 2. `/clear` - Clear conversation
 3. `/new` - Start new conversation
@@ -129,6 +147,7 @@ Implement 6 slash commands với autocomplete suggestions.
 ### Implementation Steps
 
 #### Step 1: Create Domain Objects (Day 1)
+
 ```bash
 # Files to create:
 - source/core/domain/valueObjects/Command.ts
@@ -136,24 +155,28 @@ Implement 6 slash commands với autocomplete suggestions.
 ```
 
 **Tasks**:
+
 - [ ] Define Command value object
 - [ ] Define ICommandRegistry interface
 - [ ] Add CommandCategory enum
 - [ ] Add ICommandExecutor interface
 
 #### Step 2: Create CommandService (Day 1-2)
+
 ```bash
 # File to create:
 - source/core/application/services/CommandService.ts
 ```
 
 **Tasks**:
+
 - [ ] Implement ICommandRegistry
 - [ ] Register 6 default commands
 - [ ] Implement filter() method
 - [ ] Add command execution logic
 
 #### Step 3: Create UI Components (Day 2)
+
 ```bash
 # Files to create:
 - source/cli/components/molecules/CommandMenuItem.tsx
@@ -161,17 +184,20 @@ Implement 6 slash commands với autocomplete suggestions.
 ```
 
 **Tasks**:
+
 - [ ] Create CommandMenuItem với selection highlight
 - [ ] Create SlashSuggestions với filtering
 - [ ] Add keyboard navigation (↑↓)
 
 #### Step 4: Update HomePresenter (Day 2-3)
+
 ```bash
 # File to modify:
 - source/cli/presenters/HomePresenter.ts
 ```
 
 **Tasks**:
+
 - [ ] Add CommandService dependency
 - [ ] Add suggestion state (filteredSuggestions, selectedIndex)
 - [ ] Implement handleSuggestionNavigate()
@@ -179,18 +205,21 @@ Implement 6 slash commands với autocomplete suggestions.
 - [ ] Update handleSubmit để check slash commands
 
 #### Step 5: Update Home Screen (Day 3)
+
 ```bash
 # File to modify:
 - source/cli/screens/Home.tsx
 ```
 
 **Tasks**:
+
 - [ ] Add SlashSuggestions component
 - [ ] Add global keyboard handlers (↑↓)
 - [ ] Conditional rendering based on input
 - [ ] Test command execution
 
 ### Testing Checklist
+
 - [ ] Typing `/` hiển thị suggestions
 - [ ] Suggestions filter theo input
 - [ ] ↑↓ navigation hoạt động
@@ -199,6 +228,7 @@ Implement 6 slash commands với autocomplete suggestions.
 - [ ] Error messages hiển thị cho invalid commands
 
 ### Success Criteria
+
 ✅ 6 commands hoạt động đầy đủ
 ✅ Autocomplete suggestions hiển thị và filter
 ✅ Keyboard navigation smooth
@@ -211,9 +241,11 @@ Implement 6 slash commands với autocomplete suggestions.
 **Priority**: 🔴 HIGH | **Effort**: 3-4 days
 
 ### Objective
+
 Responses xuất hiện progressively thay vì all at once.
 
 ### Components Required
+
 - ✅ StreamHandler (hoặc integrate vào CodehClient)
 - ✅ API clients với streaming support
 - ✅ StreamingIndicator component
@@ -221,6 +253,7 @@ Responses xuất hiện progressively thay vì all at once.
 ### Implementation Steps
 
 #### Step 1: Add Streaming Interface (Day 1)
+
 ```bash
 # Files to create/modify:
 - source/core/domain/interfaces/IStreamHandler.ts
@@ -228,11 +261,13 @@ Responses xuất hiện progressively thay vì all at once.
 ```
 
 **Tasks**:
+
 - [ ] Define IStreamHandler interface
 - [ ] Add executeStream() to IApiClient
 - [ ] Define StreamChunk type
 
 #### Step 2: Implement in API Clients (Day 1-2)
+
 ```bash
 # Files to modify:
 - source/infrastructure/api/clients/AnthropicClient.ts
@@ -241,18 +276,21 @@ Responses xuất hiện progressively thay vì all at once.
 ```
 
 **Tasks**:
+
 - [ ] Add executeStream() to AnthropicClient
 - [ ] Add executeStream() to OpenAIClient
 - [ ] Add executeStream() to OllamaClient
 - [ ] Test streaming với mỗi provider
 
 #### Step 3: Update CodehClient (Day 2-3)
+
 ```bash
 # File to modify:
 - source/core/application/CodehClient.ts
 ```
 
 **Tasks**:
+
 - [ ] Implement IStreamHandler
 - [ ] Add executeStream() method
 - [ ] Add buffer logic (50-100ms batching)
@@ -260,12 +298,14 @@ Responses xuất hiện progressively thay vì all at once.
 - [ ] Handle errors during streaming
 
 #### Step 4: Update HomePresenter (Day 3)
+
 ```bash
 # File to modify:
 - source/cli/presenters/HomePresenter.ts
 ```
 
 **Tasks**:
+
 - [ ] Update handleSubmit để use streaming
 - [ ] Create assistant message trước khi stream
 - [ ] Update content as chunks arrive
@@ -273,6 +313,7 @@ Responses xuất hiện progressively thay vì all at once.
 - [ ] Clear streaming state when done
 
 #### Step 5: Update UI (Day 3-4)
+
 ```bash
 # Files to modify:
 - source/cli/components/atoms/Spinner.tsx (add StreamingIndicator)
@@ -281,12 +322,14 @@ Responses xuất hiện progressively thay vì all at once.
 ```
 
 **Tasks**:
+
 - [ ] Add streaming indicator (▌) to MessageBubble
 - [ ] Show indicator when isStreaming=true
 - [ ] Disable input during streaming
 - [ ] Test streaming animation
 
 ### Testing Checklist
+
 - [ ] Streaming hoạt động với Anthropic
 - [ ] Streaming hoạt động với OpenAI
 - [ ] Streaming hoạt động với Ollama
@@ -297,6 +340,7 @@ Responses xuất hiện progressively thay vì all at once.
 - [ ] Cancel hoạt động (nếu implement)
 
 ### Success Criteria
+
 ✅ Responses stream realtime
 ✅ Latency < 100ms per chunk
 ✅ Smooth animation
@@ -309,9 +353,11 @@ Responses xuất hiện progressively thay vì all at once.
 **Priority**: 🔴 HIGH | **Effort**: 2-3 days
 
 ### Objective
+
 Save và load conversations để continue later.
 
 ### Components Required
+
 - ✅ Session value object
 - ✅ ISessionManager interface
 - ✅ FileSessionManager implementation
@@ -319,6 +365,7 @@ Save và load conversations để continue later.
 ### Implementation Steps
 
 #### Step 1: Create Domain Objects (Day 1)
+
 ```bash
 # Files to create:
 - source/core/domain/valueObjects/Session.ts
@@ -326,18 +373,21 @@ Save và load conversations để continue later.
 ```
 
 **Tasks**:
+
 - [ ] Define Session value object
 - [ ] Define ISessionManager interface
 - [ ] Add SessionInfo type
 - [ ] Add serialization methods
 
 #### Step 2: Implement FileSessionManager (Day 1-2)
+
 ```bash
 # File to create:
 - source/infrastructure/session/SessionManager.ts
 ```
 
 **Tasks**:
+
 - [ ] Implement save() method
 - [ ] Implement load() method
 - [ ] Implement list() method
@@ -346,35 +396,41 @@ Save và load conversations để continue later.
 - [ ] Handle file I/O errors
 
 #### Step 3: Update DI Container (Day 2)
+
 ```bash
 # File to modify:
 - source/core/di/Container.ts
 ```
 
 **Tasks**:
+
 - [ ] Register ISessionManager
 - [ ] Bind to FileSessionManager
 - [ ] Inject into HomePresenter
 
 #### Step 4: Update HomePresenter (Day 2)
+
 ```bash
 # File to modify:
 - source/cli/presenters/HomePresenter.ts
 ```
 
 **Tasks**:
+
 - [ ] Add SessionManager dependency
 - [ ] Implement saveSession() method
 - [ ] Implement loadSession() method
 - [ ] Update commands to use session methods
 
 #### Step 5: Update Commands (Day 3)
+
 ```bash
 # File to modify:
 - source/core/application/services/CommandService.ts
 ```
 
 **Tasks**:
+
 - [ ] Verify `/save [name]` command
 - [ ] Verify `/load [name]` command
 - [ ] Verify `/sessions` command
@@ -382,6 +438,7 @@ Save và load conversations để continue later.
 - [ ] Add success messages
 
 ### Testing Checklist
+
 - [ ] `/save session-name` saves to file
 - [ ] `/load session-name` restores conversation
 - [ ] `/sessions` lists all saved sessions
@@ -391,6 +448,7 @@ Save và load conversations để continue later.
 - [ ] Overwrite confirmation (optional)
 
 ### Success Criteria
+
 ✅ Sessions save to ~/.codeh/sessions/
 ✅ Sessions load correctly
 ✅ Metadata preserved (tokens, messages, todos)
@@ -403,13 +461,13 @@ Save và load conversations để continue later.
 
 ### Total Effort Breakdown
 
-| Feature | Days | Priority |
-|---------|------|----------|
-| Conversation History | 3-4 | 🔴 |
-| Slash Commands | 2-3 | 🔴 |
-| Streaming Responses | 3-4 | 🔴 |
-| Session Persistence | 2-3 | 🔴 |
-| **Total** | **10-14 days** | **2-3 weeks** |
+| Feature              | Days           | Priority      |
+| -------------------- | -------------- | ------------- |
+| Conversation History | 3-4            | 🔴            |
+| Slash Commands       | 2-3            | 🔴            |
+| Streaming Responses  | 3-4            | 🔴            |
+| Session Persistence  | 2-3            | 🔴            |
+| **Total**            | **10-14 days** | **2-3 weeks** |
 
 ### Files Created/Modified
 
@@ -418,13 +476,15 @@ Save và load conversations để continue later.
 **Total New Lines**: ~1800 lines
 
 ### Dependencies
+
 ```json
 {
-  "ink-spinner": "^5.0.0"
+	"ink-spinner": "^5.0.0"
 }
 ```
 
 ### Testing Requirements
+
 - Unit tests cho tất cả new components
 - Integration tests cho presenter
 - E2E tests cho slash commands

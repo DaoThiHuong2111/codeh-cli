@@ -6,18 +6,20 @@
 
 ## Summary
 
-Đã loại bỏ tất cả legacy environment variables (ANTHROPIC_*, OPENAI_*, OLLAMA_*) và thống nhất chỉ sử dụng prefix `CODEH_*` cho tất cả configuration.
+Đã loại bỏ tất cả legacy environment variables (ANTHROPIC*\*, OPENAI*\_, OLLAMA\__) và thống nhất chỉ sử dụng prefix `CODEH_\*` cho tất cả configuration.
 
 ## Motivation
 
 ### Problems với Legacy Variables:
+
 1. **Confusing**: Multiple variables cho cùng một purpose
 2. **Inconsistent**: Mỗi provider có naming convention khác nhau
 3. **Hard to maintain**: Phải support multiple variable sets
 4. **Error-prone**: Users không biết variable nào được sử dụng
 5. **Redundant code**: Fallback logic phức tạp trong EnvConfigRepository
 
-### Benefits của CODEH_* Only:
+### Benefits của CODEH\_\* Only:
+
 1. ✅ **Unified**: Một prefix duy nhất cho tất cả configs
 2. ✅ **Simple**: Dễ nhớ, dễ document
 3. ✅ **Predictable**: Behavior rõ ràng, không có fallback magic
@@ -181,6 +183,7 @@ fi
 ```
 
 Usage:
+
 ```bash
 # Source the script to export variables
 source migrate_to_codeh_env.sh
@@ -194,19 +197,22 @@ env | grep CODEH_
 ### File: `source/infrastructure/config/EnvConfigRepository.ts`
 
 **Before** (178 lines):
-- Support for both CODEH_* and legacy variables
+
+- Support for both CODEH\_\* and legacy variables
 - Complex fallback logic in `getModel()`, `getBaseUrl()`, `getApiKey()`
 - Both `unifiedVars` and `legacyVars` arrays
 - Provider-specific fallback checks
 
 **After** (117 lines):
-- Only CODEH_* variables supported
+
+- Only CODEH\_\* variables supported
 - Simple, direct variable access
 - Single `envVars` array
 - No fallback logic needed
 - **61 lines removed** (-34% code reduction)
 
 ### Changes Summary:
+
 ```diff
 - private unifiedVars = [...]
 - private legacyVars = [...]
@@ -237,11 +243,13 @@ env | grep CODEH_
 ## Testing
 
 ### Unit Tests to Update:
+
 - [ ] `EnvConfigRepository.test.ts` - Remove legacy variable tests
 - [ ] `ConfigLoader.test.ts` - Update integration tests
 - [ ] Add tests for validation logic
 
 ### Manual Testing:
+
 ```bash
 # Test 1: Anthropic
 export CODEH_PROVIDER=anthropic
@@ -271,6 +279,7 @@ npm start  # Should fail with validation error
 ## Documentation Updates
 
 ### Updated Files:
+
 1. ✅ `README.md` - Configuration section
 2. ✅ `docs/architecture/FINAL_COMPLETION_REPORT.md` - Environment variables section
 3. ✅ `docs/base_logic.md` - Configuration system
@@ -278,6 +287,7 @@ npm start  # Should fail with validation error
 5. ✅ `docs/CHANGELOG_ENV_SIMPLIFICATION.md` - This file
 
 ### New Files:
+
 - `docs/ENVIRONMENT_VARIABLES.md` - Complete guide with examples
 - `docs/CHANGELOG_ENV_SIMPLIFICATION.md` - Migration guide
 
@@ -287,7 +297,7 @@ npm start  # Should fail with validation error
 
 Users upgrading from previous versions MUST:
 
-1. **Update environment variables** to use CODEH_* prefix
+1. **Update environment variables** to use CODEH\_\* prefix
 2. **Remove old variables** from `.bashrc`, `.zshrc`, `.env` files
 3. **Update CI/CD pipelines** with new variable names
 4. **Update documentation** and team guides
@@ -297,6 +307,7 @@ Users upgrading from previous versions MUST:
 ❌ **NO BACKWARD COMPATIBILITY** - Legacy variables are completely removed.
 
 This is intentional to:
+
 - Force users to migrate to cleaner system
 - Prevent confusion from mixed variable usage
 - Simplify codebase maintenance
@@ -304,18 +315,21 @@ This is intentional to:
 ## Rollout Plan
 
 ### Phase 1: Development (Complete ✅)
+
 - Remove legacy variable support from code
 - Update all documentation
 - Create migration scripts
 - Test thoroughly
 
 ### Phase 2: Communication (Next)
+
 - Announce breaking change in release notes
 - Update README with migration guide
 - Email users about change
 - Update examples and tutorials
 
 ### Phase 3: Release (Next)
+
 - Tag version 1.0.0 (breaking change)
 - Publish to npm with major version bump
 - Monitor for issues
@@ -335,18 +349,21 @@ Backup commit before changes: `[previous-commit-hash]`
 ## Impact Assessment
 
 ### Code Impact:
+
 - **Files changed**: 5 files
 - **Lines removed**: 61 lines
 - **Lines added**: 117 lines (including new documentation)
 - **Net change**: Better code quality, less complexity
 
 ### User Impact:
+
 - **Existing users**: Must migrate (breaking change)
 - **New users**: Simpler onboarding
 - **Migration time**: ~5 minutes per user
 - **Risk**: Low (clear migration path provided)
 
 ### Performance Impact:
+
 - **Startup time**: Slightly faster (no fallback checks)
 - **Memory**: Negligible difference
 - **CPU**: Negligible difference
@@ -354,12 +371,14 @@ Backup commit before changes: `[previous-commit-hash]`
 ## Success Metrics
 
 ### Goals:
+
 - ✅ Reduce configuration complexity
 - ✅ Improve code maintainability
 - ✅ Standardize variable naming
 - ✅ Better user experience for new users
 
 ### Measurements:
+
 - Code complexity: -34% in EnvConfigRepository
 - Support tickets: TBD (monitor for increase)
 - User feedback: TBD (collect via issues)
@@ -368,12 +387,14 @@ Backup commit before changes: `[previous-commit-hash]`
 ## Support
 
 ### For Users:
+
 - Migration script: `docs/migrate_to_codeh_env.sh`
 - Documentation: `docs/ENVIRONMENT_VARIABLES.md`
 - Examples: `README.md` Configuration section
 - Issues: GitHub Issues
 
 ### For Developers:
+
 - Code changes: See git diff
 - Tests: Run `npm test`
 - Review: `source/infrastructure/config/EnvConfigRepository.ts`

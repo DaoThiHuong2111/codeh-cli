@@ -3,8 +3,8 @@
  * Handles business logic for Welcome screen with API integration
  */
 
-import { UpgradeInfo } from '../../core/domain/models/UpgradeInfo';
-import { UpgradeApiService } from '../../infrastructure/api/UpgradeApiService';
+import {UpgradeInfo} from '../../core/domain/models/UpgradeInfo';
+import {UpgradeApiService} from '../../infrastructure/api/UpgradeApiService';
 
 export class WelcomePresenter {
 	private apiService: UpgradeApiService;
@@ -35,7 +35,9 @@ export class WelcomePresenter {
 		if (!upgradeInfo) {
 			return 'Welcome to CODEH CLI - Your AI coding assistant';
 		}
-		return upgradeInfo.message || 'Welcome to CODEH CLI - Your AI coding assistant';
+		return (
+			upgradeInfo.message || 'Welcome to CODEH CLI - Your AI coding assistant'
+		);
 	}
 
 	/**

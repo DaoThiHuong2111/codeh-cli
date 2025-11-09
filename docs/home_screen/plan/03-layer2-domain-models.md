@@ -49,73 +49,74 @@ source/core/
 **Current Definition**: Basic message structure
 
 **Enhanced Definition**:
+
 ```typescript
 export interface MessageMetadata {
-  model?: string
-  usage?: {
-    promptTokens: number
-    completionTokens: number
-    totalTokens: number
-  }
-  toolCalls?: ToolCall[]
-  finishReason?: 'stop' | 'length' | 'tool_calls' | 'content_filter'
-  duration?: number  // Response time in ms
+	model?: string;
+	usage?: {
+		promptTokens: number;
+		completionTokens: number;
+		totalTokens: number;
+	};
+	toolCalls?: ToolCall[];
+	finishReason?: 'stop' | 'length' | 'tool_calls' | 'content_filter';
+	duration?: number; // Response time in ms
 }
 
 export interface Message {
-  id: string
-  role: 'user' | 'assistant' | 'system' | 'error'
-  content: string
-  timestamp: Date
-  metadata?: MessageMetadata
+	id: string;
+	role: 'user' | 'assistant' | 'system' | 'error';
+	content: string;
+	timestamp: Date;
+	metadata?: MessageMetadata;
 }
 
 export class MessageFactory {
-  static createUserMessage(content: string): Message {
-    return {
-      id: this.generateId(),
-      role: 'user',
-      content,
-      timestamp: new Date()
-    }
-  }
+	static createUserMessage(content: string): Message {
+		return {
+			id: this.generateId(),
+			role: 'user',
+			content,
+			timestamp: new Date(),
+		};
+	}
 
-  static createAssistantMessage(
-    content: string,
-    metadata?: MessageMetadata
-  ): Message {
-    return {
-      id: this.generateId(),
-      role: 'assistant',
-      content,
-      timestamp: new Date(),
-      metadata
-    }
-  }
+	static createAssistantMessage(
+		content: string,
+		metadata?: MessageMetadata,
+	): Message {
+		return {
+			id: this.generateId(),
+			role: 'assistant',
+			content,
+			timestamp: new Date(),
+			metadata,
+		};
+	}
 
-  static createSystemMessage(content: string): Message {
-    return {
-      id: this.generateId(),
-      role: 'system',
-      content,
-      timestamp: new Date()
-    }
-  }
+	static createSystemMessage(content: string): Message {
+		return {
+			id: this.generateId(),
+			role: 'system',
+			content,
+			timestamp: new Date(),
+		};
+	}
 
-  static createErrorMessage(error: Error | string): Message {
-    const content = typeof error === 'string' ? error : error.message
+	static createErrorMessage(error: Error | string): Message {
+		const content = typeof error === 'string' ? error : error.message;
 
-    return {
-      id: this.generateId(),
-      role: 'error',
-      content,
-      timestamp: new Date()
-    }
-  }
+		return {
+			id: this.generateId(),
+			role: 'error',
+			content,
+			timestamp: new Date(),
+		};
+	}
 
-  private static generateId(): string {
-    return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-  }
+	private static generateId(): string {
+		return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+	}
 }
 ```
 
@@ -132,110 +133,111 @@ export class MessageFactory {
 **Current Definition**: Basic conversation
 
 **Enhanced Definition**:
+
 ```typescript
-import { Message } from './Message'
-import { Todo } from '../valueObjects/Todo'
+import {Message} from './Message';
+import {Todo} from '../valueObjects/Todo';
 
 export interface ConversationMetadata {
-  title?: string
-  tags?: string[]
-  createdAt: Date
-  updatedAt: Date
-  messageCount: number
-  totalTokens: number
-  estimatedCost: number
+	title?: string;
+	tags?: string[];
+	createdAt: Date;
+	updatedAt: Date;
+	messageCount: number;
+	totalTokens: number;
+	estimatedCost: number;
 }
 
 export class Conversation {
-  private messages: Message[] = []
-  private todos: Todo[] = []
-  private metadata: ConversationMetadata
+	private messages: Message[] = [];
+	private todos: Todo[] = [];
+	private metadata: ConversationMetadata;
 
-  constructor(metadata?: Partial<ConversationMetadata>) {
-    this.metadata = {
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      messageCount: 0,
-      totalTokens: 0,
-      estimatedCost: 0,
-      ...metadata
-    }
-  }
+	constructor(metadata?: Partial<ConversationMetadata>) {
+		this.metadata = {
+			createdAt: new Date(),
+			updatedAt: new Date(),
+			messageCount: 0,
+			totalTokens: 0,
+			estimatedCost: 0,
+			...metadata,
+		};
+	}
 
-  // === Message Management ===
+	// === Message Management ===
 
-  addMessage(message: Message): void {
-    this.messages.push(message)
-    this.metadata.messageCount++
-    this.metadata.updatedAt = new Date()
+	addMessage(message: Message): void {
+		this.messages.push(message);
+		this.metadata.messageCount++;
+		this.metadata.updatedAt = new Date();
 
-    // Update token count
-    if (message.metadata?.usage) {
-      this.metadata.totalTokens += message.metadata.usage.totalTokens
-      this.updateCost()
-    }
-  }
+		// Update token count
+		if (message.metadata?.usage) {
+			this.metadata.totalTokens += message.metadata.usage.totalTokens;
+			this.updateCost();
+		}
+	}
 
-  getMessages(): Message[] {
-    return [...this.messages]
-  }
+	getMessages(): Message[] {
+		return [...this.messages];
+	}
 
-  getLastMessage(): Message | null {
-    return this.messages[this.messages.length - 1] || null
-  }
+	getLastMessage(): Message | null {
+		return this.messages[this.messages.length - 1] || null;
+	}
 
-  clearMessages(): void {
-    this.messages = []
-    this.metadata.messageCount = 0
-    this.metadata.totalTokens = 0
-    this.metadata.estimatedCost = 0
-    this.metadata.updatedAt = new Date()
-  }
+	clearMessages(): void {
+		this.messages = [];
+		this.metadata.messageCount = 0;
+		this.metadata.totalTokens = 0;
+		this.metadata.estimatedCost = 0;
+		this.metadata.updatedAt = new Date();
+	}
 
-  // === Todo Management ===
+	// === Todo Management ===
 
-  setTodos(todos: Todo[]): void {
-    this.todos = todos
-  }
+	setTodos(todos: Todo[]): void {
+		this.todos = todos;
+	}
 
-  getTodos(): Todo[] {
-    return [...this.todos]
-  }
+	getTodos(): Todo[] {
+		return [...this.todos];
+	}
 
-  // === Metadata ===
+	// === Metadata ===
 
-  getMetadata(): ConversationMetadata {
-    return { ...this.metadata }
-  }
+	getMetadata(): ConversationMetadata {
+		return {...this.metadata};
+	}
 
-  setTitle(title: string): void {
-    this.metadata.title = title
-    this.metadata.updatedAt = new Date()
-  }
+	setTitle(title: string): void {
+		this.metadata.title = title;
+		this.metadata.updatedAt = new Date();
+	}
 
-  // === Serialization ===
+	// === Serialization ===
 
-  toJSON(): object {
-    return {
-      messages: this.messages,
-      todos: this.todos,
-      metadata: this.metadata
-    }
-  }
+	toJSON(): object {
+		return {
+			messages: this.messages,
+			todos: this.todos,
+			metadata: this.metadata,
+		};
+	}
 
-  static fromJSON(data: any): Conversation {
-    const conversation = new Conversation(data.metadata)
-    conversation.messages = data.messages || []
-    conversation.todos = data.todos || []
-    return conversation
-  }
+	static fromJSON(data: any): Conversation {
+		const conversation = new Conversation(data.metadata);
+		conversation.messages = data.messages || [];
+		conversation.todos = data.todos || [];
+		return conversation;
+	}
 
-  // === Private Methods ===
+	// === Private Methods ===
 
-  private updateCost(): void {
-    // Example: $0.005 per 1K tokens
-    this.metadata.estimatedCost = (this.metadata.totalTokens / 1000) * 0.005
-  }
+	private updateCost(): void {
+		// Example: $0.005 per 1K tokens
+		this.metadata.estimatedCost = (this.metadata.totalTokens / 1000) * 0.005;
+	}
 }
 ```
 
@@ -254,93 +256,94 @@ export class Conversation {
 **Location**: `source/core/domain/valueObjects/Todo.ts`
 
 **Implementation**:
+
 ```typescript
-export type TodoStatus = 'pending' | 'in_progress' | 'completed'
+export type TodoStatus = 'pending' | 'in_progress' | 'completed';
 
 export interface TodoData {
-  content: string
-  status: TodoStatus
-  activeForm: string
-  createdAt?: Date
-  completedAt?: Date
+	content: string;
+	status: TodoStatus;
+	activeForm: string;
+	createdAt?: Date;
+	completedAt?: Date;
 }
 
 export class Todo {
-  readonly content: string
-  readonly status: TodoStatus
-  readonly activeForm: string
-  readonly createdAt: Date
-  readonly completedAt?: Date
+	readonly content: string;
+	readonly status: TodoStatus;
+	readonly activeForm: string;
+	readonly createdAt: Date;
+	readonly completedAt?: Date;
 
-  private constructor(data: TodoData) {
-    this.content = data.content
-    this.status = data.status
-    this.activeForm = data.activeForm
-    this.createdAt = data.createdAt || new Date()
-    this.completedAt = data.completedAt
-  }
+	private constructor(data: TodoData) {
+		this.content = data.content;
+		this.status = data.status;
+		this.activeForm = data.activeForm;
+		this.createdAt = data.createdAt || new Date();
+		this.completedAt = data.completedAt;
+	}
 
-  // === Factory Methods ===
+	// === Factory Methods ===
 
-  static create(content: string, activeForm: string): Todo {
-    return new Todo({
-      content,
-      status: 'pending',
-      activeForm,
-      createdAt: new Date()
-    })
-  }
+	static create(content: string, activeForm: string): Todo {
+		return new Todo({
+			content,
+			status: 'pending',
+			activeForm,
+			createdAt: new Date(),
+		});
+	}
 
-  static fromData(data: TodoData): Todo {
-    return new Todo(data)
-  }
+	static fromData(data: TodoData): Todo {
+		return new Todo(data);
+	}
 
-  // === State Transitions ===
+	// === State Transitions ===
 
-  markInProgress(): Todo {
-    if (this.status === 'completed') {
-      throw new Error('Cannot mark completed todo as in progress')
-    }
+	markInProgress(): Todo {
+		if (this.status === 'completed') {
+			throw new Error('Cannot mark completed todo as in progress');
+		}
 
-    return new Todo({
-      ...this,
-      status: 'in_progress'
-    })
-  }
+		return new Todo({
+			...this,
+			status: 'in_progress',
+		});
+	}
 
-  markCompleted(): Todo {
-    return new Todo({
-      ...this,
-      status: 'completed',
-      completedAt: new Date()
-    })
-  }
+	markCompleted(): Todo {
+		return new Todo({
+			...this,
+			status: 'completed',
+			completedAt: new Date(),
+		});
+	}
 
-  // === Queries ===
+	// === Queries ===
 
-  isPending(): boolean {
-    return this.status === 'pending'
-  }
+	isPending(): boolean {
+		return this.status === 'pending';
+	}
 
-  isInProgress(): boolean {
-    return this.status === 'in_progress'
-  }
+	isInProgress(): boolean {
+		return this.status === 'in_progress';
+	}
 
-  isCompleted(): boolean {
-    return this.status === 'completed'
-  }
+	isCompleted(): boolean {
+		return this.status === 'completed';
+	}
 
-  // === Serialization ===
+	// === Serialization ===
 
-  toJSON(): TodoData {
-    return {
-      content: this.content,
-      status: this.status,
-      activeForm: this.activeForm,
-      createdAt: this.createdAt,
-      completedAt: this.completedAt
-    }
-  }
+	toJSON(): TodoData {
+		return {
+			content: this.content,
+			status: this.status,
+			activeForm: this.activeForm,
+			createdAt: this.createdAt,
+			completedAt: this.completedAt,
+		};
+	}
 }
 ```
 
@@ -357,81 +360,82 @@ export class Todo {
 **Location**: `source/core/domain/valueObjects/Command.ts`
 
 **Implementation**:
+
 ```typescript
 export enum CommandCategory {
-  CONVERSATION = 'conversation',
-  SESSION = 'session',
-  CONFIGURATION = 'configuration',
-  SYSTEM = 'system'
+	CONVERSATION = 'conversation',
+	SESSION = 'session',
+	CONFIGURATION = 'configuration',
+	SYSTEM = 'system',
 }
 
 export interface CommandData {
-  cmd: string
-  desc: string
-  category: CommandCategory
-  aliases?: string[]
-  argCount?: number
-  argNames?: string[]
+	cmd: string;
+	desc: string;
+	category: CommandCategory;
+	aliases?: string[];
+	argCount?: number;
+	argNames?: string[];
 }
 
 export interface ICommandExecutor {
-  execute(args: string[], presenter: any): Promise<void>
+	execute(args: string[], presenter: any): Promise<void>;
 }
 
 export class Command {
-  readonly cmd: string
-  readonly desc: string
-  readonly category: CommandCategory
-  readonly aliases: string[]
-  readonly argCount: number
-  readonly argNames: string[]
-  private executor: ICommandExecutor
+	readonly cmd: string;
+	readonly desc: string;
+	readonly category: CommandCategory;
+	readonly aliases: string[];
+	readonly argCount: number;
+	readonly argNames: string[];
+	private executor: ICommandExecutor;
 
-  constructor(data: CommandData, executor: ICommandExecutor) {
-    this.cmd = data.cmd
-    this.desc = data.desc
-    this.category = data.category
-    this.aliases = data.aliases || []
-    this.argCount = data.argCount || 0
-    this.argNames = data.argNames || []
-    this.executor = executor
-  }
+	constructor(data: CommandData, executor: ICommandExecutor) {
+		this.cmd = data.cmd;
+		this.desc = data.desc;
+		this.category = data.category;
+		this.aliases = data.aliases || [];
+		this.argCount = data.argCount || 0;
+		this.argNames = data.argNames || [];
+		this.executor = executor;
+	}
 
-  // === Execution ===
+	// === Execution ===
 
-  async execute(args: string[], presenter: any): Promise<void> {
-    // Validate arg count
-    if (args.length < this.argCount) {
-      throw new Error(
-        `${this.cmd} requires ${this.argCount} argument(s): ${this.argNames.join(', ')}`
-      )
-    }
+	async execute(args: string[], presenter: any): Promise<void> {
+		// Validate arg count
+		if (args.length < this.argCount) {
+			throw new Error(
+				`${this.cmd} requires ${this.argCount} argument(s): ${this.argNames.join(', ')}`,
+			);
+		}
 
-    await this.executor.execute(args, presenter)
-  }
+		await this.executor.execute(args, presenter);
+	}
 
-  // === Matching ===
+	// === Matching ===
 
-  matches(input: string): boolean {
-    const normalized = input.toLowerCase()
-    return (
-      this.cmd.toLowerCase().startsWith(normalized) ||
-      this.aliases.some(alias => alias.toLowerCase().startsWith(normalized))
-    )
-  }
+	matches(input: string): boolean {
+		const normalized = input.toLowerCase();
+		return (
+			this.cmd.toLowerCase().startsWith(normalized) ||
+			this.aliases.some(alias => alias.toLowerCase().startsWith(normalized))
+		);
+	}
 
-  // === Serialization ===
+	// === Serialization ===
 
-  toJSON(): CommandData {
-    return {
-      cmd: this.cmd,
-      desc: this.desc,
-      category: this.category,
-      aliases: this.aliases,
-      argCount: this.argCount,
-      argNames: this.argNames
-    }
-  }
+	toJSON(): CommandData {
+		return {
+			cmd: this.cmd,
+			desc: this.desc,
+			category: this.category,
+			aliases: this.aliases,
+			argCount: this.argCount,
+			argNames: this.argNames,
+		};
+	}
 }
 ```
 
@@ -448,111 +452,112 @@ export class Command {
 **Location**: `source/core/domain/valueObjects/Session.ts`
 
 **Implementation**:
+
 ```typescript
-import { Message } from '../models/Message'
-import { Todo } from './Todo'
+import {Message} from '../models/Message';
+import {Todo} from './Todo';
 
 export interface SessionMetadata {
-  messageCount: number
-  totalTokens: number
-  estimatedCost: number
-  model: string
-  tags?: string[]
+	messageCount: number;
+	totalTokens: number;
+	estimatedCost: number;
+	model: string;
+	tags?: string[];
 }
 
 export interface SessionData {
-  id: string
-  name: string
-  messages: Message[]
-  todos: Todo[]
-  metadata: SessionMetadata
-  createdAt: Date
-  updatedAt: Date
+	id: string;
+	name: string;
+	messages: Message[];
+	todos: Todo[];
+	metadata: SessionMetadata;
+	createdAt: Date;
+	updatedAt: Date;
 }
 
 export class Session {
-  readonly id: string
-  readonly name: string
-  readonly messages: Message[]
-  readonly todos: Todo[]
-  readonly metadata: SessionMetadata
-  readonly createdAt: Date
-  readonly updatedAt: Date
+	readonly id: string;
+	readonly name: string;
+	readonly messages: Message[];
+	readonly todos: Todo[];
+	readonly metadata: SessionMetadata;
+	readonly createdAt: Date;
+	readonly updatedAt: Date;
 
-  private constructor(data: SessionData) {
-    this.id = data.id
-    this.name = data.name
-    this.messages = data.messages
-    this.todos = data.todos
-    this.metadata = data.metadata
-    this.createdAt = data.createdAt
-    this.updatedAt = data.updatedAt
-  }
+	private constructor(data: SessionData) {
+		this.id = data.id;
+		this.name = data.name;
+		this.messages = data.messages;
+		this.todos = data.todos;
+		this.metadata = data.metadata;
+		this.createdAt = data.createdAt;
+		this.updatedAt = data.updatedAt;
+	}
 
-  // === Factory Methods ===
+	// === Factory Methods ===
 
-  static create(
-    name: string,
-    messages: Message[],
-    todos: Todo[],
-    model: string
-  ): Session {
-    const totalTokens = messages.reduce(
-      (sum, msg) => sum + (msg.metadata?.usage?.totalTokens || 0),
-      0
-    )
+	static create(
+		name: string,
+		messages: Message[],
+		todos: Todo[],
+		model: string,
+	): Session {
+		const totalTokens = messages.reduce(
+			(sum, msg) => sum + (msg.metadata?.usage?.totalTokens || 0),
+			0,
+		);
 
-    const estimatedCost = (totalTokens / 1000) * 0.005
+		const estimatedCost = (totalTokens / 1000) * 0.005;
 
-    return new Session({
-      id: this.generateId(),
-      name,
-      messages,
-      todos,
-      metadata: {
-        messageCount: messages.length,
-        totalTokens,
-        estimatedCost,
-        model
-      },
-      createdAt: new Date(),
-      updatedAt: new Date()
-    })
-  }
+		return new Session({
+			id: this.generateId(),
+			name,
+			messages,
+			todos,
+			metadata: {
+				messageCount: messages.length,
+				totalTokens,
+				estimatedCost,
+				model,
+			},
+			createdAt: new Date(),
+			updatedAt: new Date(),
+		});
+	}
 
-  static fromData(data: SessionData): Session {
-    return new Session(data)
-  }
+	static fromData(data: SessionData): Session {
+		return new Session(data);
+	}
 
-  // === Queries ===
+	// === Queries ===
 
-  getMessageCount(): number {
-    return this.messages.length
-  }
+	getMessageCount(): number {
+		return this.messages.length;
+	}
 
-  getTotalTokens(): number {
-    return this.metadata.totalTokens
-  }
+	getTotalTokens(): number {
+		return this.metadata.totalTokens;
+	}
 
-  // === Serialization ===
+	// === Serialization ===
 
-  toJSON(): SessionData {
-    return {
-      id: this.id,
-      name: this.name,
-      messages: this.messages,
-      todos: this.todos,
-      metadata: this.metadata,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt
-    }
-  }
+	toJSON(): SessionData {
+		return {
+			id: this.id,
+			name: this.name,
+			messages: this.messages,
+			todos: this.todos,
+			metadata: this.metadata,
+			createdAt: this.createdAt,
+			updatedAt: this.updatedAt,
+		};
+	}
 
-  // === Private ===
+	// === Private ===
 
-  private static generateId(): string {
-    return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-  }
+	private static generateId(): string {
+		return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+	}
 }
 ```
 
@@ -571,42 +576,43 @@ export class Session {
 **Location**: `source/core/domain/interfaces/ISessionManager.ts`
 
 **Implementation**:
+
 ```typescript
-import { Session } from '../valueObjects/Session'
+import {Session} from '../valueObjects/Session';
 
 export interface ISessionManager {
-  /**
-   * Save a session
-   */
-  save(session: Session): Promise<void>
+	/**
+	 * Save a session
+	 */
+	save(session: Session): Promise<void>;
 
-  /**
-   * Load a session by name
-   */
-  load(name: string): Promise<Session>
+	/**
+	 * Load a session by name
+	 */
+	load(name: string): Promise<Session>;
 
-  /**
-   * List all saved sessions
-   */
-  list(): Promise<SessionInfo[]>
+	/**
+	 * List all saved sessions
+	 */
+	list(): Promise<SessionInfo[]>;
 
-  /**
-   * Delete a session
-   */
-  delete(name: string): Promise<void>
+	/**
+	 * Delete a session
+	 */
+	delete(name: string): Promise<void>;
 
-  /**
-   * Check if session exists
-   */
-  exists(name: string): Promise<boolean>
+	/**
+	 * Check if session exists
+	 */
+	exists(name: string): Promise<boolean>;
 }
 
 export interface SessionInfo {
-  name: string
-  messageCount: number
-  createdAt: Date
-  updatedAt: Date
-  size: number  // File size in bytes
+	name: string;
+	messageCount: number;
+	createdAt: Date;
+	updatedAt: Date;
+	size: number; // File size in bytes
 }
 ```
 
@@ -623,38 +629,36 @@ export interface SessionInfo {
 **Location**: `source/core/domain/interfaces/IStreamHandler.ts`
 
 **Implementation**:
+
 ```typescript
 export interface StreamChunk {
-  type: 'content' | 'metadata' | 'error' | 'done'
-  data: any
+	type: 'content' | 'metadata' | 'error' | 'done';
+	data: any;
 }
 
 export interface StreamOptions {
-  bufferSize?: number      // Buffer chunks before sending
-  bufferDelay?: number     // Delay in ms before flushing buffer
-  onChunk?: (chunk: StreamChunk) => void
-  onError?: (error: Error) => void
-  onDone?: () => void
+	bufferSize?: number; // Buffer chunks before sending
+	bufferDelay?: number; // Delay in ms before flushing buffer
+	onChunk?: (chunk: StreamChunk) => void;
+	onError?: (error: Error) => void;
+	onDone?: () => void;
 }
 
 export interface IStreamHandler {
-  /**
-   * Start streaming
-   */
-  stream(
-    input: string,
-    options?: StreamOptions
-  ): AsyncGenerator<StreamChunk>
+	/**
+	 * Start streaming
+	 */
+	stream(input: string, options?: StreamOptions): AsyncGenerator<StreamChunk>;
 
-  /**
-   * Cancel ongoing stream
-   */
-  cancel(): void
+	/**
+	 * Cancel ongoing stream
+	 */
+	cancel(): void;
 
-  /**
-   * Check if currently streaming
-   */
-  isStreaming(): boolean
+	/**
+	 * Check if currently streaming
+	 */
+	isStreaming(): boolean;
 }
 ```
 
@@ -671,39 +675,40 @@ export interface IStreamHandler {
 **Location**: `source/core/domain/interfaces/ICommandRegistry.ts`
 
 **Implementation**:
+
 ```typescript
-import { Command } from '../valueObjects/Command'
+import {Command} from '../valueObjects/Command';
 
 export interface ICommandRegistry {
-  /**
-   * Register a command
-   */
-  register(command: Command): void
+	/**
+	 * Register a command
+	 */
+	register(command: Command): void;
 
-  /**
-   * Get command by name
-   */
-  get(cmd: string): Command | null
+	/**
+	 * Get command by name
+	 */
+	get(cmd: string): Command | null;
 
-  /**
-   * Get all commands
-   */
-  getAll(): Command[]
+	/**
+	 * Get all commands
+	 */
+	getAll(): Command[];
 
-  /**
-   * Filter commands by input
-   */
-  filter(input: string): Command[]
+	/**
+	 * Filter commands by input
+	 */
+	filter(input: string): Command[];
 
-  /**
-   * Check if command exists
-   */
-  has(cmd: string): boolean
+	/**
+	 * Check if command exists
+	 */
+	has(cmd: string): boolean;
 
-  /**
-   * Get commands by category
-   */
-  getByCategory(category: string): Command[]
+	/**
+	 * Get commands by category
+	 */
+	getByCategory(category: string): Command[];
 }
 ```
 
@@ -720,17 +725,18 @@ export interface ICommandRegistry {
 **Location**: `source/core/domain/interfaces/IApiClient.ts`
 
 **Enhanced Interface**:
+
 ```typescript
 export interface IApiClient {
-  // Existing methods
-  execute(input: string): Promise<ExecutionResult>
+	// Existing methods
+	execute(input: string): Promise<ExecutionResult>;
 
-  // NEW: Streaming method
-  executeStream(input: string): AsyncGenerator<string>
+	// NEW: Streaming method
+	executeStream(input: string): AsyncGenerator<string>;
 
-  // Existing
-  getModel(): string
-  validateConnection(): Promise<boolean>
+	// Existing
+	getModel(): string;
+	validateConnection(): Promise<boolean>;
 }
 ```
 
@@ -744,22 +750,22 @@ export interface IApiClient {
 
 ### New Files to Create (6)
 
-| File | Type | Lines | Phase | Priority |
-|------|------|-------|-------|----------|
-| Todo.ts | Value Object | ~90 | v1.2 | 🟡 |
-| Command.ts | Value Object | ~80 | v1.1 | 🔴 |
-| Session.ts | Value Object | ~120 | v1.1 | 🔴 |
-| ISessionManager.ts | Interface | ~40 | v1.1 | 🔴 |
-| IStreamHandler.ts | Interface | ~50 | v1.1 | 🔴 |
-| ICommandRegistry.ts | Interface | ~40 | v1.1 | 🔴 |
+| File                | Type         | Lines | Phase | Priority |
+| ------------------- | ------------ | ----- | ----- | -------- |
+| Todo.ts             | Value Object | ~90   | v1.2  | 🟡       |
+| Command.ts          | Value Object | ~80   | v1.1  | 🔴       |
+| Session.ts          | Value Object | ~120  | v1.1  | 🔴       |
+| ISessionManager.ts  | Interface    | ~40   | v1.1  | 🔴       |
+| IStreamHandler.ts   | Interface    | ~50   | v1.1  | 🔴       |
+| ICommandRegistry.ts | Interface    | ~40   | v1.1  | 🔴       |
 
 ### Files to Enhance (3)
 
-| File | Current | New | Changes | Phase |
-|------|---------|-----|---------|-------|
-| Message.ts | ~50 | ~100 | +MessageFactory, +metadata | v1.1 |
-| Conversation.ts | ~80 | ~150 | +todos, +metadata, +serialization | v1.1 |
-| IApiClient.ts | ~30 | ~40 | +executeStream() | v1.1 |
+| File            | Current | New  | Changes                           | Phase |
+| --------------- | ------- | ---- | --------------------------------- | ----- |
+| Message.ts      | ~50     | ~100 | +MessageFactory, +metadata        | v1.1  |
+| Conversation.ts | ~80     | ~150 | +todos, +metadata, +serialization | v1.1  |
+| IApiClient.ts   | ~30     | ~40  | +executeStream()                  | v1.1  |
 
 **Total New Lines**: ~720 lines
 
@@ -768,6 +774,7 @@ export interface IApiClient {
 ## 🎯 Implementation Order
 
 ### Phase 1 (v1.1):
+
 1. **Command.ts** (needed for slash commands)
 2. **Session.ts** (needed for persistence)
 3. **ISessionManager.ts** (interface for session)
@@ -778,6 +785,7 @@ export interface IApiClient {
 8. **IApiClient.ts** (add streaming method)
 
 ### Phase 2 (v1.2):
+
 9. **Todo.ts** (for todos display)
 
 ---

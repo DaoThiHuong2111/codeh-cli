@@ -43,125 +43,125 @@ source/infrastructure/
 ### Implementation
 
 ```typescript
-import * as fs from 'fs/promises'
-import * as path from 'path'
-import { ISessionManager, SessionInfo } from '@/core/domain/interfaces'
-import { Session } from '@/core/domain/valueObjects/Session'
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import {ISessionManager, SessionInfo} from '@/core/domain/interfaces';
+import {Session} from '@/core/domain/valueObjects/Session';
 
 export class FileSessionManager implements ISessionManager {
-  private sessionsDir: string
+	private sessionsDir: string;
 
-  constructor(baseDir: string = '~/.codeh/sessions') {
-    this.sessionsDir = this.expandPath(baseDir)
-  }
+	constructor(baseDir: string = '~/.codeh/sessions') {
+		this.sessionsDir = this.expandPath(baseDir);
+	}
 
-  async init(): Promise<void> {
-    // Create sessions directory if not exists
-    await fs.mkdir(this.sessionsDir, { recursive: true })
-  }
+	async init(): Promise<void> {
+		// Create sessions directory if not exists
+		await fs.mkdir(this.sessionsDir, {recursive: true});
+	}
 
-  async save(session: Session): Promise<void> {
-    await this.init()
+	async save(session: Session): Promise<void> {
+		await this.init();
 
-    const filename = this.getFilename(session.name)
-    const filepath = path.join(this.sessionsDir, filename)
+		const filename = this.getFilename(session.name);
+		const filepath = path.join(this.sessionsDir, filename);
 
-    // Serialize session
-    const data = JSON.stringify(session.toJSON(), null, 2)
+		// Serialize session
+		const data = JSON.stringify(session.toJSON(), null, 2);
 
-    // Write to file
-    await fs.writeFile(filepath, data, 'utf-8')
-  }
+		// Write to file
+		await fs.writeFile(filepath, data, 'utf-8');
+	}
 
-  async load(name: string): Promise<Session> {
-    const filename = this.getFilename(name)
-    const filepath = path.join(this.sessionsDir, filename)
+	async load(name: string): Promise<Session> {
+		const filename = this.getFilename(name);
+		const filepath = path.join(this.sessionsDir, filename);
 
-    // Check if exists
-    if (!(await this.exists(name))) {
-      throw new Error(`Session "${name}" not found`)
-    }
+		// Check if exists
+		if (!(await this.exists(name))) {
+			throw new Error(`Session "${name}" not found`);
+		}
 
-    // Read file
-    const data = await fs.readFile(filepath, 'utf-8')
+		// Read file
+		const data = await fs.readFile(filepath, 'utf-8');
 
-    // Parse and create session
-    const json = JSON.parse(data)
-    return Session.fromData(json)
-  }
+		// Parse and create session
+		const json = JSON.parse(data);
+		return Session.fromData(json);
+	}
 
-  async list(): Promise<SessionInfo[]> {
-    await this.init()
+	async list(): Promise<SessionInfo[]> {
+		await this.init();
 
-    // Read directory
-    const files = await fs.readdir(this.sessionsDir)
+		// Read directory
+		const files = await fs.readdir(this.sessionsDir);
 
-    // Filter .json files
-    const sessionFiles = files.filter(f => f.endsWith('.json'))
+		// Filter .json files
+		const sessionFiles = files.filter(f => f.endsWith('.json'));
 
-    // Get info for each
-    const infos: SessionInfo[] = []
+		// Get info for each
+		const infos: SessionInfo[] = [];
 
-    for (const file of sessionFiles) {
-      const filepath = path.join(this.sessionsDir, file)
-      const stats = await fs.stat(filepath)
+		for (const file of sessionFiles) {
+			const filepath = path.join(this.sessionsDir, file);
+			const stats = await fs.stat(filepath);
 
-      // Read file to get metadata
-      const data = await fs.readFile(filepath, 'utf-8')
-      const json = JSON.parse(data)
+			// Read file to get metadata
+			const data = await fs.readFile(filepath, 'utf-8');
+			const json = JSON.parse(data);
 
-      infos.push({
-        name: json.name,
-        messageCount: json.metadata.messageCount,
-        createdAt: new Date(json.createdAt),
-        updatedAt: new Date(json.updatedAt),
-        size: stats.size
-      })
-    }
+			infos.push({
+				name: json.name,
+				messageCount: json.metadata.messageCount,
+				createdAt: new Date(json.createdAt),
+				updatedAt: new Date(json.updatedAt),
+				size: stats.size,
+			});
+		}
 
-    // Sort by updated date (newest first)
-    infos.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+		// Sort by updated date (newest first)
+		infos.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
 
-    return infos
-  }
+		return infos;
+	}
 
-  async delete(name: string): Promise<void> {
-    const filename = this.getFilename(name)
-    const filepath = path.join(this.sessionsDir, filename)
+	async delete(name: string): Promise<void> {
+		const filename = this.getFilename(name);
+		const filepath = path.join(this.sessionsDir, filename);
 
-    if (!(await this.exists(name))) {
-      throw new Error(`Session "${name}" not found`)
-    }
+		if (!(await this.exists(name))) {
+			throw new Error(`Session "${name}" not found`);
+		}
 
-    await fs.unlink(filepath)
-  }
+		await fs.unlink(filepath);
+	}
 
-  async exists(name: string): Promise<boolean> {
-    const filename = this.getFilename(name)
-    const filepath = path.join(this.sessionsDir, filename)
+	async exists(name: string): Promise<boolean> {
+		const filename = this.getFilename(name);
+		const filepath = path.join(this.sessionsDir, filename);
 
-    try {
-      await fs.access(filepath)
-      return true
-    } catch {
-      return false
-    }
-  }
+		try {
+			await fs.access(filepath);
+			return true;
+		} catch {
+			return false;
+		}
+	}
 
-  // === Private Methods ===
+	// === Private Methods ===
 
-  private getFilename(name: string): string {
-    // Sanitize name
-    const sanitized = name.replace(/[^a-zA-Z0-9-_]/g, '_')
-    return `${sanitized}.json`
-  }
+	private getFilename(name: string): string {
+		// Sanitize name
+		const sanitized = name.replace(/[^a-zA-Z0-9-_]/g, '_');
+		return `${sanitized}.json`;
+	}
 
-  private expandPath(filepath: string): string {
-    if (filepath.startsWith('~/')) {
-      return path.join(process.env.HOME || '', filepath.slice(2))
-    }
-    return filepath
-  }
+	private expandPath(filepath: string): string {
+		if (filepath.startsWith('~/')) {
+			return path.join(process.env.HOME || '', filepath.slice(2));
+		}
+		return filepath;
+	}
 }
 ```
 
@@ -180,36 +180,36 @@ export class FileSessionManager implements ISessionManager {
 ### Add Streaming Method
 
 ```typescript
-import Anthropic from '@anthropic-ai/sdk'
+import Anthropic from '@anthropic-ai/sdk';
 
 export class AnthropicClient implements IApiClient {
-  private client: Anthropic
-  // ... existing code
+	private client: Anthropic;
+	// ... existing code
 
-  /**
-   * Execute with streaming
-   */
-  async *executeStream(input: string): AsyncGenerator<string> {
-    // Build messages
-    const messages = this.buildMessages(input)
+	/**
+	 * Execute with streaming
+	 */
+	async *executeStream(input: string): AsyncGenerator<string> {
+		// Build messages
+		const messages = this.buildMessages(input);
 
-    // Create streaming request
-    const stream = await this.client.messages.stream({
-      model: this.config.model,
-      max_tokens: this.config.maxTokens,
-      messages,
-      stream: true
-    })
+		// Create streaming request
+		const stream = await this.client.messages.stream({
+			model: this.config.model,
+			max_tokens: this.config.maxTokens,
+			messages,
+			stream: true,
+		});
 
-    // Yield chunks as they arrive
-    for await (const event of stream) {
-      if (event.type === 'content_block_delta') {
-        if (event.delta.type === 'text_delta') {
-          yield event.delta.text
-        }
-      }
-    }
-  }
+		// Yield chunks as they arrive
+		for await (const event of stream) {
+			if (event.type === 'content_block_delta') {
+				if (event.delta.type === 'text_delta') {
+					yield event.delta.text;
+				}
+			}
+		}
+	}
 }
 ```
 
@@ -228,34 +228,34 @@ export class AnthropicClient implements IApiClient {
 ### Add Streaming Method
 
 ```typescript
-import OpenAI from 'openai'
+import OpenAI from 'openai';
 
 export class OpenAIClient implements IApiClient {
-  private client: OpenAI
-  // ... existing code
+	private client: OpenAI;
+	// ... existing code
 
-  /**
-   * Execute with streaming
-   */
-  async *executeStream(input: string): AsyncGenerator<string> {
-    // Build messages
-    const messages = this.buildMessages(input)
+	/**
+	 * Execute with streaming
+	 */
+	async *executeStream(input: string): AsyncGenerator<string> {
+		// Build messages
+		const messages = this.buildMessages(input);
 
-    // Create streaming request
-    const stream = await this.client.chat.completions.create({
-      model: this.config.model,
-      messages,
-      stream: true
-    })
+		// Create streaming request
+		const stream = await this.client.chat.completions.create({
+			model: this.config.model,
+			messages,
+			stream: true,
+		});
 
-    // Yield chunks
-    for await (const chunk of stream) {
-      const content = chunk.choices[0]?.delta?.content
-      if (content) {
-        yield content
-      }
-    }
-  }
+		// Yield chunks
+		for await (const chunk of stream) {
+			const content = chunk.choices[0]?.delta?.content;
+			if (content) {
+				yield content;
+			}
+		}
+	}
 }
 ```
 
@@ -275,52 +275,52 @@ export class OpenAIClient implements IApiClient {
 
 ```typescript
 export class OllamaClient implements IApiClient {
-  // ... existing code
+	// ... existing code
 
-  /**
-   * Execute with streaming
-   */
-  async *executeStream(input: string): AsyncGenerator<string> {
-    const response = await fetch(`${this.baseUrl}/api/chat`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: this.config.model,
-        messages: this.buildMessages(input),
-        stream: true
-      })
-    })
+	/**
+	 * Execute with streaming
+	 */
+	async *executeStream(input: string): AsyncGenerator<string> {
+		const response = await fetch(`${this.baseUrl}/api/chat`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				model: this.config.model,
+				messages: this.buildMessages(input),
+				stream: true,
+			}),
+		});
 
-    if (!response.body) {
-      throw new Error('No response body')
-    }
+		if (!response.body) {
+			throw new Error('No response body');
+		}
 
-    // Read stream
-    const reader = response.body.getReader()
-    const decoder = new TextDecoder()
+		// Read stream
+		const reader = response.body.getReader();
+		const decoder = new TextDecoder();
 
-    while (true) {
-      const { done, value } = await reader.read()
+		while (true) {
+			const {done, value} = await reader.read();
 
-      if (done) break
+			if (done) break;
 
-      const chunk = decoder.decode(value)
-      const lines = chunk.split('\n').filter(l => l.trim())
+			const chunk = decoder.decode(value);
+			const lines = chunk.split('\n').filter(l => l.trim());
 
-      for (const line of lines) {
-        try {
-          const data = JSON.parse(line)
-          if (data.message?.content) {
-            yield data.message.content
-          }
-        } catch {
-          // Skip invalid JSON
-        }
-      }
-    }
-  }
+			for (const line of lines) {
+				try {
+					const data = JSON.parse(line);
+					if (data.message?.content) {
+						yield data.message.content;
+					}
+				} catch {
+					// Skip invalid JSON
+				}
+			}
+		}
+	}
 }
 ```
 
@@ -334,17 +334,17 @@ export class OllamaClient implements IApiClient {
 
 ### New Files (1)
 
-| File | Lines | Phase | Priority |
-|------|-------|-------|----------|
-| SessionManager.ts | ~150 | v1.1 | 🔴 HIGH |
+| File              | Lines | Phase | Priority |
+| ----------------- | ----- | ----- | -------- |
+| SessionManager.ts | ~150  | v1.1  | 🔴 HIGH  |
 
 ### Files to Enhance (3)
 
-| File | Addition | Phase | Priority |
-|------|----------|-------|----------|
-| AnthropicClient.ts | ~30 lines | v1.1 | 🔴 HIGH |
-| OpenAIClient.ts | ~25 lines | v1.1 | 🔴 HIGH |
-| OllamaClient.ts | ~40 lines | v1.1 | 🔴 HIGH |
+| File               | Addition  | Phase | Priority |
+| ------------------ | --------- | ----- | -------- |
+| AnthropicClient.ts | ~30 lines | v1.1  | 🔴 HIGH  |
+| OpenAIClient.ts    | ~25 lines | v1.1  | 🔴 HIGH  |
+| OllamaClient.ts    | ~40 lines | v1.1  | 🔴 HIGH  |
 
 **Total New Lines**: ~245 lines
 
@@ -353,6 +353,7 @@ export class OllamaClient implements IApiClient {
 ## 🎯 Implementation Checklist
 
 ### SessionManager
+
 - [ ] Create sessions directory
 - [ ] Implement save() method
 - [ ] Implement load() method
@@ -362,6 +363,7 @@ export class OllamaClient implements IApiClient {
 - [ ] Add tests
 
 ### API Clients Streaming
+
 - [ ] AnthropicClient.executeStream()
 - [ ] OpenAIClient.executeStream()
 - [ ] OllamaClient.executeStream()
