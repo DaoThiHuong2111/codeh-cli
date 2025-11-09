@@ -4,6 +4,11 @@
  */
 
 import {useState, useCallback, useEffect} from 'react';
+import {
+	saveHistoryToFile,
+	loadHistoryFromFile,
+	clearHistoryFile,
+} from '../utils/storage';
 import type {
 	HistoryItem,
 	PendingItem,
@@ -192,27 +197,36 @@ export function useHistory(
 		setNextId(1);
 
 		if (enablePersistence) {
-			// Clear from storage
-			// TODO: Implement storage clear
+			clearHistoryFile(storageKey);
 		}
-	}, [enablePersistence]);
+	}, [enablePersistence, storageKey]);
 
 	/**
 	 * Load history from storage
 	 */
 	const loadHistory = useCallback(() => {
-		// TODO: Implement loading from file-based storage
-		// For CLI environment, might use a JSON file in user's home directory
-		// For now, just in-memory
-	}, [storageKey]);
+		try {
+			const loaded = loadHistoryFromFile(storageKey);
+			if (loaded.length > 0) {
+				setHistory(limitHistory(loaded));
+				// Update nextId based on loaded history
+				const maxId = Math.max(...loaded.map(item => item.id), 0);
+				setNextId(maxId + 1);
+			}
+		} catch (error) {
+			console.error('Failed to load history:', error);
+		}
+	}, [storageKey, maxItems]);
 
 	/**
 	 * Save history to storage
 	 */
 	const saveHistory = useCallback(() => {
-		// TODO: Implement saving to file-based storage
-		// For CLI environment, might use a JSON file in user's home directory
-		// For now, just in-memory
+		try {
+			saveHistoryToFile(storageKey, history);
+		} catch (error) {
+			console.error('Failed to save history:', error);
+		}
 	}, [storageKey, history]);
 
 	/**
