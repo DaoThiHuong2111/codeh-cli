@@ -12,9 +12,10 @@ Ensures all documentation follows project standards and prevents redundant files
 
 Before creating ANY documentation:
 
-1. **Check first**: Does similar documentation already exist?
+1. **Check first**: Use scripts for efficient search
    ```bash
-   grep -r "topic-keyword" docs/ --include="*.md"
+   ./scripts/doc-search.sh "topic-keyword"
+   ./scripts/doc-metadata.sh docs/path/to/file.md
    ```
 
 2. **Verify need**: Is this feature complete and ready to document?
@@ -26,6 +27,37 @@ Before creating ANY documentation:
 5. **Use template**: See `templates/README.md` for document templates
 
 6. **Validate**: Check against rules in `rules.md`
+
+## Efficient Scripts (Section-Level Interaction)
+
+**Instead of reading entire files**, use these scripts for section-level operations:
+
+```bash
+# Get metadata without reading content
+./scripts/doc-metadata.sh docs/screens/home/README.md
+
+# List sections to navigate structure
+./scripts/doc-list-sections.sh docs/screens/home/README.md
+
+# Get specific section only (not entire file)
+./scripts/doc-get-section.sh docs/screens/home/README.md "Features"
+
+# Search across docs
+./scripts/doc-search.sh "slash command" docs/screens/home
+
+# Update section without reading full file
+./scripts/doc-update-section.sh docs/file.md "Section" new-content.md
+
+# Delete section
+./scripts/doc-delete-section.sh docs/file.md "Old Section"
+
+# Find duplicates
+./scripts/doc-find-duplicates.sh docs/
+```
+
+**See**: `scripts/README.md` for complete documentation
+
+**Benefits**: 80-98% reduction in context usage vs reading full files
 
 ## Core Principles
 
@@ -182,6 +214,18 @@ Good documentation is:
 ├── rules.md              # Detailed rules and standards
 ├── structure.md          # Directory structure details
 ├── examples.md           # Real examples from project
+│
+├── scripts/              # Efficient doc interaction scripts
+│   ├── README.md         # Scripts documentation
+│   ├── doc-search.sh     # Search without reading full files
+│   ├── doc-list-sections.sh      # List sections (structure)
+│   ├── doc-get-section.sh        # Get section only
+│   ├── doc-update-section.sh     # Update section
+│   ├── doc-delete-section.sh     # Delete section
+│   ├── doc-insert-after.sh       # Insert content
+│   ├── doc-metadata.sh           # Get file metadata
+│   └── doc-find-duplicates.sh    # Find redundant content
+│
 ├── templates/            # Document templates (on-demand)
 │   ├── README.md
 │   ├── screen-readme.md
@@ -190,6 +234,7 @@ Good documentation is:
 │   ├── screen-flows.md
 │   ├── architecture.md
 │   └── guide.md
+│
 └── workflows/            # Step-by-step workflows (on-demand)
     ├── README.md
     ├── create-screen.md
