@@ -14,16 +14,18 @@ Before creating ANY documentation:
 
 1. **Check first**: Does similar documentation already exist?
    ```bash
-   find docs -type f -name "*.md" -exec grep -l "topic-keyword" {} \;
+   grep -r "topic-keyword" docs/ --include="*.md"
    ```
 
 2. **Verify need**: Is this feature complete and ready to document?
 
-3. **Choose location**: Follow the structure in `structure.md`
+3. **Choose location**: See `structure.md` for directory organization
 
-4. **Use template**: Select from `templates.md`
+4. **Select workflow**: See `workflows/README.md` for step-by-step process
 
-5. **Validate**: Check against rules in `rules.md`
+5. **Use template**: See `templates/README.md` for document templates
+
+6. **Validate**: Check against rules in `rules.md`
 
 ## Core Principles
 
@@ -40,9 +42,9 @@ docs/
 ├── architecture/          # Architecture docs
 └── screens/               # Screen-specific docs
     └── {screen-name}/
-        ├── README.md      # Overview
+        ├── README.md      # Overview (required)
         ├── features.md    # Features (optional)
-        ├── technical.md   # Technical details
+        ├── technical.md   # Technical (required)
         └── flows.md       # Flows (optional)
 ```
 
@@ -67,60 +69,68 @@ docs/
 - Planning docs (use GitHub Issues)
 - Personal notes
 
-## Decision Flow
+## Progressive Disclosure
 
+This skill uses **filesystem-based progressive disclosure** to minimize context usage:
+
+### Core Files (Always Available)
+- `SKILL.md` (this file) - Core instructions
+- `rules.md` - Detailed rules
+- `structure.md` - Directory structure
+
+### On-Demand Resources
+
+**Templates** (load when creating docs):
 ```
-Need documentation?
-  ↓
-Check if similar exists → Yes → UPDATE existing
-  ↓ No
-Feature complete? → No → STOP (don't create)
-  ↓ Yes
-Choose location:
-  ├─ Screen feature? → docs/screens/{screen}/
-  ├─ Architecture? → docs/architecture/
-  └─ Guide? → docs/guides/
-  ↓
-Select template from templates.md
-  ↓
-Create & validate (max 500 lines)
-```
-
-## Files in This Skill
-
-- **SKILL.md** (this file): Core instructions
-- **rules.md**: Detailed rules and standards
-- **structure.md**: Directory structure details
-- **workflow.md**: Complete workflows and checklists
-- **templates.md**: Document templates
-- **examples.md**: Real examples from project
-
-## Quick Commands
-
-**Check for existing docs:**
-```bash
-grep -r "keyword" docs/ --include="*.md"
+templates/
+├── README.md            # Template index
+├── screen-readme.md     # For docs/screens/{name}/README.md
+├── screen-technical.md  # For docs/screens/{name}/technical.md
+├── screen-features.md   # For docs/screens/{name}/features.md
+├── screen-flows.md      # For docs/screens/{name}/flows.md
+├── architecture.md      # For docs/architecture/*.md
+└── guide.md             # For docs/guides/*.md
 ```
 
-**Count lines in file:**
-```bash
-wc -l docs/path/to/file.md
+**Workflows** (load when performing task):
+```
+workflows/
+├── README.md               # Workflow index + decision trees
+├── create-screen.md        # Creating new screen docs
+├── update-existing.md      # Updating existing docs
+├── consolidate-duplicates.md  # Consolidating duplicates
+├── split-large-file.md     # Splitting files >500 lines
+├── add-examples.md         # Adding examples
+└── review-quarterly.md     # Quarterly review
 ```
 
-**List screen docs:**
-```bash
-ls -la docs/screens/*/
+**Examples** (load when need reference):
 ```
+examples.md              # Real examples from this project
+```
+
+## Usage Pattern
+
+**When user asks to create screen documentation:**
+1. Read `SKILL.md` (this file) → understand principles
+2. Read `workflows/create-screen.md` → get step-by-step process
+3. Read `templates/screen-readme.md` → get template
+4. Read `templates/screen-technical.md` → get template
+5. Create documentation
+
+**Total context**: ~700 lines instead of 2,800 lines
 
 ## Enforcement
 
 When generating documentation, Claude MUST:
 
-1. ✅ Check existing docs first
+1. ✅ Check existing docs first (Grep/Glob)
 2. ✅ Ask user if unsure about duplication
-3. ✅ Follow templates
-4. ✅ Stay under 500 lines
-5. ✅ Include code references (file:line)
+3. ✅ Load appropriate workflow from `workflows/`
+4. ✅ Load appropriate template from `templates/`
+5. ✅ Follow rules from `rules.md`
+6. ✅ Stay under 500 lines
+7. ✅ Include code references (file:line)
 
 ## Questions to Ask User
 
@@ -130,6 +140,29 @@ Before creating documentation:
 - "Is this feature complete?"
 - "Should this go in screens/{screen}/ or guides/?"
 - "File is 450+ lines. Should I split it?"
+
+## Decision Trees
+
+See `workflows/README.md` for:
+- Should I create documentation?
+- Where should documentation go?
+- Should I split this file?
+
+## Quick Commands
+
+```bash
+# Check for existing docs
+grep -r "keyword" docs/ --include="*.md"
+
+# Count lines
+wc -l docs/path/to/file.md
+
+# List screens
+ls -la docs/screens/
+
+# Test links
+grep -o "\[.*\](.*)" docs/file.md
+```
 
 ## Success Criteria
 
@@ -141,11 +174,40 @@ Good documentation is:
 - ✅ Actionable (includes examples)
 - ✅ Traceable (code references)
 
-## See Supporting Files
+## File Structure
 
-For detailed information:
-- `rules.md` - Complete rules and anti-patterns
-- `structure.md` - Directory structure details
-- `workflow.md` - Step-by-step workflows
-- `templates.md` - All document templates
-- `examples.md` - Real project examples
+```
+.claude/skills/documentation/
+├── SKILL.md              # This file (core instructions)
+├── rules.md              # Detailed rules and standards
+├── structure.md          # Directory structure details
+├── examples.md           # Real examples from project
+├── templates/            # Document templates (on-demand)
+│   ├── README.md
+│   ├── screen-readme.md
+│   ├── screen-technical.md
+│   ├── screen-features.md
+│   ├── screen-flows.md
+│   ├── architecture.md
+│   └── guide.md
+└── workflows/            # Step-by-step workflows (on-demand)
+    ├── README.md
+    ├── create-screen.md
+    ├── update-existing.md
+    ├── consolidate-duplicates.md
+    ├── split-large-file.md
+    ├── add-examples.md
+    └── review-quarterly.md
+```
+
+## Next Steps
+
+Depending on the task:
+
+- **Creating screen docs?** → Read `workflows/create-screen.md`
+- **Updating docs?** → Read `workflows/update-existing.md`
+- **File too large?** → Read `workflows/split-large-file.md`
+- **Found duplicates?** → Read `workflows/consolidate-duplicates.md`
+- **Need examples?** → Read `workflows/add-examples.md` or `examples.md`
+- **Need template?** → Read `templates/README.md` then specific template
+- **Quarterly review?** → Read `workflows/review-quarterly.md`
