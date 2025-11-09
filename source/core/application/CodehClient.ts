@@ -5,21 +5,37 @@
 
 import {IApiClient} from '../domain/interfaces/IApiClient';
 import {IHistoryRepository} from '../domain/interfaces/IHistoryRepository';
+import {IToolPermissionHandler} from '../domain/interfaces/IToolPermissionHandler';
 import {Turn} from '../domain/models/Turn';
 import {Message} from '../domain/models/Message';
 import {InputClassifier} from './services/InputClassifier';
 import {OutputFormatter} from './services/OutputFormatter';
+import {ToolRegistry} from '../tools/base/ToolRegistry';
+import {ToolExecutionOrchestrator} from './ToolExecutionOrchestrator';
 
 export class CodehClient {
 	private inputClassifier: InputClassifier;
 	private outputFormatter: OutputFormatter;
+	private toolOrchestrator?: ToolExecutionOrchestrator;
 
 	constructor(
 		private apiClient: IApiClient,
 		private historyRepo: IHistoryRepository,
+		toolRegistry?: ToolRegistry,
+		permissionHandler?: IToolPermissionHandler,
 	) {
 		this.inputClassifier = new InputClassifier();
 		this.outputFormatter = new OutputFormatter();
+
+		// Create tool orchestrator if tools are enabled
+		if (toolRegistry && permissionHandler) {
+			this.toolOrchestrator = new ToolExecutionOrchestrator(
+				toolRegistry,
+				permissionHandler,
+				apiClient,
+				historyRepo,
+			);
+		}
 	}
 
 	/**
@@ -148,14 +164,18 @@ export class CodehClient {
 				},
 			);
 
-			// Create response message with full content
-			const responseMsg = Message.assistant(fullResponse);
+			// Create response message with full content and tool calls
+			const responseMsg = Message.assistant(
+				fullResponse,
+				apiResponse.toolCalls,
+			);
 
 			// Save to history
 			await this.historyRepo.addMessage(requestMsg);
 			await this.historyRepo.addMessage(responseMsg);
 
-			return Turn.create(requestMsg)
+			// Create turn with tool calls if present
+			let turn = Turn.create(requestMsg)
 				.withResponse(responseMsg)
 				.withMetadata({
 					duration: Date.now() - startTime,
@@ -169,6 +189,13 @@ export class CodehClient {
 					model: apiResponse.model,
 					finishReason: apiResponse.finishReason,
 				});
+
+			// Add tool calls to turn if present
+			if (apiResponse.toolCalls && apiResponse.toolCalls.length > 0) {
+				turn = turn.withToolCalls(apiResponse.toolCalls);
+			}
+
+			return turn;
 		} catch (error: any) {
 			const errorMsg = Message.assistant(`❌ Error: ${error.message}`);
 
