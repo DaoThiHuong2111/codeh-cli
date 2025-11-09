@@ -24,9 +24,11 @@
 	],
 	"dependencies": {
 		"dotenv": "^17.2.3",
+		"highlight.js": "^11.11.1",
 		"ink": "^6.4.0",
 		"ink-big-text": "^2.0.0",
 		"ink-gradient": "^3.0.0",
+		"lowlight": "^3.3.0",
 		"meow": "^14.0.0",
 		"node-fetch": "^3.3.2",
 		"react": "^19.2.0"
