@@ -18,8 +18,13 @@ export class SimplePermissionHandler implements IToolPermissionHandler {
 	): Promise<PermissionResult> {
 		// MVP: Auto-approve all tools
 		// TODO: Show dialog and ask user
-		console.log(`[MVP] Auto-approving tool: ${context.toolCall.name}`);
+		console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+		console.log('🔧 Tool Execution Request');
+		console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+		console.log(`Tool: ${context.toolCall.name}`);
 		console.log(`Arguments:`, JSON.stringify(context.toolCall.arguments, null, 2));
+		console.log('Status: ✅ Auto-approved (MVP mode)');
+		console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
 		return {
 			approved: true,

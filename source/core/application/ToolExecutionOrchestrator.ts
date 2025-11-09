@@ -57,18 +57,26 @@ export class ToolExecutionOrchestrator {
 		const allExecutionContexts: ToolExecutionContext[] = [];
 		let iterations = 0;
 
+		console.log('\n🤖 Starting Tool Execution Orchestration');
+		console.log(`Max iterations: ${maxIterations}\n`);
+
 		// Agentic Loop: Continue while LLM requests tools and under limit
 		while (iterations < maxIterations) {
 			iterations++;
+			console.log(`\n📍 Iteration ${iterations}/${maxIterations}`);
 
 			// Check if current turn has tool calls
 			const toolCalls = currentTurn.response?.toolCalls;
 			if (!toolCalls || toolCalls.length === 0) {
 				// No more tools to execute, done
+				console.log('✅ No more tool calls detected. Orchestration complete.\n');
 				break;
 			}
 
+			console.log(`🔍 Detected ${toolCalls.length} tool call(s)`);
+
 			// Execute tools with permission handling
+			console.log('⚙️  Executing tools...');
 			const handleResult = await this.executeTools(toolCalls, conversationContext);
 			allExecutionContexts.push(...handleResult.contexts);
 
@@ -76,11 +84,13 @@ export class ToolExecutionOrchestrator {
 			if (!handleResult.allApproved) {
 				// Some tools rejected, stop agentic loop
 				// TODO: Send rejection info back to LLM
+				console.log('❌ Some tools were rejected. Stopping orchestration.\n');
 				break;
 			}
 
 			// Format tool results for LLM continuation
 			const toolResultMessages = this.formatToolResults(handleResult.contexts);
+			console.log(`✅ Tools executed successfully. Sending results back to LLM...`);
 
 			// Continue conversation with tool results
 			currentTurn = await this.continueWithToolResults(
@@ -88,11 +98,23 @@ export class ToolExecutionOrchestrator {
 				toolResultMessages,
 			);
 
+			console.log('📨 Received LLM response');
+
 			// If LLM response has no tool calls, we're done
 			if (!currentTurn.response?.toolCalls || currentTurn.response.toolCalls.length === 0) {
+				console.log('✅ LLM completed without requesting more tools. Orchestration complete.\n');
 				break;
 			}
 		}
+
+		if (iterations >= maxIterations) {
+			console.log('⚠️  Maximum iterations reached. Stopping orchestration.\n');
+		}
+
+		console.log(`🎯 Orchestration Summary:`);
+		console.log(`   - Total iterations: ${iterations}`);
+		console.log(`   - Tools executed: ${allExecutionContexts.length}`);
+		console.log(`   - Final response length: ${currentTurn.response?.content.length || 0} chars\n`);
 
 		return {
 			finalTurn: currentTurn,
