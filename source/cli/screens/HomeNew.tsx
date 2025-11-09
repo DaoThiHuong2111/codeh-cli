@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import {Box, Text, useInput} from 'ink';
 import {Container} from '../../core/di/Container.js';
 import {useHomeLogicNew} from '../hooks/useHomeLogicNew.js';
@@ -11,6 +11,8 @@ import {SlashSuggestions} from '../components/organisms/SlashSuggestions.js';
 import {HelpOverlay} from '../components/organisms/HelpOverlay.js';
 import {Footer} from '../components/organisms/Footer.js';
 import {TodosDisplay} from '../components/organisms/TodosDisplay.js';
+import type {PermissionModeManager} from '../../infrastructure/permissions/PermissionModeManager.js';
+import type {PermissionMode} from '../../infrastructure/permissions/PermissionModeManager.js';
 
 interface HomeNewProps {
 	container: Container;
@@ -19,9 +21,47 @@ interface HomeNewProps {
 export default function HomeNew({container}: HomeNewProps) {
 	const {presenter, loading, error} = useHomeLogicNew(container);
 
+	// Permission mode state
+	const [permissionMode, setPermissionMode] = useState<PermissionMode>('mvp');
+	const [modeManager, setModeManager] = useState<PermissionModeManager | null>(
+		null,
+	);
+
+	// Initialize mode manager from container
+	useEffect(() => {
+		try {
+			const manager =
+				container.resolve<PermissionModeManager>('PermissionModeManager');
+			setModeManager(manager);
+			setPermissionMode(manager.getCurrentMode());
+
+			// Listen for mode changes
+			const listener = {
+				onModeChanged: (mode: PermissionMode) => {
+					setPermissionMode(mode);
+				},
+			};
+			manager.addListener(listener);
+
+			return () => {
+				manager.removeListener(listener);
+			};
+		} catch (err) {
+			console.error('Failed to resolve PermissionModeManager:', err);
+		}
+	}, [container]);
+
 	// Global keyboard shortcuts
 	useInput((input, key) => {
 		if (!presenter) return;
+
+		// Toggle permission mode with Shift+Tab
+		if (key.shift && key.tab) {
+			if (modeManager) {
+				modeManager.toggleMode();
+			}
+			return;
+		}
 
 		// Toggle help with ?
 		if (input === '?' && !presenter.isLoading) {
@@ -148,6 +188,7 @@ export default function HomeNew({container}: HomeNewProps) {
 				estimatedCost={presenter.estimatedCost}
 				sessionDuration={presenter.sessionDuration}
 				gitBranch={presenter.gitBranch}
+				permissionMode={permissionMode}
 			/>
 
 			{/* Help Hint */}

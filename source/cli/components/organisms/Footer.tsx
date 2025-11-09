@@ -13,6 +13,7 @@ export interface FooterProps {
 	estimatedCost: number;
 	sessionDuration: number; // in seconds
 	gitBranch?: string;
+	permissionMode?: 'mvp' | 'interactive';
 }
 
 export const Footer: React.FC<FooterProps> = ({
@@ -22,6 +23,7 @@ export const Footer: React.FC<FooterProps> = ({
 	estimatedCost,
 	sessionDuration,
 	gitBranch,
+	permissionMode = 'mvp',
 }) => {
 	// Format duration as MM:SS
 	const formatDuration = (seconds: number): string => {
@@ -117,6 +119,20 @@ export const Footer: React.FC<FooterProps> = ({
 						</Box>
 					</>
 				)}
+
+				{/* Permission Mode */}
+				<Text color="gray" dimColor>
+					|
+				</Text>
+				<Box>
+					<Text color={permissionMode === 'mvp' ? 'cyan' : 'green'}>
+						{permissionMode === 'mvp' ? '🚀 MVP' : '🔒 Interactive'}
+					</Text>
+					<Text color="gray" dimColor>
+						{' '}
+						(Shift+Tab)
+					</Text>
+				</Box>
 			</Box>
 		</Box>
 	);

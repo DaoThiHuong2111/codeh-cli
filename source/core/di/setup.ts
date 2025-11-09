@@ -13,6 +13,8 @@ import {FileOperations} from '../../infrastructure/filesystem/FileOperations';
 import {ShellExecutor} from '../../infrastructure/process/ShellExecutor';
 import {CommandValidator} from '../../infrastructure/process/CommandValidator';
 import {SimplePermissionHandler} from '../../infrastructure/permissions/SimplePermissionHandler';
+import {PermissionModeManager} from '../../infrastructure/permissions/PermissionModeManager';
+import {HybridPermissionHandler} from '../../infrastructure/permissions/HybridPermissionHandler';
 
 // Layer 2 - Core
 import {CodehClient} from '../application/CodehClient';
@@ -52,10 +54,21 @@ export async function setupContainer(): Promise<Container> {
 	container.register('ShellExecutor', () => new ShellExecutor(), true);
 	container.register('CommandValidator', () => new CommandValidator(), true);
 
-	// Permission Handler
+	// Permission Mode Manager (singleton shared across app)
+	container.register(
+		'PermissionModeManager',
+		() => new PermissionModeManager(),
+		true,
+	);
+
+	// Permission Handler (hybrid - switches between MVP and Interactive)
 	container.register(
 		'PermissionHandler',
-		() => new SimplePermissionHandler(),
+		() => {
+			const modeManager =
+				container.resolve<PermissionModeManager>('PermissionModeManager');
+			return new HybridPermissionHandler(modeManager);
+		},
 		true,
 	);
 
