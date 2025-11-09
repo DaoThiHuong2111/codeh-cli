@@ -12,3 +12,6 @@ export {useDebouncedStreamContent} from './useDebouncedStreamContent';
 
 export {useHistory} from './useHistory';
 export type {UseHistoryOptions, UseHistoryReturn} from './useHistory';
+
+export {useTerminalSize} from './useTerminalSize';
+export type {TerminalSize} from './useTerminalSize';

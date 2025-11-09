@@ -28,6 +28,7 @@
 		"ink": "^6.4.0",
 		"ink-big-text": "^2.0.0",
 		"ink-gradient": "^3.0.0",
+		"ink-text-input": "^6.0.0",
 		"lowlight": "^3.3.0",
 		"meow": "^14.0.0",
 		"node-fetch": "^3.3.2",
