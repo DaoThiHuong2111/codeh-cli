@@ -30,7 +30,7 @@ mkdir -p docs/screens/{screen-name}
 
 ### 3. Create README.md (Required)
 
-Load template: `templates/screen-readme.md`
+Load template: `assets/templates/screen-readme.md`
 
 Include:
 - Overview
@@ -43,7 +43,7 @@ Include:
 
 ### 4. Create technical.md (Required)
 
-Load template: `templates/screen-technical.md`
+Load template: `assets/templates/screen-technical.md`
 
 Include:
 - Architecture diagram
@@ -57,7 +57,7 @@ Include:
 
 **Only if** screen has 5+ complex features
 
-Load template: `templates/screen-features.md`
+Load template: `assets/templates/screen-features.md`
 
 Include:
 - Each feature in detail
@@ -70,7 +70,7 @@ Include:
 
 **Only if** screen has complex multi-step workflows
 
-Load template: `templates/screen-flows.md`
+Load template: `assets/templates/screen-flows.md`
 
 Include:
 - Step-by-step flows

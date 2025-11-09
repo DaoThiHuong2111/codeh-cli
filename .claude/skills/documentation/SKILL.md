@@ -1,6 +1,6 @@
 ---
 name: documentation
-description: Enforces documentation standards and structure for this project. Use when creating, updating, or organizing documentation to ensure compliance with project rules, prevent redundancy, and maintain screen-based organization. Activates when user asks to create/update docs or when documentation needs to be generated.
+description: Enforces documentation standards and structure for this project. This skill should be used when creating, updating, or organizing documentation to ensure compliance with project rules, prevent redundancy, and maintain screen-based organization. Activates when user asks to create/update docs or when documentation needs to be generated.
 allowed-tools: [Read, Write, Edit, Glob, Grep, Bash]
 ---
 
@@ -8,63 +8,30 @@ allowed-tools: [Read, Write, Edit, Glob, Grep, Bash]
 
 Ensures all documentation follows project standards and prevents redundant files.
 
-## Quick Start
+## Purpose
 
-Before creating ANY documentation:
+This skill provides tools and workflows for efficient documentation management:
+- Section-level interaction scripts (search, get, update without reading full files)
+- Document templates for consistent structure
+- Workflows for common documentation tasks
+- Rules and standards to prevent redundancy
 
-1. **Check first**: Use scripts for efficient search
-   ```bash
-   ./scripts/doc-search.sh "topic-keyword"
-   ./scripts/doc-metadata.sh docs/path/to/file.md
-   ```
+## When to Use This Skill
 
-2. **Verify need**: Is this feature complete and ready to document?
-
-3. **Choose location**: See `structure.md` for directory organization
-
-4. **Select workflow**: See `workflows/README.md` for step-by-step process
-
-5. **Use template**: See `templates/README.md` for document templates
-
-6. **Validate**: Check against rules in `rules.md`
-
-## Efficient Scripts (Section-Level Interaction)
-
-**Instead of reading entire files**, use these scripts for section-level operations:
-
-```bash
-# Get metadata without reading content
-./scripts/doc-metadata.sh docs/screens/home/README.md
-
-# List sections to navigate structure
-./scripts/doc-list-sections.sh docs/screens/home/README.md
-
-# Get specific section only (not entire file)
-./scripts/doc-get-section.sh docs/screens/home/README.md "Features"
-
-# Search across docs
-./scripts/doc-search.sh "slash command" docs/screens/home
-
-# Update section without reading full file
-./scripts/doc-update-section.sh docs/file.md "Section" new-content.md
-
-# Delete section
-./scripts/doc-delete-section.sh docs/file.md "Old Section"
-
-# Find duplicates
-./scripts/doc-find-duplicates.sh docs/
-```
-
-**See**: `scripts/README.md` for complete documentation
-
-**Benefits**: 80-98% reduction in context usage vs reading full files
+Use this skill when:
+- Creating new documentation for features, screens, or architecture
+- Updating existing documentation after code changes
+- Finding and consolidating duplicate documentation
+- Splitting large documentation files (>500 lines)
+- Searching for specific information in docs
+- Checking documentation quality and compliance
 
 ## Core Principles
 
 ### 1. DRY (Don't Repeat Yourself)
-- Check existing docs FIRST
-- Update instead of create
-- Consolidate related info
+- Check for existing documentation before creating new files
+- Update existing docs instead of creating duplicates
+- Consolidate related information into single files
 
 ### 2. Screen-Based Organization
 ```
@@ -81,178 +48,165 @@ docs/
 ```
 
 ### 3. Size Limits
-- **Max 500 lines per file**
-- Split if approaching limit
-- Keep focused and scannable
+- Maximum 500 lines per file
+- Split files approaching limit (>450 lines)
+- Keep documents focused and scannable
 
-## When to Create Documentation
+## How to Use This Skill
 
-### ✅ CREATE for:
-- Complete implemented features
-- Breaking changes in APIs
-- New screens or major UI components
-- Integration guides
-- Architecture decisions
+### Step 1: Check for Existing Documentation
 
-### ❌ DO NOT create for:
-- Work in progress (WIP)
-- Temporary implementation details
-- Duplicate information
-- Planning docs (use GitHub Issues)
-- Personal notes
+**Use scripts for efficient search** (80-98% context reduction):
+
+```bash
+# Search without reading full files
+./scripts/doc-search.sh "topic-keyword"
+
+# Get file metadata (0 lines read)
+./scripts/doc-metadata.sh docs/path/to/file.md
+
+# List sections to navigate (structure only)
+./scripts/doc-list-sections.sh docs/file.md
+```
+
+**Complete script documentation:** See `scripts/README.md`
+
+### Step 2: Determine Action
+
+**If similar documentation exists:**
+- Load workflow: `references/workflows/update-existing.md`
+- Use `doc-get-section.sh` to read only relevant section
+- Update section with `doc-update-section.sh`
+
+**If creating new documentation:**
+- Load workflow: `references/workflows/create-screen.md`
+- Load template: `assets/templates/screen-readme.md` or `assets/templates/screen-technical.md`
+- Follow template structure
+
+**If file is too large (>450 lines):**
+- Load workflow: `references/workflows/split-large-file.md`
+
+**If duplicates found:**
+- Load workflow: `references/workflows/consolidate-duplicates.md`
+
+### Step 3: Validate Against Rules
+
+Load reference file: `references/rules.md`
+
+Check:
+- ✅ No duplicate content exists
+- ✅ File under 500 lines
+- ✅ Code references include file:line format
+- ✅ All code blocks have language specified
+- ✅ Examples are tested and working
+
+**Complete rules:** See `references/rules.md`
+
+## Bundled Resources
+
+### Scripts (`scripts/`)
+
+Efficient section-level interaction tools:
+
+- **doc-search.sh** - Search content without reading full files
+- **doc-list-sections.sh** - List all headings with line numbers
+- **doc-get-section.sh** - Extract specific section only (90% context reduction)
+- **doc-update-section.sh** - Update section without reading full file
+- **doc-delete-section.sh** - Remove section
+- **doc-insert-after.sh** - Insert content after section
+- **doc-metadata.sh** - Get file statistics (100% context reduction)
+- **doc-find-duplicates.sh** - Find redundant content
+
+**Benefits:** 80-98% reduction in context usage vs reading entire files
+
+**Complete documentation:** `scripts/README.md`
+
+### References (`references/`)
+
+Load as needed for detailed information:
+
+- **rules.md** - Complete documentation rules and anti-patterns
+- **structure.md** - Directory organization details and navigation
+- **examples.md** - Real examples from this project (good vs bad patterns)
+- **workflows/** - Step-by-step workflows for common tasks:
+  - `create-screen.md` - Creating new screen documentation
+  - `update-existing.md` - Updating existing documentation
+  - `consolidate-duplicates.md` - Consolidating duplicate docs
+  - `split-large-file.md` - Splitting files >500 lines
+  - `add-examples.md` - Adding examples to docs
+  - `review-quarterly.md` - Quarterly documentation review
+
+### Assets (`assets/`)
+
+Templates used in documentation output:
+
+- **templates/** - Document templates:
+  - `screen-readme.md` - For docs/screens/{name}/README.md
+  - `screen-technical.md` - For docs/screens/{name}/technical.md
+  - `screen-features.md` - For docs/screens/{name}/features.md
+  - `screen-flows.md` - For docs/screens/{name}/flows.md
+  - `architecture.md` - For docs/architecture/*.md
+  - `guide.md` - For docs/guides/*.md
 
 ## Progressive Disclosure
 
-This skill uses **filesystem-based progressive disclosure** to minimize context usage:
+This skill uses filesystem-based progressive disclosure:
 
-### Core Files (Always Available)
-- `SKILL.md` (this file) - Core instructions
-- `rules.md` - Detailed rules
-- `structure.md` - Directory structure
+**Level 1: Metadata (always in context)**
+- Skill name and description (~100 words)
 
-### On-Demand Resources
+**Level 2: SKILL.md (when skill triggers)**
+- Core instructions and workflow guidance (~2k words)
 
-**Templates** (load when creating docs):
-```
-templates/
-├── README.md            # Template index
-├── screen-readme.md     # For docs/screens/{name}/README.md
-├── screen-technical.md  # For docs/screens/{name}/technical.md
-├── screen-features.md   # For docs/screens/{name}/features.md
-├── screen-flows.md      # For docs/screens/{name}/flows.md
-├── architecture.md      # For docs/architecture/*.md
-└── guide.md             # For docs/guides/*.md
-```
+**Level 3: Bundled resources (loaded as needed)**
+- Scripts: Execute without reading into context
+- References: Load specific file when detailed info needed
+- Assets: Copy template into output
 
-**Workflows** (load when performing task):
-```
-workflows/
-├── README.md               # Workflow index + decision trees
-├── create-screen.md        # Creating new screen docs
-├── update-existing.md      # Updating existing docs
-├── consolidate-duplicates.md  # Consolidating duplicates
-├── split-large-file.md     # Splitting files >500 lines
-├── add-examples.md         # Adding examples
-└── review-quarterly.md     # Quarterly review
-```
+**Example:** Creating screen docs
+- Before: Read all 3,620 lines
+- After: SKILL.md (300 lines) + workflow (150 lines) + template (200 lines) = 650 lines (82% reduction)
 
-**Examples** (load when need reference):
-```
-examples.md              # Real examples from this project
-```
+## Typical Workflows
 
-## Usage Pattern
+### Creating New Screen Documentation
 
-**When user asks to create screen documentation:**
-1. Read `SKILL.md` (this file) → understand principles
-2. Read `workflows/create-screen.md` → get step-by-step process
-3. Read `templates/screen-readme.md` → get template
-4. Read `templates/screen-technical.md` → get template
-5. Create documentation
+1. **Check:** `./scripts/doc-search.sh "ScreenName"`
+2. **If not exists:** Load `references/workflows/create-screen.md`
+3. **Follow workflow:**
+   - Create directory: `docs/screens/{screen-name}`
+   - Use template: `assets/templates/screen-readme.md`
+   - Use template: `assets/templates/screen-technical.md`
+   - Validate against: `references/rules.md`
 
-**Total context**: ~700 lines instead of 2,800 lines
+### Updating Existing Documentation
 
-## Enforcement
+1. **Get metadata:** `./scripts/doc-metadata.sh docs/file.md`
+2. **List sections:** `./scripts/doc-list-sections.sh docs/file.md`
+3. **Get section:** `./scripts/doc-get-section.sh docs/file.md "Section"`
+4. **Update section:** `./scripts/doc-update-section.sh docs/file.md "Section" new-content.md`
 
-When generating documentation, Claude MUST:
+### Finding and Removing Duplicates
 
-1. ✅ Check existing docs first (Grep/Glob)
-2. ✅ Ask user if unsure about duplication
-3. ✅ Load appropriate workflow from `workflows/`
-4. ✅ Load appropriate template from `templates/`
-5. ✅ Follow rules from `rules.md`
-6. ✅ Stay under 500 lines
-7. ✅ Include code references (file:line)
+1. **Find duplicates:** `./scripts/doc-find-duplicates.sh docs/`
+2. **Load workflow:** `references/workflows/consolidate-duplicates.md`
+3. **Follow consolidation steps**
+4. **Delete redundant files**
 
 ## Questions to Ask User
 
 Before creating documentation:
-
-- "I found similar docs at {path}. Update instead?"
-- "Is this feature complete?"
-- "Should this go in screens/{screen}/ or guides/?"
-- "File is 450+ lines. Should I split it?"
-
-## Decision Trees
-
-See `workflows/README.md` for:
-- Should I create documentation?
-- Where should documentation go?
-- Should I split this file?
-
-## Quick Commands
-
-```bash
-# Check for existing docs
-grep -r "keyword" docs/ --include="*.md"
-
-# Count lines
-wc -l docs/path/to/file.md
-
-# List screens
-ls -la docs/screens/
-
-# Test links
-grep -o "\[.*\](.*)" docs/file.md
-```
+- "Found similar docs at {path}. Update existing instead of creating new?"
+- "Is this feature complete and ready to document?"
+- "Should this go in screens/{screen}/, guides/, or architecture/?"
+- "File is 450+ lines. Should split into multiple files?"
 
 ## Success Criteria
 
 Good documentation is:
-- ✅ Easy to find (follows structure)
+- ✅ Easy to find (follows structure in `references/structure.md`)
 - ✅ Easy to read (under 500 lines)
-- ✅ No duplicates (DRY)
-- ✅ Up to date (matches code)
-- ✅ Actionable (includes examples)
-- ✅ Traceable (code references)
-
-## File Structure
-
-```
-.claude/skills/documentation/
-├── SKILL.md              # This file (core instructions)
-├── rules.md              # Detailed rules and standards
-├── structure.md          # Directory structure details
-├── examples.md           # Real examples from project
-│
-├── scripts/              # Efficient doc interaction scripts
-│   ├── README.md         # Scripts documentation
-│   ├── doc-search.sh     # Search without reading full files
-│   ├── doc-list-sections.sh      # List sections (structure)
-│   ├── doc-get-section.sh        # Get section only
-│   ├── doc-update-section.sh     # Update section
-│   ├── doc-delete-section.sh     # Delete section
-│   ├── doc-insert-after.sh       # Insert content
-│   ├── doc-metadata.sh           # Get file metadata
-│   └── doc-find-duplicates.sh    # Find redundant content
-│
-├── templates/            # Document templates (on-demand)
-│   ├── README.md
-│   ├── screen-readme.md
-│   ├── screen-technical.md
-│   ├── screen-features.md
-│   ├── screen-flows.md
-│   ├── architecture.md
-│   └── guide.md
-│
-└── workflows/            # Step-by-step workflows (on-demand)
-    ├── README.md
-    ├── create-screen.md
-    ├── update-existing.md
-    ├── consolidate-duplicates.md
-    ├── split-large-file.md
-    ├── add-examples.md
-    └── review-quarterly.md
-```
-
-## Next Steps
-
-Depending on the task:
-
-- **Creating screen docs?** → Read `workflows/create-screen.md`
-- **Updating docs?** → Read `workflows/update-existing.md`
-- **File too large?** → Read `workflows/split-large-file.md`
-- **Found duplicates?** → Read `workflows/consolidate-duplicates.md`
-- **Need examples?** → Read `workflows/add-examples.md` or `examples.md`
-- **Need template?** → Read `templates/README.md` then specific template
-- **Quarterly review?** → Read `workflows/review-quarterly.md`
+- ✅ No duplicates (DRY principle)
+- ✅ Up to date (matches current code)
+- ✅ Actionable (includes tested examples)
+- ✅ Traceable (code references with file:line format)

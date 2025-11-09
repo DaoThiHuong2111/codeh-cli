@@ -63,7 +63,7 @@ touch docs/guides/{topic}-advanced.md
 
 **For each new file:**
 
-1. Load appropriate template from `templates/`
+1. Load appropriate template from `assets/templates/`
 2. Cut sections from large file
 3. Paste into new file
 4. Follow template structure
