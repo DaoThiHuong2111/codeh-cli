@@ -17,7 +17,7 @@ export class ConfigValidator {
 	static validateUrl(url: string): ValidationResult {
 		// Empty URL is valid (optional field)
 		if (!url || !url.trim()) {
-			return { isValid: true };
+			return {isValid: true};
 		}
 
 		try {
@@ -31,7 +31,7 @@ export class ConfigValidator {
 				};
 			}
 
-			return { isValid: true };
+			return {isValid: true};
 		} catch (err) {
 			return {
 				isValid: false,
@@ -53,7 +53,7 @@ export class ConfigValidator {
 			};
 		}
 
-		return { isValid: true };
+		return {isValid: true};
 	}
 
 	/**
@@ -65,7 +65,7 @@ export class ConfigValidator {
 	static validateApiKey(apiKey: string, provider: string): ValidationResult {
 		// Ollama doesn't require API key
 		if (provider === 'ollama') {
-			return { isValid: true };
+			return {isValid: true};
 		}
 
 		if (!apiKey || !apiKey.trim()) {
@@ -75,7 +75,7 @@ export class ConfigValidator {
 			};
 		}
 
-		return { isValid: true };
+		return {isValid: true};
 	}
 
 	/**
@@ -100,6 +100,6 @@ export class ConfigValidator {
 			};
 		}
 
-		return { isValid: true };
+		return {isValid: true};
 	}
 }

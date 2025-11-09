@@ -3,9 +3,9 @@
  * Access CodehChat from DI Container
  */
 
-import { useEffect, useState } from 'react';
-import { Container } from '../../core/di/Container';
-import { CodehChat } from '../../core/application/CodehChat';
+import {useEffect, useState} from 'react';
+import {Container} from '../../core/di/Container';
+import {CodehChat} from '../../core/application/CodehChat';
 
 export function useCodehChat(container: Container) {
 	const [chat, setChat] = useState<CodehChat | null>(null);
@@ -28,5 +28,5 @@ export function useCodehChat(container: Container) {
 		loadChat();
 	}, [container]);
 
-	return { chat, loading, error };
+	return {chat, loading, error};
 }

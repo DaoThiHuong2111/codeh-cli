@@ -3,7 +3,7 @@
  * Provides navigation functions to child components
  */
 
-import React, { createContext, useContext } from 'react';
+import React, {createContext, useContext} from 'react';
 
 export type ScreenType = 'welcome' | 'home' | 'config';
 
@@ -12,7 +12,9 @@ export interface NavigationContextType {
 	navigateTo: (screen: ScreenType) => void;
 }
 
-export const NavigationContext = createContext<NavigationContextType | null>(null);
+export const NavigationContext = createContext<NavigationContextType | null>(
+	null,
+);
 
 export function useNavigation(): NavigationContextType {
 	const context = useContext(NavigationContext);

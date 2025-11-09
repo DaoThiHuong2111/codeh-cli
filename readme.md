@@ -113,6 +113,7 @@ codeh --help
 This project follows Clean Architecture with 3 layers:
 
 ### LAYER 1: CLI Layer (Presentation)
+
 - **Location**: `source/cli/`
 - **Purpose**: User interface and interaction
 - **Components**:
@@ -124,6 +125,7 @@ This project follows Clean Architecture with 3 layers:
   - `cli.tsx` - Entry point
 
 ### LAYER 2: Core Layer (Business Logic)
+
 - **Location**: `source/core/`
 - **Purpose**: Business rules and domain logic
 - **Components**:
@@ -139,6 +141,7 @@ This project follows Clean Architecture with 3 layers:
   - `di/` - Dependency injection container
 
 ### LAYER 3: Infrastructure Layer (External Services)
+
 - **Location**: `source/infrastructure/`
 - **Purpose**: External integrations and data access
 - **Components**:
@@ -221,12 +224,12 @@ npm start
 
 ## Supported Providers
 
-| Provider | API Key Required | Local | Streaming |
-|----------|-----------------|-------|-----------|
-| Anthropic (Claude) | ✅ | ❌ | ✅ |
-| OpenAI (GPT) | ✅ | ❌ | ✅ |
-| Ollama | ❌ | ✅ | ✅ |
-| Generic OpenAI-compatible | ✅ | Depends | ✅ |
+| Provider                  | API Key Required | Local   | Streaming |
+| ------------------------- | ---------------- | ------- | --------- |
+| Anthropic (Claude)        | ✅               | ❌      | ✅        |
+| OpenAI (GPT)              | ✅               | ❌      | ✅        |
+| Ollama                    | ❌               | ✅      | ✅        |
+| Generic OpenAI-compatible | ✅               | Depends | ✅        |
 
 ## Key Technologies
 

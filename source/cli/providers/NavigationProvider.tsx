@@ -3,19 +3,26 @@
  * Manages navigation state and provides navigation functions
  */
 
-import React, { useState, useEffect } from 'react';
-import { Box, Text, useInput } from 'ink';
-import { NavigationContext, ScreenType, NavigationContextType } from '../contexts/NavigationContext';
-import { Container } from '../../core';
+import React, {useState, useEffect} from 'react';
+import {Box, Text, useInput} from 'ink';
+import {
+	NavigationContext,
+	ScreenType,
+	NavigationContextType,
+} from '../contexts/NavigationContext';
+import {Container} from '../../core';
 import Welcome from '../screens/Welcome';
 import Home from '../screens/Home';
+import HomeNew from '../screens/HomeNew';
 import Config from '../screens/Config';
 
 interface NavigationProviderProps {
 	container: Container;
 }
 
-export default function NavigationProvider({ container }: NavigationProviderProps) {
+export default function NavigationProvider({
+	container,
+}: NavigationProviderProps) {
 	const [currentScreen, setCurrentScreen] = useState<ScreenType>('home');
 	const [loading, setLoading] = useState(true);
 
@@ -51,7 +58,7 @@ export default function NavigationProvider({ container }: NavigationProviderProp
 			case 'welcome':
 				return <Welcome />;
 			case 'home':
-				return <Home container={container} />;
+				return <HomeNew container={container} />;
 			case 'config':
 				return (
 					<Config

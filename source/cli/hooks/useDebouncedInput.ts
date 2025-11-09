@@ -1,5 +1,5 @@
-import { useInput } from 'ink';
-import { useRef } from 'react';
+import {useInput} from 'ink';
+import {useRef} from 'react';
 
 export interface KeyDebounceConfig {
 	/**
@@ -87,13 +87,9 @@ export interface UseDebouncedInputOptions {
  */
 export function useDebouncedInput(
 	handler: (input: string, key: any) => void,
-	options: UseDebouncedInputOptions = {}
+	options: UseDebouncedInputOptions = {},
 ) {
-	const {
-		keyDebounce = {},
-		globalDebounceMs = 0,
-		disabled = false,
-	} = options;
+	const {keyDebounce = {}, globalDebounceMs = 0, disabled = false} = options;
 
 	// Track last press time for each key
 	const lastPressTimeRef = useRef<Record<string, number>>({});
