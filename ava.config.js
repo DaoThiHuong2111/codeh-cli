@@ -4,5 +4,5 @@ export default {
 		ts: 'module',
 		tsx: 'module',
 	},
-	nodeArguments: ['--loader=@esbuild-kit/esm-loader'],
+	nodeArguments: ['--import=tsx'],
 };

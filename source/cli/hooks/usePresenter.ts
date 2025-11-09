@@ -3,7 +3,7 @@
  * Generic hook for creating and managing presenters
  */
 
-import { useState, useEffect } from 'react';
+import {useState, useEffect} from 'react';
 
 type PresenterConstructor<T> = new (...args: any[]) => T;
 
@@ -15,7 +15,9 @@ export function usePresenter<T>(
 
 	useEffect(() => {
 		// Check if all dependencies are available
-		const allDepsReady = dependencies.every((dep) => dep !== null && dep !== undefined);
+		const allDepsReady = dependencies.every(
+			dep => dep !== null && dep !== undefined,
+		);
 
 		if (allDepsReady) {
 			try {

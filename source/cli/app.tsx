@@ -6,6 +6,6 @@ interface AppProps {
 	container: Container;
 }
 
-export default function App({ container }: AppProps) {
+export default function App({container}: AppProps) {
 	return <Navigation container={container} />;
 }

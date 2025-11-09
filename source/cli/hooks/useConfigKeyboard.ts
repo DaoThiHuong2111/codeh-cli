@@ -1,5 +1,5 @@
-import { ConfigStep } from './useConfigWizard';
-import { useDebouncedInput } from './useDebouncedInput';
+import {ConfigStep} from './useConfigWizard';
+import {useDebouncedInput} from './useDebouncedInput';
 
 export interface UseConfigKeyboardProps {
 	currentStep: ConfigStep;
@@ -48,9 +48,13 @@ export function useConfigKeyboard({
 				}
 			} else if (key.downArrow) {
 				if (currentStep === ConfigStep.PROVIDER) {
-					onProviderIndexChange(Math.min(providersLength - 1, providerIndex + 1));
+					onProviderIndexChange(
+						Math.min(providersLength - 1, providerIndex + 1),
+					);
 				} else if (currentStep === ConfigStep.CONFIRM) {
-					onConfirmIndexChange(Math.min(confirmOptionsLength - 1, confirmIndex + 1));
+					onConfirmIndexChange(
+						Math.min(confirmOptionsLength - 1, confirmIndex + 1),
+					);
 				}
 			} else if (key.return) {
 				onComplete();
@@ -59,9 +63,9 @@ export function useConfigKeyboard({
 		{
 			// Per-key debounce configuration
 			keyDebounce: {
-				return: { debounceMs: 1500 },   // Enter needs strong debounce
+				return: {debounceMs: 1500}, // Enter needs strong debounce
 			},
 			disabled: saving,
-		}
+		},
 	);
 }

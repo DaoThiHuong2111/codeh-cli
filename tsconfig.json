@@ -22,13 +22,6 @@
 		},
 		"allowSyntheticDefaultImports": true
 	},
-	"include": [
-		"source/**/*"
-	],
-	"exclude": [
-		"node_modules",
-		"dist",
-		"**/*.test.ts",
-		"**/*.test.tsx"
-	]
+	"include": ["source/**/*"],
+	"exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.test.tsx"]
 }

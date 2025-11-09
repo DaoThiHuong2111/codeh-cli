@@ -3,14 +3,14 @@
  * Handles business logic for Home screen
  */
 
-import { CodehClient } from '../../core/application/CodehClient';
-import { CodehChat } from '../../core/application/CodehChat';
-import { ExecutionResult, ConversationViewModel } from './types';
+import {CodehClient} from '../../core/application/CodehClient';
+import {CodehChat} from '../../core/application/CodehChat';
+import {ExecutionResult, ConversationViewModel} from './types';
 
 export class HomePresenter {
 	constructor(
 		private client: CodehClient,
-		private chat: CodehChat
+		private chat: CodehChat,
 	) {}
 
 	/**
@@ -54,7 +54,7 @@ export class HomePresenter {
 		const stats = this.chat.getStats();
 
 		return {
-			messages: messages.map((m) => ({
+			messages: messages.map(m => ({
 				role: m.role,
 				content: m.content,
 				timestamp: m.timestamp,

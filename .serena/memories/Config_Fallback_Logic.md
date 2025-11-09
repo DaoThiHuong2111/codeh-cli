@@ -1,107 +1,329 @@
-# Config Fallback Logic Implementation
+# Configuration System Architecture
 
-## Problem
+## Overview
 
-- Config screen saves to file AND sets env vars
-- When user Ctrl+C, env vars disappear on next restart
-- Code that only reads env vars will fail
+The configuration system uses a **layered architecture** with priority-based fallback logic to handle API credentials and settings.
 
-## Solution: Centralized Config with Fallback
-
-### Architecture
+## Architecture
 
 ```
-All config reads → services/config.js getter functions
-                 ├─ Check env var (fast, session-only)
-                 ├─ Check config file ~/.codeh/configs.json (persistent)
-                 └─ Return default value or empty string
+ConfigLoader
+├── EnvConfigRepository (Priority 1)
+│   └── Reads from process.env
+│       ├── CODEH_PROVIDER
+│       ├── CODEH_MODEL
+│       ├── CODEH_API_KEY
+│       ├── CODEH_BASE_URL
+│       ├── CODEH_MAX_TOKENS
+│       └── CODEH_TEMPERATURE
+│
+└── FileConfigRepository (Priority 2)
+    └── Reads from ~/.codeh/configs.json
+        └── custom_models[0]
 ```
 
-### New Getter Functions (services/config.js)
+## File Structure
 
-All implement same pattern:
+### ConfigLoader (`source/infrastructure/config/ConfigLoader.ts`)
 
-```javascript
-export function getModel() {
-	try {
-		return getConfigValue('CODEH_MODEL', 'custom_models.0.model', '');
-	} catch (error) {
-		return '';
+Main class that orchestrates config loading with fallback:
+
+```typescript
+class ConfigLoader {
+	private envRepo: EnvConfigRepository;
+	private fileRepo: FileConfigRepository;
+
+	async mergeConfigs(): Promise<ConfigData | null> {
+		const fileConfig = await this.fileRepo.getAll();
+		const envConfig = await this.envRepo.getAll();
+
+		// Return null if neither exists
+		if (!envConfig && !fileConfig) {
+			return null;
+		}
+
+		// Merge with ENV priority
+		return {
+			provider: envConfig?.provider || fileConfig?.provider || 'anthropic',
+			model: envConfig?.model || fileConfig?.model || '',
+			baseUrl: envConfig?.baseUrl || fileConfig?.baseUrl,
+			apiKey: envConfig?.apiKey || fileConfig?.apiKey,
+			maxTokens: envConfig?.maxTokens || fileConfig?.maxTokens || 4096,
+			temperature: envConfig?.temperature || fileConfig?.temperature || 0.7,
+		};
 	}
 }
 ```
 
-Available getters:
+### File Config Location
 
-- `getModel()` → env CODEH_MODEL | file custom_models[0].model | ''
-- `getApiKey()` → env CODEH_API_KEY | file custom_models[0].api_key | ''
-- `getBaseUrl()` → env CODEH_BASE_URL | file custom_models[0].base_url | ''
-- `getProvider()` → env CODEH_PROVIDER | file custom_models[0].provider | ''
-- `getMaxToken()` → env CODEH_MAX_TOKEN | file custom_models[0].max_token | 0
+**Path:** `~/.codeh/configs.json`
 
-### Usage in Other Services
+**Format:**
 
-#### apiManager.js
+```json
+{
+	"custom_models": [
+		{
+			"provider": "openai",
+			"model": "gpt-4",
+			"base_url": "https://api.openai.com/v1",
+			"api_key": "sk-...",
+			"max_tokens": 128000,
+			"temperature": 0.7
+		}
+	]
+}
+```
 
-```javascript
-import {getModel, getApiKey, getBaseUrl, getProvider, getMaxToken} from './config.js';
+**Note:** Only the **first model** in `custom_models` array is used.
 
-// In class, use helper:
-getConfig() {
+## Repositories
+
+### FileConfigRepository (`source/infrastructure/config/FileConfigRepository.ts`)
+
+Handles file-based config:
+
+```typescript
+class FileConfigRepository implements IConfigRepository {
+	private configFile: string; // ~/.codeh/configs.json
+
+	async getAll(): Promise<ConfigData | null> {
+		const firstModel = this.config.custom_models?.[0];
+		if (!firstModel) {
+			return null; // Trigger Config screen
+		}
+		return {
+			provider: firstModel.provider,
+			model: firstModel.model || '',
+			baseUrl: firstModel.base_url,
+			apiKey: firstModel.api_key,
+			maxTokens: firstModel.max_tokens || 4096,
+			temperature: firstModel.temperature || 0.7,
+		};
+	}
+
+	async exists(): Promise<boolean> {
+		// File must exist AND have at least one model
+		return existsSync(this.configFile) && this.config.custom_models?.length > 0;
+	}
+}
+```
+
+### EnvConfigRepository (`source/infrastructure/config/EnvConfigRepository.ts`)
+
+Handles environment variables:
+
+```typescript
+class EnvConfigRepository implements IConfigRepository {
+	async getAll(): Promise<ConfigData | null> {
+		const provider = process.env.CODEH_PROVIDER;
+		if (!provider) {
+			return null;
+		}
+
+		return {
+			provider: provider as any,
+			model: process.env.CODEH_MODEL || '',
+			baseUrl: process.env.CODEH_BASE_URL,
+			apiKey: process.env.CODEH_API_KEY,
+			maxTokens: parseInt(process.env.CODEH_MAX_TOKENS || '4096'),
+			temperature: parseFloat(process.env.CODEH_TEMPERATURE || '0.7'),
+		};
+	}
+}
+```
+
+## Configuration Flow
+
+### 1. Load Config
+
+```typescript
+const loader = new ConfigLoader();
+const config = await loader.load();
+```
+
+Returns:
+
+- `Configuration` object if config exists
+- `null` if no config (triggers Config screen)
+
+### 2. Merge Priority
+
+ENV variables override file config:
+
+```typescript
+{
+  provider: ENV || FILE || 'anthropic',
+  model: ENV || FILE || '',
+  baseUrl: ENV || FILE || undefined,
+  apiKey: ENV || FILE || undefined,
+  maxTokens: ENV || FILE || 4096,
+  temperature: ENV || FILE || 0.7
+}
+```
+
+### 3. Validation
+
+```typescript
+async validate(): Promise<{ valid: boolean; errors: string[] }> {
+  const config = await this.load();
+  if (!config) {
+    return { valid: false, errors: ['No configuration found'] };
+  }
   return {
-    provider: getProvider(),
-    model: getModel(),
-    apiKey: getApiKey(),
-    baseUrl: getBaseUrl(),
-    maxTokens: getMaxToken(),
+    valid: errors.length === 0,
+    errors: config.getValidationErrors()
   };
 }
-
-// Then use: this.getConfig()
 ```
 
-#### configManager.js
+### 4. Create API Client
 
-```javascript
-// In validate():
-const provider =
-	envManager.get('CODEH_PROVIDER') || (firstModel ? firstModel.provider : null);
-const apiKey =
-	envManager.get('CODEH_API_KEY') || (firstModel ? firstModel.api_key : null);
+```typescript
+// In setup.ts
+const config = await configLoader.mergeConfigs();
+if (!config) {
+	throw new Error('No configuration found. Please run "codeh config"');
+}
 
-// In getSummary():
-const provider =
-	envManager.get('CODEH_PROVIDER') || (firstModel ? firstModel.provider : '');
+const configuration = Configuration.create(config);
+const apiClient = factory.create(configuration);
 ```
 
-### Key Design Decisions
+## Configuration Domain Model
 
-1. **No Circular Imports**
-   - config.js imports configManager
-   - configManager does NOT import config
-   - configManager uses inline fallback logic
+### Configuration (`source/core/domain/models/Configuration.ts`)
+
+```typescript
+class Configuration {
+	constructor(
+		public readonly provider: Provider,
+		public readonly model: string,
+		public readonly apiKey?: string,
+		public readonly baseUrl?: string,
+		public readonly maxTokens: number = 4096,
+		public readonly temperature: number = 0.7,
+	) {}
+
+	static create(data: {
+		provider: string;
+		model: string;
+		// ...
+	}): Configuration {
+		const providerInfo = ProviderInfo.fromString(data.provider);
+
+		if (!data.model || data.model.trim() === '') {
+			throw new Error('Model is required');
+		}
+
+		return new Configuration(
+			providerInfo.name,
+			data.model,
+			data.apiKey,
+			data.baseUrl,
+			data.maxTokens,
+			data.temperature,
+		);
+	}
+}
+```
+
+## Provider Support
+
+### Provider Enum (`source/core/domain/valueObjects/Provider.ts`)
+
+```typescript
+enum Provider {
+	ANTHROPIC = 'anthropic',
+	OPENAI = 'openai',
+	OLLAMA = 'ollama',
+	GENERIC = 'generic-chat-completion-api',
+}
+```
+
+### ProviderInfo
+
+```typescript
+class ProviderInfo {
+	static fromString(value: string): ProviderInfo {
+		if (!value || value.trim() === '') {
+			throw new Error('Provider cannot be empty');
+		}
+
+		const provider = value as Provider;
+		if (!this.PROVIDERS[provider]) {
+			throw new Error(`Unknown provider: ${value}`);
+		}
+		return this.PROVIDERS[provider];
+	}
+}
+```
+
+## Usage Examples
+
+### Check Config Status
+
+```typescript
+const loader = new ConfigLoader();
+const status = await loader.getStatus();
+
+if (status.hasConfig) {
+	console.log(`Provider: ${status.provider}`);
+	console.log(`Model: ${status.model}`);
+} else {
+	// Navigate to Config screen
+}
+```
+
+### Save Config
+
+```typescript
+const config = Configuration.create({
+	provider: 'openai',
+	model: 'gpt-4',
+	apiKey: 'sk-...',
+	baseUrl: 'https://api.openai.com/v1',
+	maxTokens: 128000,
+	temperature: 0.7,
+});
+
+await loader.save(config);
+```
+
+### Clear Config
+
+```typescript
+await loader.clear(); // Clears file config only, not env vars
+```
+
+## Key Design Decisions
+
+1. **No Circular Dependencies**
+   - ConfigLoader uses repositories
+   - Repositories don't know about each other
+   - Clean separation of concerns
 
 2. **Graceful Degradation**
-   - All getters wrapped in try-catch
-   - Return empty strings/0 on errors
-   - App doesn't crash on missing config
+   - Return `null` instead of throwing on missing config
+   - Allow app to start without config
+   - Trigger Config screen when needed
 
-3. **Env Priority**
-   - Check env first (allows override)
-   - Falls back to persistent file
-   - Supports both session and persistent config
+3. **ENV Priority**
+   - ENV vars take precedence (runtime override)
+   - File config is persistent fallback
+   - Supports both dev and prod workflows
 
-### Testing
+4. **Type Safety**
+   - Strong typing throughout
+   - Domain models enforce validation
+   - Compile-time checks prevent errors
 
-- Fresh install: Config saved to file, survives restart ✓
-- Env override: export CODEH_MODEL=xxx works ✓
-- Recovery: Ctrl+C then restart → reads from file ✓
-- Missing config: Returns default, no crash ✓
+## Testing Scenarios
 
-### Migration Checklist
-
-- ✅ All direct env reads replaced
-- ✅ All envManager.modelConfig replaced
-- ✅ No circular dependencies
-- ✅ Error handling in place
-- ✅ Code formatted and reviewed
+✅ **Fresh install:** No config → null → Config screen  
+✅ **File config:** Reads from ~/.codeh/configs.json  
+✅ **ENV override:** ENV vars take precedence  
+✅ **Missing model:** Throws validation error  
+✅ **Invalid provider:** Throws "Unknown provider" error  
+✅ **Partial config:** Merges with defaults

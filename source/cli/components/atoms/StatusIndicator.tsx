@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Text } from 'ink';
+import {Box, Text} from 'ink';
 
 type StatusType = 'success' | 'error' | 'warning' | 'info' | 'loading';
 
@@ -59,18 +59,18 @@ export default function StatusIndicator({
 }
 
 // Export predefined status components
-export const SuccessStatus: React.FC<{ text?: string }> = ({ text }) => (
+export const SuccessStatus: React.FC<{text?: string}> = ({text}) => (
 	<StatusIndicator status="success" text={text} />
 );
-export const ErrorStatus: React.FC<{ text?: string }> = ({ text }) => (
+export const ErrorStatus: React.FC<{text?: string}> = ({text}) => (
 	<StatusIndicator status="error" text={text} />
 );
-export const WarningStatus: React.FC<{ text?: string }> = ({ text }) => (
+export const WarningStatus: React.FC<{text?: string}> = ({text}) => (
 	<StatusIndicator status="warning" text={text} />
 );
-export const InfoStatus: React.FC<{ text?: string }> = ({ text }) => (
+export const InfoStatus: React.FC<{text?: string}> = ({text}) => (
 	<StatusIndicator status="info" text={text} />
 );
-export const LoadingStatus: React.FC<{ text?: string }> = ({ text }) => (
+export const LoadingStatus: React.FC<{text?: string}> = ({text}) => (
 	<StatusIndicator status="loading" text={text} />
 );

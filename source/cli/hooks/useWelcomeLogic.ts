@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { useInput } from 'ink';
-import { WelcomePresenter } from '../presenters/WelcomePresenter';
-import { UpgradeInfo } from '../../core/domain/models/UpgradeInfo';
+import {useState, useEffect} from 'react';
+import {useInput} from 'ink';
+import {WelcomePresenter} from '../presenters/WelcomePresenter';
+import {UpgradeInfo} from '../../core/domain/models/UpgradeInfo';
 
 export interface UseWelcomeLogicReturn {
 	loading: boolean;
@@ -19,7 +19,10 @@ export interface UseWelcomeLogicProps {
 /**
  * Custom hook for Welcome screen business logic
  */
-export function useWelcomeLogic({ onNavigateHome, onNavigateConfig }: UseWelcomeLogicProps): UseWelcomeLogicReturn {
+export function useWelcomeLogic({
+	onNavigateHome,
+	onNavigateConfig,
+}: UseWelcomeLogicProps): UseWelcomeLogicReturn {
 	const presenter = new WelcomePresenter();
 	const [loading, setLoading] = useState(true);
 	const [upgradeInfo, setUpgradeInfo] = useState<UpgradeInfo | null>(null);
@@ -33,7 +36,8 @@ export function useWelcomeLogic({ onNavigateHome, onNavigateConfig }: UseWelcome
 				setUpgradeInfo(fetchedUpgradeInfo);
 
 				// Check if upgrade info has valid content
-				const hasValidContent = presenter.hasValidUpgradeInfo(fetchedUpgradeInfo);
+				const hasValidContent =
+					presenter.hasValidUpgradeInfo(fetchedUpgradeInfo);
 				setShouldShowWelcome(hasValidContent);
 
 				// If no valid upgrade info, skip welcome screen
@@ -54,7 +58,9 @@ export function useWelcomeLogic({ onNavigateHome, onNavigateConfig }: UseWelcome
 
 	const checkConfigurationAndNavigate = async () => {
 		try {
-			const { ConfigLoader } = await import('../../infrastructure/config/ConfigLoader.js');
+			const {ConfigLoader} = await import(
+				'../../infrastructure/config/ConfigLoader.js'
+			);
 			const loader = new ConfigLoader();
 			const status = await loader.getStatus();
 
