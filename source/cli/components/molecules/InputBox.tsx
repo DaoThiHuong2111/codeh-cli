@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {Box, Text, useInput} from 'ink';
+import {Box, Text, useInput, useStdout} from 'ink';
 import {useLayerSwitch} from '../../../core/input/index.js';
 
 interface InputBoxProps {
@@ -31,6 +31,8 @@ export default function InputBox({
 }: InputBoxProps) {
 	const [input, setInput] = useState(value);
 	const [isFocused, setIsFocused] = useState(true);
+	const {stdout} = useStdout();
+	const terminalWidth = stdout?.columns || 80;
 
 	useEffect(() => {
 		if (value !== input) {
@@ -74,7 +76,7 @@ export default function InputBox({
 	const isPlaceholder = !input;
 
 	const borderChar = '─';
-	const border = borderChar.repeat(width);
+	const border = borderChar.repeat(terminalWidth - 2);
 
 	// Calculate character counter display
 	const charCount = input.length;
