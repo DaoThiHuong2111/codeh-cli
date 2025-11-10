@@ -43,7 +43,7 @@ export const Footer: React.FC<FooterProps> = ({
 	};
 
 	return (
-		<Box borderStyle="single" borderColor="gray" paddingX={1} marginTop={1}>
+		<Box paddingX={1} marginTop={1}>
 			<Box gap={2}>
 				{/* Model */}
 				<Box>
@@ -51,32 +51,6 @@ export const Footer: React.FC<FooterProps> = ({
 						Model:{' '}
 					</Text>
 					<Text color="cyan">{model}</Text>
-				</Box>
-
-				{/* Separator */}
-				<Text color="gray" dimColor>
-					|
-				</Text>
-
-				{/* Messages */}
-				<Box>
-					<Text color="yellow" dimColor>
-						Messages:{' '}
-					</Text>
-					<Text color="yellow">{messageCount}</Text>
-				</Box>
-
-				{/* Separator */}
-				<Text color="gray" dimColor>
-					|
-				</Text>
-
-				{/* Tokens */}
-				<Box>
-					<Text color="green" dimColor>
-						Tokens:{' '}
-					</Text>
-					<Text color="green">{formatTokens(totalTokens)}</Text>
 				</Box>
 
 				{/* Separator */}
@@ -126,7 +100,7 @@ export const Footer: React.FC<FooterProps> = ({
 				</Text>
 				<Box>
 					<Text color={permissionMode === 'mvp' ? 'cyan' : 'green'}>
-						{permissionMode === 'mvp' ? '🚀 MVP' : '🔒 Interactive'}
+						{permissionMode === 'mvp' ? 'YOLO' : 'Ask before edits'}
 					</Text>
 					<Text color="gray" dimColor>
 						{' '}

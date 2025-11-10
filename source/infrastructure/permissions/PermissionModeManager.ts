@@ -27,7 +27,6 @@ export class PermissionModeManager {
 	setMode(mode: PermissionMode): void {
 		if (this.currentMode !== mode) {
 			this.currentMode = mode;
-			console.log(`\n🔄 Permission mode switched to: ${mode.toUpperCase()}\n`);
 			this.notifyListeners();
 		}
 	}
