@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {Box, Text, useInput} from 'ink';
+import {Box, Text} from 'ink';
 import {Container} from '../../core/di/Container.js';
 import {useHomeLogic} from '../hooks/useHomeLogic.js';
 import InputBox from '../components/molecules/InputBox.js';
@@ -11,6 +11,7 @@ import {SlashSuggestions} from '../components/organisms/SlashSuggestions.js';
 import {HelpOverlay} from '../components/organisms/HelpOverlay.js';
 import {Footer} from '../components/organisms/Footer.js';
 import {TodosDisplay} from '../components/organisms/TodosDisplay.js';
+import {useShortcut} from '../../core/input/index.js';
 import type {PermissionModeManager} from '../../infrastructure/permissions/PermissionModeManager.js';
 import type {PermissionMode} from '../../infrastructure/permissions/PermissionModeManager.js';
 
@@ -56,54 +57,114 @@ export default function Home({
 		}
 	}, [container]);
 
-	// Global keyboard shortcuts
-	useInput((input, key) => {
-		if (!presenter) return;
-
-		// Toggle permission mode with Shift+Tab
-		if (key.shift && key.tab) {
+	// Register screen-level keyboard shortcuts
+	// Shift+Tab: Toggle permission mode
+	useShortcut({
+		key: 'shift+tab',
+		handler: () => {
 			if (modeManager) {
 				modeManager.toggleMode();
 			}
-			return;
-		}
+		},
+		layer: 'screen',
+		description: 'Toggle permission mode (MVP/Interactive)',
+		source: 'Home',
+	});
 
-		// Toggle help with ?
-		if (input === '?' && !presenter.isLoading) {
-			presenter.toggleHelp();
-			return;
-		}
+	// ?: Toggle help overlay
+	useShortcut({
+		key: '?',
+		handler: () => {
+			if (presenter && !presenter.isLoading) {
+				presenter.toggleHelp();
+			}
+		},
+		layer: 'screen',
+		enabled: () => presenter !== null && !presenter.isLoading,
+		description: 'Toggle help overlay',
+		source: 'Home',
+	});
 
-		// Close help or clear input with Esc
-		if (key.escape) {
+	// Esc: Close help or clear input
+	useShortcut({
+		key: 'escape',
+		handler: () => {
+			if (!presenter) return;
+
 			if (presenter.showHelp) {
 				presenter.toggleHelp();
 			} else if (presenter.input) {
 				presenter.handleInputChange('');
 			}
-			return;
-		}
+		},
+		layer: 'screen',
+		enabled: () => presenter !== null,
+		description: 'Close help or clear input',
+		source: 'Home',
+	});
 
-		// Navigate suggestions (when typing slash command)
-		if (presenter.hasSuggestions()) {
-			if (key.upArrow) {
+	// Up Arrow: Navigate suggestions or history
+	useShortcut({
+		key: 'up',
+		handler: () => {
+			if (!presenter) return;
+
+			if (presenter.hasSuggestions()) {
 				presenter.handleSuggestionNavigate('up');
-			} else if (key.downArrow) {
-				presenter.handleSuggestionNavigate('down');
-			} else if (key.return || key.tab) {
-				presenter.handleSuggestionSelect();
-			}
-			return;
-		}
-
-		// Navigate input history (when NOT in suggestion mode)
-		if (!presenter.hasSuggestions() && !presenter.isLoading) {
-			if (key.upArrow) {
+			} else if (!presenter.isLoading) {
 				presenter.navigateHistory('up');
-			} else if (key.downArrow) {
+			}
+		},
+		layer: 'screen',
+		enabled: () => presenter !== null,
+		description: 'Navigate suggestions/history up',
+		source: 'Home',
+	});
+
+	// Down Arrow: Navigate suggestions or history
+	useShortcut({
+		key: 'down',
+		handler: () => {
+			if (!presenter) return;
+
+			if (presenter.hasSuggestions()) {
+				presenter.handleSuggestionNavigate('down');
+			} else if (!presenter.isLoading) {
 				presenter.navigateHistory('down');
 			}
-		}
+		},
+		layer: 'screen',
+		enabled: () => presenter !== null,
+		description: 'Navigate suggestions/history down',
+		source: 'Home',
+	});
+
+	// Tab: Select suggestion
+	useShortcut({
+		key: 'tab',
+		handler: () => {
+			if (presenter && presenter.hasSuggestions()) {
+				presenter.handleSuggestionSelect();
+			}
+		},
+		layer: 'screen',
+		enabled: () => presenter !== null && presenter.hasSuggestions(),
+		description: 'Select suggestion',
+		source: 'Home',
+	});
+
+	// Enter: Select suggestion (when suggestions visible)
+	useShortcut({
+		key: 'enter',
+		handler: () => {
+			if (presenter && presenter.hasSuggestions()) {
+				presenter.handleSuggestionSelect();
+			}
+		},
+		layer: 'screen',
+		enabled: () => presenter !== null && presenter.hasSuggestions(),
+		description: 'Select suggestion',
+		source: 'Home',
 	});
 
 	// Loading state

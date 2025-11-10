@@ -4,13 +4,14 @@
  */
 
 import React, {useEffect, useState} from 'react';
-import {Box, useApp, useInput} from 'ink';
+import {Box} from 'ink';
 import {useChat} from './contexts/ChatContext';
 import {useSettings} from './contexts/SettingsContext';
 import {useTerminalSize} from './hooks/useTerminalSize';
 import {MainContent} from './components/layout/MainContent';
 import {InputBox} from './components/layout/InputBox';
 import {Footer} from './components/layout/Footer';
+import {useShortcut} from '../../../core/input/index.js';
 import type {ConnectionStatus} from './components/layout/Footer';
 
 /**
@@ -46,12 +47,18 @@ export const HomeScreenContent: React.FC = () => {
 			? 'streaming'
 			: 'connected';
 
-	useInput((input, key) => {
-
-
-		if (key.escape && isStreaming) {
-			cancelStream();
-		}
+	// Esc: Cancel streaming
+	useShortcut({
+		key: 'escape',
+		handler: () => {
+			if (isStreaming) {
+				cancelStream();
+			}
+		},
+		layer: 'screen',
+		enabled: () => isStreaming,
+		description: 'Cancel stream',
+		source: 'HomeScreenContent',
 	});
 
 	const footerHeight = 3;

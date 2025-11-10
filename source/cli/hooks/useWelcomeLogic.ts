@@ -1,7 +1,7 @@
 import {useState, useEffect} from 'react';
-import {useInput} from 'ink';
 import {WelcomePresenter} from '../presenters/WelcomePresenter';
 import {UpgradeInfo} from '../../core/domain/models/UpgradeInfo';
+import {useShortcut} from '../../core/input/index.js';
 
 export interface UseWelcomeLogicReturn {
 	loading: boolean;
@@ -75,15 +75,29 @@ export function useWelcomeLogic({
 		}
 	};
 
-	// Handle keyboard input
-	useInput((input: string, key: any) => {
-		if (!shouldShowWelcome) return;
-
-		if (key.return) {
+	// Register screen shortcuts for Welcome screen
+	// Enter: Navigate to Home
+	useShortcut({
+		key: 'enter',
+		handler: () => {
 			onNavigateHome();
-		} else if (input === 'c') {
+		},
+		layer: 'screen',
+		enabled: () => shouldShowWelcome,
+		description: 'Continue to Home screen',
+		source: 'useWelcomeLogic',
+	});
+
+	// C: Navigate to Config
+	useShortcut({
+		key: 'c',
+		handler: () => {
 			onNavigateConfig();
-		}
+		},
+		layer: 'screen',
+		enabled: () => shouldShowWelcome,
+		description: 'Go to Config screen',
+		source: 'useWelcomeLogic',
 	});
 
 	const displayMessage = presenter.getDisplayMessage(upgradeInfo);

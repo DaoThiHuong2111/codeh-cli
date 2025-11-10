@@ -1,5 +1,6 @@
 import {useState, useEffect, useRef} from 'react';
-import {useApp, useInput} from 'ink';
+import {useApp} from 'ink';
+import {useShortcut} from '../../core/input/index.js';
 
 interface UseExitConfirmationReturn {
 	exitConfirmation: boolean;
@@ -9,6 +10,8 @@ interface UseExitConfirmationReturn {
  * Hook to handle Ctrl+C exit confirmation
  * First Ctrl+C shows confirmation, second Ctrl+C exits
  * Auto-resets after 3 seconds
+ *
+ * Uses global layer to ensure it always works
  */
 export function useExitConfirmation(): UseExitConfirmationReturn {
 	const {exit} = useApp();
@@ -31,9 +34,10 @@ export function useExitConfirmation(): UseExitConfirmationReturn {
 		}
 	}, [exitConfirmation]);
 
-	// Handle Ctrl+C using useInput (works better with Ink's exitOnCtrlC: false)
-	useInput((input, key) => {
-		if (key.ctrl && input === 'c') {
+	// Register Ctrl+C shortcut in global layer (always active)
+	useShortcut({
+		key: 'ctrl+c',
+		handler: () => {
 			if (exitConfirmationRef.current) {
 				// Second Ctrl+C - exit
 				exit();
@@ -41,7 +45,10 @@ export function useExitConfirmation(): UseExitConfirmationReturn {
 				// First Ctrl+C - show confirmation
 				setExitConfirmation(true);
 			}
-		}
+		},
+		layer: 'global',
+		description: 'Exit application (press twice to confirm)',
+		source: 'useExitConfirmation',
 	});
 
 	return {exitConfirmation};

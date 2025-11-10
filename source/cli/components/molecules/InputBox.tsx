@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import {Box, Text, useInput} from 'ink';
+import {useLayerSwitch} from '../../../core/input/index.js';
 
 interface InputBoxProps {
 	value?: string;
@@ -36,6 +37,10 @@ export default function InputBox({
 			setInput(value);
 		}
 	}, [value]);
+
+	// Switch to input layer when this component is active
+	// This blocks screen-level shortcuts when typing
+	useLayerSwitch('input', enabled && isFocused, 'screen');
 
 	useInput(
 		(inputChar: string, key: any) => {

@@ -6,6 +6,7 @@
 import React, {useState, useEffect} from 'react';
 import {Box, Text, useInput} from 'ink';
 import Button from '../atoms/Button.js';
+import {useLayerSwitch} from '../../../core/input/index.js';
 
 export interface ToolPermissionRequest {
 	toolName: string;
@@ -37,6 +38,10 @@ export default function ToolPermissionDialog({
 			setFocusedButton('allow');
 		}
 	}, [request]);
+
+	// Switch to dialog layer when dialog is visible
+	// This blocks screen-level shortcuts when dialog is active
+	useLayerSwitch('dialog', !!request, 'screen');
 
 	useInput(
 		(input, key) => {
