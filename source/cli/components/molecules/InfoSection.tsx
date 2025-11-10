@@ -13,7 +13,7 @@ export default function InfoSection({
 	directory,
 }: InfoSectionProps) {
 	return (
-		<Box flexDirection="column" marginTop={1} paddingLeft={2}>
+		<Box flexDirection="column" paddingLeft={2} marginBottom={1}>
 			{version && (
 				<Text dimColor>
 					Version: <Text color="cyan">{version}</Text>

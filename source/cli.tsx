@@ -7,7 +7,7 @@ import App from './cli/app.js';
 import {setupContainer} from './core/di/setup.js';
 
 // Load .env file
-dotenv.config();
+dotenv.config({debug: false});
 
 const cli = meow(
 	`

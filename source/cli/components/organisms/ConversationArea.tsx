@@ -15,19 +15,8 @@ export const ConversationArea: React.FC<ConversationAreaProps> = ({
 	isLoading,
 	streamingMessageId,
 }) => {
-	// Empty state
-	if (messages.length === 0 && !isLoading) {
-		return (
-			<Box marginY={1}>
-				<Text color="gray" dimColor>
-					No conversation yet. Type a message to start!
-				</Text>
-			</Box>
-		);
-	}
-
 	return (
-		<Box flexDirection="column" marginY={1}>
+		<Box flexDirection="column" >
 			{/* Render all messages */}
 			{messages.map(message => (
 				<MessageBubble
