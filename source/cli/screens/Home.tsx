@@ -7,7 +7,6 @@ import InfoSection from '../components/molecules/InfoSection.js';
 import Logo from '../components/atoms/Logo.js';
 import {ConversationArea} from '../components/organisms/ConversationArea.js';
 import {SlashSuggestions} from '../components/organisms/SlashSuggestions.js';
-import {HelpOverlay} from '../components/organisms/HelpOverlay.js';
 import {Footer} from '../components/organisms/Footer.js';
 import {TodosDisplay} from '../components/organisms/TodosDisplay.js';
 import {useShortcut} from '../../core/input/index.js';
@@ -19,10 +18,7 @@ interface HomeProps {
 	exitConfirmation?: boolean;
 }
 
-export default function Home({
-	container,
-	exitConfirmation = false,
-}: HomeProps) {
+export default function Home({container, exitConfirmation = false}: HomeProps) {
 	const {presenter, loading, error} = useHomeLogic(container);
 
 	// Permission mode state
@@ -71,34 +67,13 @@ export default function Home({
 		source: 'Home',
 	});
 
-	// ?: Toggle help overlay (only when input is empty or starts with ?)
-	useShortcut({
-		key: '?',
-		handler: () => {
-			if (presenter && !presenter.isLoading) {
-				// Only toggle if input is empty (opening help)
-				// or if input starts with ? (user is typing ?)
-				if (!presenter.input || presenter.input === '') {
-					presenter.toggleHelp();
-					return true; // Stop propagation so ? doesn't get added to input
-				}
-			}
-		},
-		layer: 'input',
-		enabled: () => presenter !== null && !presenter.isLoading && (!presenter.input || presenter.input === ''),
-		description: 'Toggle help overlay',
-		source: 'Home',
-	});
-
 	// Esc: Close help or clear input
 	useShortcut({
 		key: 'escape',
 		handler: () => {
 			if (!presenter) return;
 
-			if (presenter.showHelp) {
-				presenter.toggleHelp();
-			} else if (presenter.input) {
+			if (presenter.input) {
 				presenter.handleInputChange('');
 			}
 		},
@@ -227,9 +202,6 @@ export default function Home({
 				/>
 			)}
 
-			{/* Help Overlay */}
-			{presenter.showHelp && <HelpOverlay onClose={presenter.toggleHelp} />}
-
 			{/* Input Area */}
 			<InputBox
 				value={presenter.input}
@@ -263,8 +235,7 @@ export default function Home({
 					<Text>Press Ctrl+C again to exit</Text>
 				) : (
 					<Text dimColor>
-						Press <Text color="green">?</Text> for help |{' '}
-						<Text color="green">Ctrl+C</Text> to exit
+						Press <Text color="green">Ctrl+C</Text> to exit
 					</Text>
 				)}
 			</Box>
