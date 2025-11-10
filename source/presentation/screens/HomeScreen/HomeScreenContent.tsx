@@ -28,7 +28,6 @@ export const HomeScreenContent: React.FC = () => {
 		provider,
 		sendMessage,
 		cancelStream,
-		clearHistory,
 	} = useChat();
 
 	const {model} = useSettings();
@@ -51,10 +50,6 @@ export const HomeScreenContent: React.FC = () => {
 	useInput((input, key) => {
 		if (key.ctrl && input === 'c') {
 			exit();
-		}
-
-		if (key.ctrl && input === 'l') {
-			clearHistory();
 		}
 
 		if (key.escape && isStreaming) {
@@ -82,7 +77,7 @@ export const HomeScreenContent: React.FC = () => {
 				onSubmit={sendMessage}
 				disabled={isStreaming}
 				currentProvider={provider}
-				placeholder="Type your message... (Ctrl+L: clear, Esc: cancel)"
+				placeholder="Type your message... (Esc: cancel)"
 			/>
 
 			{/* Footer - status bar */}

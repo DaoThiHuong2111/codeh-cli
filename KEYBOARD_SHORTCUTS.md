@@ -51,10 +51,9 @@ Alternative implementation của Home screen với shortcuts khác:
 | Shortcut | Chức Năng | Context | Ghi Chú |
 |----------|-----------|---------|---------|
 | **Ctrl+C** | Exit app | Bất kỳ lúc nào | Thoát ứng dụng |
-| **Ctrl+L** | Clear history | Bất kỳ lúc nào | Xóa toàn bộ lịch sử chat |
 | **Esc** | Cancel stream | Khi đang streaming | Hủy bỏ response đang stream |
 
-**Placeholder text:** `"Type your message... (Ctrl+L: clear, Esc: cancel)"`
+**Placeholder text:** `"Type your message... (Esc: cancel)"`
 
 ---
 
@@ -137,7 +136,6 @@ Khi dialog yêu cầu permission xuất hiện (Interactive Mode):
 
 | Shortcut | Chức Năng | Screen |
 |----------|-----------|--------|
-| Ctrl+L | Clear history | HomeScreen |
 | Esc | Cancel stream | HomeScreen (khi streaming) |
 
 ---
@@ -192,7 +190,6 @@ Khi dialog yêu cầu permission xuất hiện (Interactive Mode):
 
 | Shortcut | Chức Năng | Use Case |
 |----------|-----------|----------|
-| Ctrl+L | Clear history | Khi muốn reset conversation |
 | Y/N/A | Quick approve/deny | Trong Interactive mode |
 | Tab/Arrow | Navigate buttons | Trong dialogs |
 
@@ -251,7 +248,7 @@ Model: claude | Messages: 5 | 🚀 MVP (Shift+Tab)
 ### Input Box Placeholders
 ```
 HomeNew: "Ask me anything... (type / for commands)"
-HomeScreen: "Type your message... (Ctrl+L: clear, Esc: cancel)"
+HomeScreen: "Type your message... (Esc: cancel)"
 ```
 
 ### Help Overlay Hints
@@ -290,7 +287,7 @@ Press ? for help | Ctrl+C to exit
 |------|-----------|-----------|
 | `NavigationProvider.tsx` | Global handler | Ctrl+C |
 | `HomeNew.tsx` | Main screen | Shift+Tab, ?, Esc, ↑/↓, Tab, Enter |
-| `HomeScreenContent.tsx` | Alt screen | Ctrl+C, Ctrl+L, Esc |
+| `HomeScreenContent.tsx` | Alt screen | Ctrl+C, Esc |
 | `ToolPermissionDialog.tsx` | Dialog | Tab, ←/→, Enter, Y/N/A |
 | `useWelcomeLogic.ts` | Welcome screen | Enter, C |
 
@@ -355,7 +352,6 @@ useInput((input: string, key: KeyboardKey) => {
 ║  Esc             Close help / Clear input                  ║
 ║  ↑/↓             Navigate suggestions/history              ║
 ║  Tab/Enter       Select suggestion                         ║
-║  Ctrl+L          Clear chat history (Alt UI)               ║
 ╠════════════════════════════════════════════════════════════╣
 ║  TOOL PERMISSION DIALOG                                    ║
 ║  Y               Approve tool execution                    ║
