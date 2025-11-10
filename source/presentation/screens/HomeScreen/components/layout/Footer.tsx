@@ -18,6 +18,8 @@ export interface FooterProps {
 	tokenCount?: number;
 	/** Terminal width */
 	terminalWidth: number;
+	/** Permission mode (mvp or interactive) */
+	permissionMode?: 'mvp' | 'interactive';
 }
 
 /**
@@ -28,8 +30,10 @@ export const Footer: React.FC<FooterProps> = ({
 	model,
 	tokenCount,
 	terminalWidth,
+	permissionMode = 'mvp',
 }) => {
 	const statusConfig = getStatusConfig(status);
+	const modeConfig = getModeConfig(permissionMode);
 
 	return (
 		<Box
@@ -56,7 +60,7 @@ export const Footer: React.FC<FooterProps> = ({
 				</Box>
 			)}
 
-			{/* Right: Token count */}
+			{/* Center-Right: Token count */}
 			{tokenCount !== undefined && (
 				<Box>
 					<Text color={THEME_COLORS.text.muted}>Tokens: </Text>
@@ -65,6 +69,18 @@ export const Footer: React.FC<FooterProps> = ({
 					</Text>
 				</Box>
 			)}
+
+			{/* Right: Permission Mode */}
+			<Box>
+				<Text color={modeConfig.color} bold>
+					{modeConfig.icon}
+				</Text>
+				<Text color={THEME_COLORS.text.muted}> {modeConfig.label}</Text>
+				<Text color={THEME_COLORS.text.muted} dimColor>
+					{' '}
+					(Shift+Tab)
+				</Text>
+			</Box>
 		</Box>
 	);
 };
@@ -105,4 +121,30 @@ function getStatusConfig(status: ConnectionStatus): StatusConfig {
  */
 function formatNumber(num: number): string {
 	return num.toLocaleString();
+}
+
+/**
+ * Mode configuration
+ */
+interface ModeConfig {
+	icon: string;
+	label: string;
+	color: string;
+}
+
+function getModeConfig(mode: 'mvp' | 'interactive'): ModeConfig {
+	const configs: Record<'mvp' | 'interactive', ModeConfig> = {
+		mvp: {
+			icon: '🚀',
+			label: 'MVP',
+			color: THEME_COLORS.text.accent,
+		},
+		interactive: {
+			icon: '🔒',
+			label: 'Interactive',
+			color: THEME_COLORS.text.success,
+		},
+	};
+
+	return configs[mode];
 }

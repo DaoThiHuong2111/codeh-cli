@@ -13,6 +13,12 @@ export interface ApiRequest {
 	systemPrompt?: string;
 }
 
+export interface ToolProperty {
+	type: string;
+	description: string;
+	enum?: string[];
+}
+
 export interface ApiResponse {
 	content: string;
 	model: string;
@@ -34,7 +40,11 @@ export interface Message {
 export interface Tool {
 	name: string;
 	description: string;
-	parameters: Record<string, any>;
+	parameters: {
+		type: 'object';
+		properties: Record<string, ToolProperty>;
+		required?: string[];
+	};
 }
 
 export interface ToolCall {

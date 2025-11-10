@@ -3,6 +3,7 @@ import React from 'react';
 import type {Message} from '../../../core/domain/models/Message.js';
 import {StreamingIndicator} from '../atoms/Spinner.js';
 import {MarkdownText} from './MarkdownText.js';
+import ToolCallDisplay from './ToolCallDisplay.js';
 
 interface MessageBubbleProps {
 	message: Message;
@@ -68,6 +69,16 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 					</Box>
 				)}
 			</Box>
+
+			{/* Tool Calls (if present) */}
+			{message.toolCalls && message.toolCalls.length > 0 && (
+				<Box marginLeft={2} marginTop={1}>
+					<ToolCallDisplay
+						toolCalls={message.toolCalls}
+						status="completed"
+					/>
+				</Box>
+			)}
 
 			{/* Metadata (tokens) */}
 			{message.metadata?.usage && (

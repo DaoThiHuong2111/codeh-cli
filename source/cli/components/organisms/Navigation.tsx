@@ -4,9 +4,10 @@ import NavigationProvider from '../../providers/NavigationProvider';
 
 interface NavigationProps {
 	container: Container;
+	exitConfirmation?: boolean;
 }
 
-export default function Navigation({container}: NavigationProps) {
+export default function Navigation({container, exitConfirmation}: NavigationProps) {
 	// NavigationProvider handles all navigation logic
-	return <NavigationProvider container={container} />;
+	return <NavigationProvider container={container} exitConfirmation={exitConfirmation} />;
 }

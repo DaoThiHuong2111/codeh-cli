@@ -11,9 +11,14 @@ import InputBox from '../components/molecules/InputBox';
 interface ConfigProps {
 	onConfigComplete?: () => void;
 	container: Container;
+	exitConfirmation?: boolean;
 }
 
-export default function Config({onConfigComplete, container}: ConfigProps) {
+export default function Config({
+	onConfigComplete,
+	container,
+	exitConfirmation,
+}: ConfigProps) {
 	const {navigateTo} = useNavigation();
 
 	// Business logic hook
@@ -110,6 +115,11 @@ export default function Config({onConfigComplete, container}: ConfigProps) {
 				return (
 					<Box flexDirection="column">
 						<Text bold>Step 4: Base URL (Optional)</Text>
+						{wizard.error && (
+							<Box marginTop={1}>
+								<Text color="red">{wizard.error}</Text>
+							</Box>
+						)}
 						<InputBox
 							value={wizard.baseUrl}
 							onChange={wizard.setBaseUrl}
@@ -199,6 +209,15 @@ export default function Config({onConfigComplete, container}: ConfigProps) {
 					</Text>
 				) : (
 					<Text dimColor>Press Enter to select • ESC to go back</Text>
+				)}
+			</Box>
+
+			{/* Help Hint */}
+			<Box>
+				{exitConfirmation ? (
+					<Text>Press Ctrl+C again to exit</Text>
+				) : (
+					<Text dimColor>Press Ctrl+C to exit</Text>
 				)}
 			</Box>
 		</Box>

@@ -12,6 +12,9 @@ import {FileHistoryRepository} from '../../infrastructure/history/FileHistoryRep
 import {FileOperations} from '../../infrastructure/filesystem/FileOperations';
 import {ShellExecutor} from '../../infrastructure/process/ShellExecutor';
 import {CommandValidator} from '../../infrastructure/process/CommandValidator';
+import {SimplePermissionHandler} from '../../infrastructure/permissions/SimplePermissionHandler';
+import {PermissionModeManager} from '../../infrastructure/permissions/PermissionModeManager';
+import {HybridPermissionHandler} from '../../infrastructure/permissions/HybridPermissionHandler';
 
 // Layer 2 - Core
 import {CodehClient} from '../application/CodehClient';
@@ -23,6 +26,7 @@ import {ShellTool} from '../tools/Shell';
 import {FileOpsTool} from '../tools/FileOps';
 import {IApiClient} from '../domain/interfaces/IApiClient';
 import {IHistoryRepository} from '../domain/interfaces/IHistoryRepository';
+import {IToolPermissionHandler} from '../domain/interfaces/IToolPermissionHandler';
 import {Configuration} from '../domain/models/Configuration';
 
 export async function setupContainer(): Promise<Container> {
@@ -49,6 +53,24 @@ export async function setupContainer(): Promise<Container> {
 	// Shell Executor
 	container.register('ShellExecutor', () => new ShellExecutor(), true);
 	container.register('CommandValidator', () => new CommandValidator(), true);
+
+	// Permission Mode Manager (singleton shared across app)
+	container.register(
+		'PermissionModeManager',
+		() => new PermissionModeManager(),
+		true,
+	);
+
+	// Permission Handler (hybrid - switches between MVP and Interactive)
+	container.register(
+		'PermissionHandler',
+		() => {
+			const modeManager =
+				container.resolve<PermissionModeManager>('PermissionModeManager');
+			return new HybridPermissionHandler(modeManager);
+		},
+		true,
+	);
 
 	// ==================================================
 	// LAYER 2: Core / Application
@@ -103,6 +125,9 @@ export async function createCodehClient(
 	const historyRepo = (await container.resolve(
 		'HistoryRepository',
 	)) as IHistoryRepository;
+	const toolRegistry = container.resolve<ToolRegistry>('ToolRegistry');
+	const permissionHandler =
+		container.resolve<IToolPermissionHandler>('PermissionHandler');
 
 	const config = await configLoader.mergeConfigs();
 	if (!config) {
@@ -114,7 +139,7 @@ export async function createCodehClient(
 	const configuration = Configuration.create(config);
 	const apiClient = factory.create(configuration);
 
-	return new CodehClient(apiClient, historyRepo);
+	return new CodehClient(apiClient, historyRepo, toolRegistry, permissionHandler);
 }
 
 /**

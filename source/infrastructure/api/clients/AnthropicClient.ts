@@ -34,6 +34,7 @@ export class AnthropicClient implements IApiClient {
 			})),
 			temperature: request.temperature,
 			system: request.systemPrompt,
+			tools: request.tools,
 		};
 
 		// Remove undefined values
@@ -72,6 +73,7 @@ export class AnthropicClient implements IApiClient {
 			})),
 			temperature: request.temperature,
 			system: request.systemPrompt,
+			tools: request.tools,
 			stream: true,
 		};
 
@@ -86,6 +88,11 @@ export class AnthropicClient implements IApiClient {
 		let usage: any = undefined;
 		let stopReason: string | undefined;
 		let modelName = request.model;
+		const toolCalls: any[] = [];
+		const toolCallsInProgress = new Map<
+			number,
+			{id: string; name: string; inputJson: string}
+		>();
 
 		await this.httpClient.streamPost(
 			`${this.baseUrl}/v1/messages`,
@@ -93,15 +100,25 @@ export class AnthropicClient implements IApiClient {
 			(event: any) => {
 				// Anthropic streaming events:
 				// - message_start: contains usage info
-				// - content_block_start: start of content
-				// - content_block_delta: actual content chunks
-				// - content_block_stop: end of content
+				// - content_block_start: start of content (text or tool_use)
+				// - content_block_delta: actual content chunks (text_delta or input_json_delta)
+				// - content_block_stop: end of content block
 				// - message_delta: final message metadata
 				// - message_stop: end of stream
 
 				if (event.type === 'message_start') {
 					usage = event.message?.usage;
 					modelName = event.message?.model || modelName;
+				} else if (event.type === 'content_block_start') {
+					const block = event.content_block;
+					if (block?.type === 'tool_use') {
+						// Start tracking new tool call
+						toolCallsInProgress.set(event.index, {
+							id: block.id,
+							name: block.name,
+							inputJson: '',
+						});
+					}
 				} else if (event.type === 'content_block_delta') {
 					const delta = event.delta;
 					if (delta?.type === 'text_delta' && delta.text) {
@@ -110,6 +127,33 @@ export class AnthropicClient implements IApiClient {
 							content: delta.text,
 							done: false,
 						});
+					} else if (delta?.type === 'input_json_delta' && delta.partial_json) {
+						// Accumulate tool input JSON
+						const toolCall = toolCallsInProgress.get(event.index);
+						if (toolCall) {
+							toolCall.inputJson += delta.partial_json;
+						}
+					}
+				} else if (event.type === 'content_block_stop') {
+					// Complete tool call if exists
+					const toolCall = toolCallsInProgress.get(event.index);
+					if (toolCall) {
+						try {
+							const inputArgs = JSON.parse(toolCall.inputJson);
+							toolCalls.push({
+								id: toolCall.id,
+								name: toolCall.name,
+								arguments: inputArgs,
+							});
+						} catch (error) {
+							// If JSON parse fails, use empty object
+							toolCalls.push({
+								id: toolCall.id,
+								name: toolCall.name,
+								arguments: {},
+							});
+						}
+						toolCallsInProgress.delete(event.index);
 					}
 				} else if (event.type === 'message_delta') {
 					// Update usage with final values
@@ -146,6 +190,7 @@ export class AnthropicClient implements IApiClient {
 				totalTokens: (usage?.input_tokens || 0) + (usage?.output_tokens || 0),
 			},
 			finishReason: this.mapStopReason(stopReason),
+			toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
 		};
 	}
 
@@ -172,8 +217,26 @@ export class AnthropicClient implements IApiClient {
 	}
 
 	private normalizeResponse(response: any, request: ApiRequest): ApiResponse {
+		// Parse content blocks (Anthropic returns array of content blocks)
+		const contentBlocks = response.content || [];
+		let textContent = '';
+		const toolCalls: any[] = [];
+
+		for (const block of contentBlocks) {
+			if (block.type === 'text') {
+				textContent += block.text;
+			} else if (block.type === 'tool_use') {
+				// Extract tool call
+				toolCalls.push({
+					id: block.id,
+					name: block.name,
+					arguments: block.input || {},
+				});
+			}
+		}
+
 		return {
-			content: response.content?.[0]?.text || '',
+			content: textContent,
 			model: response.model,
 			usage: {
 				promptTokens: response.usage?.input_tokens || 0,
@@ -183,6 +246,7 @@ export class AnthropicClient implements IApiClient {
 					(response.usage?.output_tokens || 0),
 			},
 			finishReason: this.mapStopReason(response.stop_reason),
+			toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
 		};
 	}
 
