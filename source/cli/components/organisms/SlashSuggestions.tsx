@@ -20,10 +20,6 @@ export const SlashSuggestions: React.FC<SlashSuggestionsProps> = ({
 	return (
 		<Box
 			flexDirection="column"
-			borderStyle="single"
-			borderColor="cyan"
-			paddingX={1}
-			marginY={1}
 		>
 			<Text color="cyan" bold>
 				Slash Commands (↑↓ to navigate):

@@ -13,20 +13,11 @@ export interface HelpOverlayProps {
 export const HelpOverlay: React.FC<HelpOverlayProps> = ({onClose}) => {
 	return (
 		<Box
-			flexDirection="column"
-			borderStyle="double"
-			borderColor="cyan"
-			padding={1}
-			marginY={1}
-		>
+			flexDirection="column"		>
 			{/* Header */}
 			<Box marginBottom={1}>
 				<Text color="cyan" bold>
-					📚 Help & Keyboard Shortcuts
-				</Text>
-				<Text color="gray" dimColor>
-					{' '}
-					(Press Esc or ? to close)
+					Help & Keyboard Shortcuts
 				</Text>
 			</Box>
 
@@ -78,18 +69,6 @@ export const HelpOverlay: React.FC<HelpOverlayProps> = ({onClose}) => {
 				</Box>
 			</Box>
 
-			{/* Tips */}
-			<Box flexDirection="column">
-				<Text color="yellow" bold>
-					Tips:
-				</Text>
-				<Box marginLeft={2} flexDirection="column">
-					<Text dimColor>• Type / to see command suggestions</Text>
-					<Text dimColor>• Use ↑↓ to navigate suggestions or history</Text>
-					<Text dimColor>• Sessions are saved to ~/.codeh/sessions/</Text>
-					<Text dimColor>• Responses stream in real-time</Text>
-				</Box>
-			</Box>
 		</Box>
 	);
 };
