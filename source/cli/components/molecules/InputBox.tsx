@@ -98,10 +98,19 @@ export default function InputBox({
 			{/* Input area */}
 			<Box paddingLeft={1}>
 				<Text color={prefixColor}>{prefix}</Text>
-				<Text color={textColor} dimColor={isPlaceholder}>
-					{displayText}
-				</Text>
-				{isFocused && enabled && <Text color={prefixColor}>▊</Text>}
+				{input ? (
+					<>
+						<Text color="white">{input}</Text>
+						{isFocused && enabled && <Text color={prefixColor}>▊</Text>}
+					</>
+				) : (
+					<>
+						{isFocused && enabled && <Text color={prefixColor}>▊</Text>}
+						<Text color="gray" dimColor>
+							{placeholder}
+						</Text>
+					</>
+				)}
 			</Box>
 
 			{/* Bottom border */}
