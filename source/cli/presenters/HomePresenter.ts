@@ -36,9 +36,6 @@ interface ViewState {
 	filteredSuggestions: Command[];
 	selectedSuggestionIndex: number;
 
-	// Help Overlay
-	showHelp: boolean;
-
 	// Stats
 	totalTokens: number;
 	estimatedCost: number;
@@ -77,7 +74,6 @@ export class HomePresenter {
 			isLoading: false,
 			filteredSuggestions: [],
 			selectedSuggestionIndex: 0,
-			showHelp: false,
 			totalTokens: 0,
 			estimatedCost: 0,
 			sessionDuration: 0,
@@ -380,13 +376,6 @@ export class HomePresenter {
 		this._notifyView();
 	};
 
-	// === Help Overlay ===
-
-	toggleHelp = (): void => {
-		this.state.showHelp = !this.state.showHelp;
-		this._notifyView();
-	};
-
 	// === Getters ===
 
 	get input() {
@@ -418,9 +407,6 @@ export class HomePresenter {
 	}
 	get streamingMessageId() {
 		return this.state.streamingMessageId;
-	}
-	get showHelp() {
-		return this.state.showHelp;
 	}
 	get totalTokens() {
 		return this.state.totalTokens;

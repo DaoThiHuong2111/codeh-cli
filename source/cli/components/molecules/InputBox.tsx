@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
-import {Box, Text, useInput} from 'ink';
+import {Box, Text, useInput, useStdout} from 'ink';
+import {useLayerSwitch} from '../../../core/input/index.js';
 
 interface InputBoxProps {
 	value?: string;
@@ -30,12 +31,18 @@ export default function InputBox({
 }: InputBoxProps) {
 	const [input, setInput] = useState(value);
 	const [isFocused, setIsFocused] = useState(true);
+	const {stdout} = useStdout();
+	const terminalWidth = stdout?.columns || 80;
 
 	useEffect(() => {
 		if (value !== input) {
 			setInput(value);
 		}
 	}, [value]);
+
+	// Switch to input layer when this component is active
+	// This blocks screen-level shortcuts when typing
+	useLayerSwitch('input', enabled && isFocused, 'screen');
 
 	useInput(
 		(inputChar: string, key: any) => {
@@ -69,7 +76,7 @@ export default function InputBox({
 	const isPlaceholder = !input;
 
 	const borderChar = '─';
-	const border = borderChar.repeat(width);
+	const border = borderChar.repeat(terminalWidth - 2);
 
 	// Calculate character counter display
 	const charCount = input.length;
@@ -93,10 +100,19 @@ export default function InputBox({
 			{/* Input area */}
 			<Box paddingLeft={1}>
 				<Text color={prefixColor}>{prefix}</Text>
-				<Text color={textColor} dimColor={isPlaceholder}>
-					{displayText}
-				</Text>
-				{isFocused && enabled && <Text color={prefixColor}>▊</Text>}
+				{input ? (
+					<>
+						<Text color="white">{input}</Text>
+						{isFocused && enabled && <Text color={prefixColor}>▊</Text>}
+					</>
+				) : (
+					<>
+						{isFocused && enabled && <Text color={prefixColor}>▊</Text>}
+						<Text color="gray" dimColor>
+							{placeholder}
+						</Text>
+					</>
+				)}
 			</Box>
 
 			{/* Bottom border */}

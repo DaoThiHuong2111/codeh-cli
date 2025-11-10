@@ -5,7 +5,7 @@ import BigText from 'ink-big-text';
 export default function Logo() {
 	return (
 		<Gradient name="cristal">
-			<BigText text="CODEH" font="block" />
+			<BigText text="CODEH" font="block"/>
 		</Gradient>
 	);
 }

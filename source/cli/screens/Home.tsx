@@ -1,16 +1,15 @@
 import React, {useState, useEffect} from 'react';
-import {Box, Text, useInput} from 'ink';
+import {Box, Text} from 'ink';
 import {Container} from '../../core/di/Container.js';
 import {useHomeLogic} from '../hooks/useHomeLogic.js';
 import InputBox from '../components/molecules/InputBox.js';
 import InfoSection from '../components/molecules/InfoSection.js';
-import TipsSection from '../components/molecules/TipsSection.js';
 import Logo from '../components/atoms/Logo.js';
 import {ConversationArea} from '../components/organisms/ConversationArea.js';
 import {SlashSuggestions} from '../components/organisms/SlashSuggestions.js';
-import {HelpOverlay} from '../components/organisms/HelpOverlay.js';
 import {Footer} from '../components/organisms/Footer.js';
 import {TodosDisplay} from '../components/organisms/TodosDisplay.js';
+import {useShortcut} from '../../core/input/index.js';
 import type {PermissionModeManager} from '../../infrastructure/permissions/PermissionModeManager.js';
 import type {PermissionMode} from '../../infrastructure/permissions/PermissionModeManager.js';
 
@@ -19,10 +18,7 @@ interface HomeProps {
 	exitConfirmation?: boolean;
 }
 
-export default function Home({
-	container,
-	exitConfirmation = false,
-}: HomeProps) {
+export default function Home({container, exitConfirmation = false}: HomeProps) {
 	const {presenter, loading, error} = useHomeLogic(container);
 
 	// Permission mode state
@@ -56,54 +52,99 @@ export default function Home({
 		}
 	}, [container]);
 
-	// Global keyboard shortcuts
-	useInput((input, key) => {
-		if (!presenter) return;
-
-		// Toggle permission mode with Shift+Tab
-		if (key.shift && key.tab) {
+	// Register input-level keyboard shortcuts
+	// These shortcuts need to work even when the input box is focused
+	// Shift+Tab: Toggle permission mode
+	useShortcut({
+		key: 'shift+tab',
+		handler: () => {
 			if (modeManager) {
 				modeManager.toggleMode();
 			}
-			return;
-		}
+		},
+		layer: 'input',
+		description: 'Toggle permission mode (MVP/Interactive)',
+		source: 'Home',
+	});
 
-		// Toggle help with ?
-		if (input === '?' && !presenter.isLoading) {
-			presenter.toggleHelp();
-			return;
-		}
+	// Esc: Close help or clear input
+	useShortcut({
+		key: 'escape',
+		handler: () => {
+			if (!presenter) return;
 
-		// Close help or clear input with Esc
-		if (key.escape) {
-			if (presenter.showHelp) {
-				presenter.toggleHelp();
-			} else if (presenter.input) {
+			if (presenter.input) {
 				presenter.handleInputChange('');
 			}
-			return;
-		}
+		},
+		layer: 'input',
+		enabled: () => presenter !== null,
+		description: 'Close help or clear input',
+		source: 'Home',
+	});
 
-		// Navigate suggestions (when typing slash command)
-		if (presenter.hasSuggestions()) {
-			if (key.upArrow) {
+	// Up Arrow: Navigate suggestions or history
+	useShortcut({
+		key: 'up',
+		handler: () => {
+			if (!presenter) return;
+
+			if (presenter.hasSuggestions()) {
 				presenter.handleSuggestionNavigate('up');
-			} else if (key.downArrow) {
-				presenter.handleSuggestionNavigate('down');
-			} else if (key.return || key.tab) {
-				presenter.handleSuggestionSelect();
-			}
-			return;
-		}
-
-		// Navigate input history (when NOT in suggestion mode)
-		if (!presenter.hasSuggestions() && !presenter.isLoading) {
-			if (key.upArrow) {
+			} else if (!presenter.isLoading) {
 				presenter.navigateHistory('up');
-			} else if (key.downArrow) {
+			}
+		},
+		layer: 'input',
+		enabled: () => presenter !== null,
+		description: 'Navigate suggestions/history up',
+		source: 'Home',
+	});
+
+	// Down Arrow: Navigate suggestions or history
+	useShortcut({
+		key: 'down',
+		handler: () => {
+			if (!presenter) return;
+
+			if (presenter.hasSuggestions()) {
+				presenter.handleSuggestionNavigate('down');
+			} else if (!presenter.isLoading) {
 				presenter.navigateHistory('down');
 			}
-		}
+		},
+		layer: 'input',
+		enabled: () => presenter !== null,
+		description: 'Navigate suggestions/history down',
+		source: 'Home',
+	});
+
+	// Tab: Select suggestion
+	useShortcut({
+		key: 'tab',
+		handler: () => {
+			if (presenter && presenter.hasSuggestions()) {
+				presenter.handleSuggestionSelect();
+			}
+		},
+		layer: 'input',
+		enabled: () => presenter !== null && presenter.hasSuggestions(),
+		description: 'Select suggestion',
+		source: 'Home',
+	});
+
+	// Enter: Select suggestion (when suggestions visible)
+	useShortcut({
+		key: 'enter',
+		handler: () => {
+			if (presenter && presenter.hasSuggestions()) {
+				presenter.handleSuggestionSelect();
+			}
+		},
+		layer: 'input',
+		enabled: () => presenter !== null && presenter.hasSuggestions(),
+		description: 'Select suggestion',
+		source: 'Home',
 	});
 
 	// Loading state
@@ -150,11 +191,6 @@ export default function Home({
 				streamingMessageId={presenter.streamingMessageId}
 			/>
 
-			{/* Tips Section (show when no messages) */}
-			{presenter.messages.length === 0 && !presenter.isLoading && (
-				<TipsSection />
-			)}
-
 			{/* Todos Display (show when there are todos) */}
 			{presenter.todos.length > 0 && <TodosDisplay todos={presenter.todos} />}
 
@@ -165,9 +201,6 @@ export default function Home({
 					selectedIndex={presenter.selectedSuggestionIndex}
 				/>
 			)}
-
-			{/* Help Overlay */}
-			{presenter.showHelp && <HelpOverlay onClose={presenter.toggleHelp} />}
 
 			{/* Input Area */}
 			<InputBox
@@ -202,8 +235,7 @@ export default function Home({
 					<Text>Press Ctrl+C again to exit</Text>
 				) : (
 					<Text dimColor>
-						Press <Text color="green">?</Text> for help |{' '}
-						<Text color="green">Ctrl+C</Text> to exit
+						Press <Text color="green">Ctrl+C</Text> to exit
 					</Text>
 				)}
 			</Box>
