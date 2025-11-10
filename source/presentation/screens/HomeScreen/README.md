@@ -111,7 +111,6 @@ HomeScreen/
 ├── index.ts            # Public exports
 │
 ├── PERFORMANCE.md      # Performance optimization guide
-├── EXAMPLE.tsx         # Usage examples
 └── README.md           # This file
 ```
 
@@ -137,49 +136,109 @@ HomeScreen/
 
 ## Usage Examples
 
-### Basic Usage
+### Example 1: Basic Usage with Anthropic
 
 ```tsx
-import {HomeScreen} from './HomeScreen';
-import {AnthropicClient} from './clients/AnthropicClient';
+import React from 'react';
+import {render} from 'ink';
+import {HomeScreen} from '@/presentation/screens/HomeScreen';
+import {AnthropicClient} from '@/infrastructure/api/clients/AnthropicClient';
 
-const client = new AnthropicClient({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+const apiClient = new AnthropicClient({
+  apiKey: process.env.ANTHROPIC_API_KEY || '',
 });
 
-<HomeScreen apiClient={client} />
+function App() {
+  return (
+    <HomeScreen
+      apiClient={apiClient}
+      initialProvider="anthropic"
+      initialModel="claude-3-5-sonnet-20241022"
+    />
+  );
+}
+
+const app = render(<App />);
+
+app.waitUntilExit().then(() => {
+  process.exit(0);
+});
 ```
 
-### With OpenAI
+### Example 2: Using OpenAI
 
 ```tsx
-import {OpenAIClient} from './clients/OpenAIClient';
+import {OpenAIClient} from '@/infrastructure/api/clients/OpenAIClient';
 
-const client = new OpenAIClient({
-  apiKey: process.env.OPENAI_API_KEY,
+const apiClient = new OpenAIClient({
+  apiKey: process.env.OPENAI_API_KEY || '',
 });
 
-<HomeScreen
-  apiClient={client}
-  initialProvider="openai"
-  initialModel="gpt-4-turbo-preview"
-/>
+function App() {
+  return (
+    <HomeScreen
+      apiClient={apiClient}
+      initialProvider="openai"
+      initialModel="gpt-4-turbo-preview"
+    />
+  );
+}
 ```
 
-### With Local Ollama
+### Example 3: Using Local Ollama
 
 ```tsx
-import {OllamaClient} from './clients/OllamaClient';
+import {OllamaClient} from '@/infrastructure/api/clients/OllamaClient';
 
-const client = new OllamaClient({
+const apiClient = new OllamaClient({
   baseURL: 'http://localhost:11434',
 });
 
-<HomeScreen
-  apiClient={client}
-  initialProvider="ollama"
-  initialModel="llama2"
-/>
+function App() {
+  return (
+    <HomeScreen
+      apiClient={apiClient}
+      initialProvider="ollama"
+      initialModel="llama2"
+    />
+  );
+}
+```
+
+### Example 4: Provider Switching Pattern
+
+For applications that need to switch between multiple providers:
+
+```tsx
+import {AnthropicClient} from '@/infrastructure/api/clients/AnthropicClient';
+import {OpenAIClient} from '@/infrastructure/api/clients/OpenAIClient';
+import {OllamaClient} from '@/infrastructure/api/clients/OllamaClient';
+
+// Create all provider clients
+const providers = {
+  anthropic: new AnthropicClient({
+    apiKey: process.env.ANTHROPIC_API_KEY || '',
+  }),
+  openai: new OpenAIClient({
+    apiKey: process.env.OPENAI_API_KEY || '',
+  }),
+  ollama: new OllamaClient({
+    baseURL: 'http://localhost:11434',
+  }),
+};
+
+// Select active provider
+const currentProvider: keyof typeof providers = 'anthropic';
+const apiClient = providers[currentProvider];
+
+function App() {
+  return (
+    <HomeScreen
+      apiClient={apiClient}
+      initialProvider={currentProvider}
+    />
+  );
+}
 ```
 
 ## API Reference
@@ -351,4 +410,3 @@ See main project LICENSE file.
 - [LLM API Integration](../../../docs/architecture/llm-api-integration.md)
 - [UI/UX Design](../../../docs/screens/home/llm-ui-ux.md)
 - [Performance Optimization](./PERFORMANCE.md)
-- [Usage Examples](./EXAMPLE.tsx)
