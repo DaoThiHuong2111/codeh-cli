@@ -12,7 +12,7 @@ import {
 } from '../contexts/NavigationContext';
 import {Container} from '../../core';
 import Welcome from '../screens/Welcome';
-import HomeNew from '../screens/HomeNew';
+import Home from '../screens/Home';
 import Config from '../screens/Config';
 
 interface NavigationProviderProps {
@@ -52,7 +52,7 @@ export default function NavigationProvider({
 			case 'welcome':
 				return <Welcome />;
 			case 'home':
-				return <HomeNew container={container} exitConfirmation={exitConfirmation} />;
+				return <Home container={container} exitConfirmation={exitConfirmation} />;
 			case 'config':
 				return (
 					<Config

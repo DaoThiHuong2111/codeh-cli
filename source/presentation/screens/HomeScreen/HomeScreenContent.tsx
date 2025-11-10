@@ -17,7 +17,6 @@ import type {ConnectionStatus} from './components/layout/Footer';
  * HomeScreenContent - Main UI layout
  */
 export const HomeScreenContent: React.FC = () => {
-	const {exit} = useApp();
 	const {width, height} = useTerminalSize();
 
 	const {
@@ -48,9 +47,7 @@ export const HomeScreenContent: React.FC = () => {
 			: 'connected';
 
 	useInput((input, key) => {
-		if (key.ctrl && input === 'c') {
-			exit();
-		}
+
 
 		if (key.escape && isStreaming) {
 			cancelStream();

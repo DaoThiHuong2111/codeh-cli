@@ -115,6 +115,11 @@ export default function Config({
 				return (
 					<Box flexDirection="column">
 						<Text bold>Step 4: Base URL (Optional)</Text>
+						{wizard.error && (
+							<Box marginTop={1}>
+								<Text color="red">{wizard.error}</Text>
+							</Box>
+						)}
 						<InputBox
 							value={wizard.baseUrl}
 							onChange={wizard.setBaseUrl}
@@ -212,9 +217,7 @@ export default function Config({
 				{exitConfirmation ? (
 					<Text>Press Ctrl+C again to exit</Text>
 				) : (
-					<Text dimColor>
-						Press Ctrl+C to exit
-					</Text>
+					<Text dimColor>Press Ctrl+C to exit</Text>
 				)}
 			</Box>
 		</Box>
