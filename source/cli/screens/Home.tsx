@@ -4,7 +4,6 @@ import {Container} from '../../core/di/Container.js';
 import {useHomeLogic} from '../hooks/useHomeLogic.js';
 import InputBox from '../components/molecules/InputBox.js';
 import InfoSection from '../components/molecules/InfoSection.js';
-import TipsSection from '../components/molecules/TipsSection.js';
 import Logo from '../components/atoms/Logo.js';
 import {ConversationArea} from '../components/organisms/ConversationArea.js';
 import {SlashSuggestions} from '../components/organisms/SlashSuggestions.js';
@@ -216,11 +215,6 @@ export default function Home({
 				isLoading={presenter.isLoading}
 				streamingMessageId={presenter.streamingMessageId}
 			/>
-
-			{/* Tips Section (show when no messages) */}
-			{presenter.messages.length === 0 && !presenter.isLoading && (
-				<TipsSection />
-			)}
 
 			{/* Todos Display (show when there are todos) */}
 			{presenter.todos.length > 0 && <TodosDisplay todos={presenter.todos} />}

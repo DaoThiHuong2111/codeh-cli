@@ -10,7 +10,6 @@ export {default as ProgressBar} from './components/atoms/ProgressBar';
 
 export {default as InputBox} from './components/molecules/InputBox';
 export {default as InfoSection} from './components/molecules/InfoSection';
-export {default as TipsSection} from './components/molecules/TipsSection';
 export {default as Menu} from './components/molecules/Menu';
 
 export {default as Card} from './components/organisms/Card';
