@@ -57,7 +57,8 @@ export default function Home({
 		}
 	}, [container]);
 
-	// Register screen-level keyboard shortcuts
+	// Register input-level keyboard shortcuts
+	// These shortcuts need to work even when the input box is focused
 	// Shift+Tab: Toggle permission mode
 	useShortcut({
 		key: 'shift+tab',
@@ -66,21 +67,26 @@ export default function Home({
 				modeManager.toggleMode();
 			}
 		},
-		layer: 'screen',
+		layer: 'input',
 		description: 'Toggle permission mode (MVP/Interactive)',
 		source: 'Home',
 	});
 
-	// ?: Toggle help overlay
+	// ?: Toggle help overlay (only when input is empty or starts with ?)
 	useShortcut({
 		key: '?',
 		handler: () => {
 			if (presenter && !presenter.isLoading) {
-				presenter.toggleHelp();
+				// Only toggle if input is empty (opening help)
+				// or if input starts with ? (user is typing ?)
+				if (!presenter.input || presenter.input === '') {
+					presenter.toggleHelp();
+					return true; // Stop propagation so ? doesn't get added to input
+				}
 			}
 		},
-		layer: 'screen',
-		enabled: () => presenter !== null && !presenter.isLoading,
+		layer: 'input',
+		enabled: () => presenter !== null && !presenter.isLoading && (!presenter.input || presenter.input === ''),
 		description: 'Toggle help overlay',
 		source: 'Home',
 	});
@@ -97,7 +103,7 @@ export default function Home({
 				presenter.handleInputChange('');
 			}
 		},
-		layer: 'screen',
+		layer: 'input',
 		enabled: () => presenter !== null,
 		description: 'Close help or clear input',
 		source: 'Home',
@@ -115,7 +121,7 @@ export default function Home({
 				presenter.navigateHistory('up');
 			}
 		},
-		layer: 'screen',
+		layer: 'input',
 		enabled: () => presenter !== null,
 		description: 'Navigate suggestions/history up',
 		source: 'Home',
@@ -133,7 +139,7 @@ export default function Home({
 				presenter.navigateHistory('down');
 			}
 		},
-		layer: 'screen',
+		layer: 'input',
 		enabled: () => presenter !== null,
 		description: 'Navigate suggestions/history down',
 		source: 'Home',
@@ -147,7 +153,7 @@ export default function Home({
 				presenter.handleSuggestionSelect();
 			}
 		},
-		layer: 'screen',
+		layer: 'input',
 		enabled: () => presenter !== null && presenter.hasSuggestions(),
 		description: 'Select suggestion',
 		source: 'Home',
@@ -161,7 +167,7 @@ export default function Home({
 				presenter.handleSuggestionSelect();
 			}
 		},
-		layer: 'screen',
+		layer: 'input',
 		enabled: () => presenter !== null && presenter.hasSuggestions(),
 		description: 'Select suggestion',
 		source: 'Home',

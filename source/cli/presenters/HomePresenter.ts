@@ -107,6 +107,11 @@ export class HomePresenter {
 		this.state.input = value;
 		this.state.inputError = '';
 
+		// Auto-close help overlay if user deletes ? from start of input
+		if (this.state.showHelp && !value.startsWith('?')) {
+			this.state.showHelp = false;
+		}
+
 		// Filter suggestions if starts with /
 		if (value.startsWith('/')) {
 			this.state.filteredSuggestions = this.commandRegistry.filter(value);

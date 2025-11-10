@@ -18,11 +18,6 @@ export function parseKeyCombo(input: string, key: InkKey): KeyCombo | null {
   const modifiers: string[] = [];
   let baseKey = '';
 
-  // Modifiers
-  if (key.ctrl) modifiers.push('ctrl');
-  if (key.shift) modifiers.push('shift');
-  if (key.meta) modifiers.push('meta');
-
   // Special keys (arrow keys, escape, tab, etc.)
   if (key.upArrow) baseKey = 'up';
   else if (key.downArrow) baseKey = 'down';
@@ -42,6 +37,23 @@ export function parseKeyCombo(input: string, key: InkKey): KeyCombo | null {
 
   // No key detected
   if (!baseKey) return null;
+
+  // Only add modifiers if we have a special key (not a character)
+  // For character input, the input already includes the effect of shift
+  // (e.g., '?' instead of '/', 'A' instead of 'a')
+  const isSpecialKey = !input || input.length !== 1;
+
+  if (isSpecialKey) {
+    // Modifiers (only for special keys like arrows, tab, etc.)
+    if (key.ctrl) modifiers.push('ctrl');
+    if (key.shift) modifiers.push('shift');
+    if (key.meta) modifiers.push('meta');
+  } else {
+    // For character input, only add ctrl/meta as they create distinct combos
+    if (key.ctrl) modifiers.push('ctrl');
+    if (key.meta) modifiers.push('meta');
+    // Ignore shift for characters as it's already in the input
+  }
 
   // Build combo string
   if (modifiers.length > 0) {

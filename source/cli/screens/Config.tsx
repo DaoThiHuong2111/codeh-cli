@@ -185,6 +185,22 @@ export default function Config({
 		}
 	};
 
+	// Function to get help text based on current step using switch case
+	const getHelpText = (step: ConfigStep) => {
+		switch (step) {
+			case ConfigStep.PROVIDER:
+				return <Text dimColor>Use ↑↓ to navigate • Press Enter to select</Text>;
+			case ConfigStep.CONFIRM:
+				return (
+					<Text dimColor>
+						Use ↑↓ to navigate • Press Enter to select • ESC to go back
+					</Text>
+				);
+			default:
+				return <Text dimColor>Press Enter to select • ESC to go back</Text>;
+		}
+	};
+
 	return (
 		<Box flexDirection="column" padding={1}>
 			<Logo />
@@ -202,14 +218,7 @@ export default function Config({
 				</Box>
 			)}
 			<Box marginTop={1}>
-				{wizard.currentStep === ConfigStep.PROVIDER ||
-				wizard.currentStep === ConfigStep.CONFIRM ? (
-					<Text dimColor>
-						Use ↑↓ to navigate • Press Enter to select • ESC to go back
-					</Text>
-				) : (
-					<Text dimColor>Press Enter to select • ESC to go back</Text>
-				)}
+				{getHelpText(wizard.currentStep)}
 			</Box>
 
 			{/* Help Hint */}
