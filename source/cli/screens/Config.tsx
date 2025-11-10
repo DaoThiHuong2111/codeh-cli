@@ -11,9 +11,14 @@ import InputBox from '../components/molecules/InputBox';
 interface ConfigProps {
 	onConfigComplete?: () => void;
 	container: Container;
+	exitConfirmation?: boolean;
 }
 
-export default function Config({onConfigComplete, container}: ConfigProps) {
+export default function Config({
+	onConfigComplete,
+	container,
+	exitConfirmation,
+}: ConfigProps) {
 	const {navigateTo} = useNavigation();
 
 	// Business logic hook
@@ -199,6 +204,17 @@ export default function Config({onConfigComplete, container}: ConfigProps) {
 					</Text>
 				) : (
 					<Text dimColor>Press Enter to select • ESC to go back</Text>
+				)}
+			</Box>
+
+			{/* Help Hint */}
+			<Box>
+				{exitConfirmation ? (
+					<Text>Press Ctrl+C again to exit</Text>
+				) : (
+					<Text dimColor>
+						Press Ctrl+C to exit
+					</Text>
 				)}
 			</Box>
 		</Box>

@@ -16,9 +16,13 @@ import type {PermissionMode} from '../../infrastructure/permissions/PermissionMo
 
 interface HomeNewProps {
 	container: Container;
+	exitConfirmation?: boolean;
 }
 
-export default function HomeNew({container}: HomeNewProps) {
+export default function HomeNew({
+	container,
+	exitConfirmation = false,
+}: HomeNewProps) {
 	const {presenter, loading, error} = useHomeLogicNew(container);
 
 	// Permission mode state
@@ -30,8 +34,9 @@ export default function HomeNew({container}: HomeNewProps) {
 	// Initialize mode manager from container
 	useEffect(() => {
 		try {
-			const manager =
-				container.resolve<PermissionModeManager>('PermissionModeManager');
+			const manager = container.resolve<PermissionModeManager>(
+				'PermissionModeManager',
+			);
 			setModeManager(manager);
 			setPermissionMode(manager.getCurrentMode());
 
@@ -193,10 +198,14 @@ export default function HomeNew({container}: HomeNewProps) {
 
 			{/* Help Hint */}
 			<Box marginTop={1}>
-				<Text dimColor>
-					Press <Text color="green">?</Text> for help |{' '}
-					<Text color="green">Ctrl+C</Text> to exit
-				</Text>
+				{exitConfirmation ? (
+					<Text>Press Ctrl+C again to exit</Text>
+				) : (
+					<Text dimColor>
+						Press <Text color="green">?</Text> for help |{' '}
+						<Text color="green">Ctrl+C</Text> to exit
+					</Text>
+				)}
 			</Box>
 		</Box>
 	);

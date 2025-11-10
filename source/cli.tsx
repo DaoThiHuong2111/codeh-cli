@@ -37,8 +37,9 @@ async function main() {
 		// Setup DI container
 		const container = await setupContainer();
 
-		// Render app
-		render(<App container={container} />);
+		render(<App container={container} />, {
+			exitOnCtrlC: false, 
+		});
 	} catch (error) {
 		console.error('Failed to start application:', error);
 		process.exit(1);

@@ -4,7 +4,7 @@
  */
 
 import React, {useState, useEffect} from 'react';
-import {Box, Text, useInput} from 'ink';
+import {Box, Text} from 'ink';
 import {
 	NavigationContext,
 	ScreenType,
@@ -12,16 +12,17 @@ import {
 } from '../contexts/NavigationContext';
 import {Container} from '../../core';
 import Welcome from '../screens/Welcome';
-import Home from '../screens/Home';
 import HomeNew from '../screens/HomeNew';
 import Config from '../screens/Config';
 
 interface NavigationProviderProps {
 	container: Container;
+	exitConfirmation?: boolean;
 }
 
 export default function NavigationProvider({
 	container,
+	exitConfirmation,
 }: NavigationProviderProps) {
 	const [currentScreen, setCurrentScreen] = useState<ScreenType>('home');
 	const [loading, setLoading] = useState(true);
@@ -38,13 +39,6 @@ export default function NavigationProvider({
 		setLoading(false);
 	}, []);
 
-	// Only handle global keys (Ctrl+C)
-	useInput((input: string, key: any) => {
-		if (key.ctrl && input === 'c') {
-			process.exit(0);
-		}
-	});
-
 	if (loading) {
 		return (
 			<Box>
@@ -58,12 +52,13 @@ export default function NavigationProvider({
 			case 'welcome':
 				return <Welcome />;
 			case 'home':
-				return <HomeNew container={container} />;
+				return <HomeNew container={container} exitConfirmation={exitConfirmation} />;
 			case 'config':
 				return (
 					<Config
 						onConfigComplete={() => setCurrentScreen('home')}
 						container={container}
+						exitConfirmation={exitConfirmation}
 					/>
 				);
 			default:
