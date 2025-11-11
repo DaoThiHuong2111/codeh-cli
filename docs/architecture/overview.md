@@ -28,12 +28,14 @@ CODEH CLI được xây dựng với **3-Layer Clean Architecture**, đảm bả
 **Thành phần**:
 
 - **Components**: React Ink UI components
-  - Atoms: Button, Spinner, ProgressBar
-  - Molecules: Menu, InputBox, MessageBubble
-  - Organisms: Navigation, ConversationArea, TodosDisplay
+  - Atoms: Button, Spinner, ProgressBar, StatusIndicator, Logo
+  - Molecules: Menu, InputBox, MessageBubble, MarkdownText, ToolCallDisplay, ToolResultDisplay, ToolPermissionDialog
+  - Organisms: Navigation, ConversationArea, TodosDisplay, SlashSuggestions, Footer, Card
 - **Screens**: Welcome, Home, Config
-- **Presenters**: MVP pattern presenters
-- **Hooks**: Custom React hooks
+- **Presenters**: MVP pattern presenters (HomePresenter, WelcomePresenter, ConfigPresenter)
+- **Hooks**: Custom React hooks (useHomeLogic, useExitConfirmation)
+- **Contexts**: NavigationContext
+- **Providers**: ShortcutProvider (from core/input)
 
 **Dependency**: Chỉ phụ thuộc vào Core layer
 
@@ -59,11 +61,16 @@ export function HomeScreen() {
 
 **Thành phần**:
 
-- **Domain Models**: Message, Turn, Configuration, Session
-- **Interfaces**: IApiClient, IHistoryRepository, ISessionManager
-- **Use Cases**: ProcessUserInput, StreamResponse, ManageHistory
-- **Services**: CommandService, InputClassifier, MarkdownService
-- **Tools**: ToolRegistry, FileOps, Shell
+- **Domain Models**: Message, Turn, Configuration, Conversation, Todo, ToolExecutionContext, UpgradeInfo
+- **Interfaces**: IApiClient, IHistoryRepository, ISessionManager, IConfigRepository
+- **Application Services**:
+  - CodehClient.ts - Main orchestrator for AI interactions
+  - CodehChat.ts - Conversation management
+  - ToolExecutionOrchestrator.ts - Tool execution workflow and permission handling
+- **Services**: CommandService, InputClassifier, MarkdownService, OutputFormatter
+- **Tools**: ToolRegistry, FileOps, Shell (base tools)
+- **Input System**: ShortcutManager, ShortcutContext, keyParser (layer-based keyboard shortcuts)
+- **DI Container**: Dependency injection container
 
 **Dependency**: KHÔNG phụ thuộc vào layer khác (pure business logic)
 
@@ -91,13 +98,21 @@ export class StreamResponse {
 **Thành phần**:
 
 - **API Clients**: AnthropicClient, OpenAIClient, OllamaClient, GenericClient
-- **Config**: FileConfigRepository, EnvConfigRepository
+  - ApiClientFactory.ts - Factory pattern for creating clients
+- **Config**:
+  - FileConfigRepository - File-based configuration (~/.codeh/configs.json)
+  - EnvConfigRepository - Environment variable configuration
+  - ConfigLoader - Configuration merging strategy (env > file)
+- **Permissions**:
+  - PermissionModeManager - Runtime permission mode switching (MVP/Interactive)
+- **Session**: SessionManager - Session lifecycle and persistence
 - **History**: FileHistoryRepository, InMemoryHistoryRepository
-- **Session**: SessionManager
 - **Integrations**:
-  - VSCodeExtension: VS Code integration
-  - MCPClient: Model Context Protocol client
-  - A2AServer: Agent-to-Agent server
+  - vscode/ - VSCodeExtension: VS Code integration (WebSocket/stdio)
+  - mcp/ - MCPClient: Model Context Protocol client (JSON-RPC)
+  - a2a/ - A2AServer: Agent-to-Agent server (HTTP/WebSocket)
+- **Filesystem**: File operations and workspace management
+- **Process**: Shell command execution with security
 
 **Dependency**: Implements interfaces từ Core layer
 
@@ -224,6 +239,8 @@ export class SaveSession {
 
 ### Immutable Value Objects
 
+#### Message Model
+
 ```typescript
 export class Message {
 	readonly id: string;
@@ -255,6 +272,67 @@ export class Message {
 			timestamp: new Date(),
 		});
 	}
+}
+```
+
+#### Todo Model
+
+```typescript
+export type TodoStatus = 'pending' | 'in_progress' | 'completed';
+
+export class Todo {
+	constructor(
+		public readonly id: string,
+		public readonly content: string,
+		public readonly status: TodoStatus,
+		public readonly timestamp: Date,
+		public readonly metadata?: Record<string, any>,
+	) {}
+
+	static create(content: string, options?: {status?: TodoStatus}): Todo {
+		return new Todo(
+			this.generateId(),
+			content,
+			options?.status || 'pending',
+			new Date(),
+		);
+	}
+
+	// Immutable state updates
+	withStatus(newStatus: TodoStatus): Todo {
+		return new Todo(this.id, this.content, newStatus, this.timestamp, this.metadata);
+	}
+
+	complete(): Todo { return this.withStatus('completed'); }
+	start(): Todo { return this.withStatus('in_progress'); }
+
+	// Status checkers
+	isPending(): boolean { return this.status === 'pending'; }
+	isInProgress(): boolean { return this.status === 'in_progress'; }
+	isCompleted(): boolean { return this.status === 'completed'; }
+}
+```
+
+#### ToolExecutionContext Model
+
+```typescript
+export class ToolExecutionContext {
+	// Context for tool execution including:
+	// - Tool metadata
+	// - Execution environment
+	// - Permission state
+	// - Approval callbacks
+}
+```
+
+#### UpgradeInfo Model
+
+```typescript
+export class UpgradeInfo {
+	// Information about CLI upgrades:
+	// - Current version
+	// - Latest version
+	// - Upgrade instructions
 }
 ```
 
@@ -348,6 +426,162 @@ test('User can chat end-to-end', async t => {
 2. Define request/response interfaces
 3. Inject dependencies via constructor
 4. Add tests
+
+## Advanced Features
+
+### Permission Mode System
+
+CODEH hỗ trợ 2 permission modes cho tool execution:
+
+**MVP Mode (YOLO)**:
+- Auto-approve tất cả tool executions
+- Fast development workflow
+- No user interruption
+- Icon: 🚀
+- Display: "YOLO"
+
+**Interactive Mode**:
+- Require user approval trước khi execute tools
+- Safe production workflow
+- User has full control
+- Icon: 🔒
+- Display: "Ask before edits"
+
+**Implementation**:
+
+```typescript
+export class PermissionModeManager {
+	private currentMode: PermissionMode = 'mvp'; // Default
+	private listeners: ModeChangeListener[] = [];
+
+	toggleMode(): void {
+		const newMode = this.currentMode === 'mvp' ? 'interactive' : 'mvp';
+		this.setMode(newMode);
+	}
+
+	isMVPMode(): boolean {
+		return this.currentMode === 'mvp';
+	}
+
+	isInteractiveMode(): boolean {
+		return this.currentMode === 'interactive';
+	}
+}
+```
+
+**Usage**:
+- Toggle với `Shift+Tab` keyboard shortcut
+- Mode hiển thị trong Footer component
+- Runtime switching không cần restart
+
+### Keyboard Shortcuts System
+
+Layer-based keyboard shortcut management với priority system:
+
+**Architecture**:
+
+```typescript
+// ShortcutManager - centralized shortcut registry
+export class ShortcutManager {
+	private shortcuts: Map<ShortcutLayer, ShortcutRegistration[]>;
+
+	register(registration: ShortcutRegistration): void {
+		// Register shortcut với layer
+	}
+
+	handleInput(input: string, layer: ShortcutLayer): boolean {
+		// Process input và execute handler nếu match
+	}
+}
+
+// ShortcutContext - React context provider
+export const ShortcutProvider: React.FC = ({children}) => {
+	const manager = useMemo(() => new ShortcutManager(), []);
+	return <ShortcutContext.Provider value={manager}>{children}</ShortcutContext.Provider>;
+};
+
+// useShortcut - React hook for registering shortcuts
+export function useShortcut(config: ShortcutConfig): void {
+	const manager = useContext(ShortcutContext);
+
+	useEffect(() => {
+		const registration = manager.register(config);
+		return () => manager.unregister(registration);
+	}, [config.key, config.layer]);
+}
+```
+
+**Features**:
+- **Layer-based priority**: `input` > `screen` > `global`
+- **Conditional shortcuts**: `enabled()` function để enable/disable dynamically
+- **Conflict detection**: Warn nếu có conflicting shortcuts
+- **Centralized management**: Single source of truth
+- **React integration**: `useShortcut` hook
+
+**Example Usage**:
+
+```typescript
+// In Home screen
+useShortcut({
+	key: 'shift+tab',
+	handler: () => modeManager.toggleMode(),
+	layer: 'input',
+	description: 'Toggle permission mode',
+	source: 'Home',
+});
+
+useShortcut({
+	key: 'escape',
+	handler: () => presenter.handleInputChange(''),
+	layer: 'input',
+	enabled: () => presenter !== null && presenter.input !== '',
+	description: 'Clear input',
+	source: 'Home',
+});
+```
+
+**Supported Key Patterns**:
+- Single keys: `a`, `enter`, `escape`
+- Modified keys: `ctrl+c`, `shift+tab`, `alt+f`
+- Arrow keys: `up`, `down`, `left`, `right`
+- Special keys: `tab`, `space`, `backspace`
+
+### Todos Management System
+
+Built-in task tracking với visual progress indicators:
+
+**Features**:
+- Real-time todos từ AI responses
+- Status tracking: `pending`, `in_progress`, `completed`
+- Visual progress bar
+- Status-based grouping
+- Immutable domain model
+
+**Components**:
+
+```typescript
+// TodosDisplay - organism component
+export const TodosDisplay: React.FC<TodosDisplayProps> = ({
+	todos,
+	showProgress = true,
+}) => {
+	const total = todos.length;
+	const completed = todos.filter(t => t.isCompleted()).length;
+
+	return (
+		<Box flexDirection="column" borderStyle="single" borderColor="blue">
+			<Text bold>📋 Tasks ({completed}/{total} completed)</Text>
+			{showProgress && <ProgressBar current={completed} total={total} />}
+			<TodosList todos={todos} />
+		</Box>
+	);
+};
+```
+
+**Display**:
+- ⚡ In Progress (yellow)
+- ⏳ Pending (gray)
+- ✓ Completed (green, dimmed)
 
 ## Best Practices
 

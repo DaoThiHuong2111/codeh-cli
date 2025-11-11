@@ -91,25 +91,26 @@ Home Screen là màn hình chính của CODEH CLI, cung cấp giao diện chat v
 - Links (non-clickable, display only)
 - Inline formatting (bold, italic, code)
 
-#### 9. Help Overlay
+#### 9. Permission Mode Management
 
-- Keyboard shortcuts reference
-- Command list với descriptions
-- Feature explanations
-- Toggle với `/help` hoặc `?` key
+- Toggle between MVP (YOLO) và Interactive modes
+- MVP Mode: Auto-approve all tool executions (fast workflow)
+- Interactive Mode: Ask before executing tools (safe workflow)
+- Runtime switching với `Shift+Tab`
+- Mode indicator trong Footer
+- Visual feedback với color coding (cyan for MVP, green for Interactive)
 
 #### 10. Keyboard Navigation
 
-**Shortcuts**:
+**Active Shortcuts** (Layer-based system):
 
-- `Ctrl+C` - Exit application
-- `Ctrl+L` - Clear screen
-- `Ctrl+R` - Reload configuration
-- `Ctrl+S` - Save session
-- `Ctrl+O` - Load session
-- `Ctrl+T` - Toggle todos
-- `Tab` - Command completion
-- `?` - Toggle help
+- `Shift+Tab` - Toggle permission mode (MVP ↔ Interactive)
+- `Escape` - Clear input (when input is not empty)
+- `Up Arrow` - Navigate suggestions up (when suggestions visible) or history up
+- `Down Arrow` - Navigate suggestions down (when suggestions visible) or history down
+- `Tab` - Select suggestion (when suggestions visible)
+- `Enter` - Select suggestion (when suggestions visible) or submit message
+- `Ctrl+C` - Exit application (double press for confirmation)
 
 ## Usage
 
@@ -171,13 +172,21 @@ Sau khi launch, Home Screen sẽ hiển thị:
 
 - **ConversationArea**: Displays chat history
   - MessageBubble: Individual message display
-  - MarkdownText: Markdown rendering
+  - MarkdownText: Markdown rendering with syntax highlighting
+  - ToolCallDisplay: Tool execution visualization
+  - ToolResultDisplay: Tool execution results
   - Spinner: Loading indicator
-- **InputBox**: Message input field
-- **SlashSuggestions**: Command suggestions dropdown
-- **TodosDisplay**: Todos sidebar panel
-- **HelpOverlay**: Help modal
-- **Footer**: Status bar với shortcuts
+- **InputBox**: Message input field with auto-resize
+- **SlashSuggestions**: Command suggestions dropdown with fuzzy search
+- **TodosDisplay**: Todos sidebar panel với progress tracking
+- **Footer**: Enhanced status bar showing:
+  - Model name
+  - Estimated cost
+  - Session duration
+  - Git branch (if available)
+  - Permission mode indicator (YOLO/Ask before edits)
+- **Logo**: CODEH branding display
+- **InfoSection**: Version, model, and directory information
 
 ### Layout Structure
 
@@ -201,25 +210,46 @@ Sau khi launch, Home Screen sẽ hiển thị:
 ### State Structure
 
 ```typescript
-interface HomeState {
+interface HomePresenterState {
+	// Messages
 	messages: Message[];
-	currentInput: string;
-	isStreaming: boolean;
-	error: string | null;
+	streamingMessageId: string | null;
+	isLoading: boolean;
+
+	// Input
+	input: string;
+	inputError: string | null;
+
+	// Todos
 	todos: Todo[];
-	showTodos: boolean;
-	showHelp: boolean;
-	sessionName: string | null;
+
+	// Slash command suggestions
+	filteredSuggestions: Command[];
+	selectedSuggestionIndex: number;
+
+	// Session info
+	version: string;
+	model: string;
+	directory: string;
+	gitBranch?: string;
+
+	// Stats
+	messageCount: number;
+	totalTokens: number;
+	estimatedCost: number;
+	sessionDuration: number;
 }
 ```
 
 ### State Updates
 
-- **Messages**: Append on send, update on stream
-- **Input**: Update on typing, clear on send
-- **Streaming**: Set true on send, false on complete
-- **Todos**: Add/remove/toggle as user interacts
-- **UI toggles**: Boolean flags cho panels
+- **Messages**: Append on send, real-time streaming updates via streamingMessageId
+- **Input**: Update on typing, clear on submit, validation on change
+- **Loading**: Set true on send, false on complete/error
+- **Todos**: Auto-parsed from AI responses, status updates (pending → in_progress → completed)
+- **Suggestions**: Filtered based on input starting with '/', navigation with up/down arrows
+- **Stats**: Auto-calculated from message history (tokens, cost, duration)
+- **Permission Mode**: Toggle via Shift+Tab, persisted in PermissionModeManager
 
 ## Performance
 
