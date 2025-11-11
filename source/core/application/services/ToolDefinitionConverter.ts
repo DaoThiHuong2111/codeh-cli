@@ -1,77 +1,198 @@
 /**
  * Tool Definition Converter
- * Converts internal ToolDefinition to API-specific formats
+ * Converts tool definitions to different AI provider formats
  */
 
-import {Tool as ApiTool} from '../../domain/interfaces/IApiClient';
 import {ToolDefinition} from '../../domain/interfaces/IToolExecutor';
 
+/**
+ * Anthropic Claude tool format
+ */
+export interface AnthropicTool {
+	name: string;
+	description: string;
+	input_schema: {
+		type: 'object';
+		properties: Record<string, any>;
+		required?: string[];
+	};
+}
+
+/**
+ * OpenAI function calling format
+ */
+export interface OpenAIFunction {
+	type: 'function';
+	function: {
+		name: string;
+		description: string;
+		parameters: {
+			type: 'object';
+			properties: Record<string, any>;
+			required?: string[];
+		};
+	};
+}
+
+/**
+ * Generic tool format (our internal format)
+ */
+export interface GenericTool {
+	name: string;
+	description: string;
+	parameters: Record<string, any>;
+}
+
+/**
+ * Tool Definition Converter Service
+ * Converts between different tool formats for various AI providers
+ */
 export class ToolDefinitionConverter {
 	/**
-	 * Convert internal ToolDefinition to unified API format
+	 * Convert to Anthropic Claude format
 	 */
-	static toApiFormat(toolDef: ToolDefinition): ApiTool {
-		const properties: Record<string, any> = {};
-		const required: string[] = [];
+	toAnthropicFormat(definitions: ToolDefinition[]): AnthropicTool[] {
+		return definitions.map(def => {
+			const properties: Record<string, any> = {};
+			const required: string[] = [];
 
-		// Convert parameters to JSON Schema format
-		for (const param of toolDef.parameters) {
-			properties[param.name] = {
-				type: param.type,
-				description: param.description,
+			// Convert from our format to Anthropic format
+			if (def.inputSchema) {
+				// Already in schema format
+				return {
+					name: def.name,
+					description: def.description,
+					input_schema: {
+						type: 'object',
+						properties: def.inputSchema.properties || {},
+						required: def.inputSchema.required || [],
+					},
+				};
+			}
+
+			// Convert from parameters array format
+			if (def.parameters) {
+				for (const param of def.parameters) {
+					properties[param.name] = {
+						type: param.type,
+						description: param.description,
+					};
+
+					if (param.required) {
+						required.push(param.name);
+					}
+				}
+			}
+
+			return {
+				name: def.name,
+				description: def.description,
+				input_schema: {
+					type: 'object',
+					properties,
+					required: required.length > 0 ? required : undefined,
+				},
 			};
+		});
+	}
 
-			if (param.default !== undefined) {
-				properties[param.name].default = param.default;
+	/**
+	 * Convert to OpenAI function calling format
+	 */
+	toOpenAIFormat(definitions: ToolDefinition[]): OpenAIFunction[] {
+		return definitions.map(def => {
+			const properties: Record<string, any> = {};
+			const required: string[] = [];
+
+			// Convert from our format to OpenAI format
+			if (def.inputSchema) {
+				// Already in schema format
+				return {
+					type: 'function',
+					function: {
+						name: def.name,
+						description: def.description,
+						parameters: {
+							type: 'object',
+							properties: def.inputSchema.properties || {},
+							required: def.inputSchema.required || [],
+						},
+					},
+				};
 			}
 
-			if (param.required) {
-				required.push(param.name);
+			// Convert from parameters array format
+			if (def.parameters) {
+				for (const param of def.parameters) {
+					properties[param.name] = {
+						type: param.type,
+						description: param.description,
+					};
+
+					if (param.required) {
+						required.push(param.name);
+					}
+				}
 			}
+
+			return {
+				type: 'function',
+				function: {
+					name: def.name,
+					description: def.description,
+					parameters: {
+						type: 'object',
+						properties,
+						required: required.length > 0 ? required : undefined,
+					},
+				},
+			};
+		});
+	}
+
+	/**
+	 * Convert to generic format (simplified)
+	 */
+	toGenericFormat(definitions: ToolDefinition[]): GenericTool[] {
+		return definitions.map(def => {
+			const parameters: Record<string, any> = {};
+
+			if (def.inputSchema) {
+				Object.assign(parameters, def.inputSchema.properties || {});
+			} else if (def.parameters) {
+				for (const param of def.parameters) {
+					parameters[param.name] = {
+						type: param.type,
+						description: param.description,
+						required: param.required || false,
+					};
+				}
+			}
+
+			return {
+				name: def.name,
+				description: def.description,
+				parameters,
+			};
+		});
+	}
+
+	/**
+	 * Get format for specific provider
+	 */
+	getFormatForProvider(
+		definitions: ToolDefinition[],
+		provider: 'anthropic' | 'openai' | 'generic',
+	): AnthropicTool[] | OpenAIFunction[] | GenericTool[] {
+		switch (provider) {
+			case 'anthropic':
+				return this.toAnthropicFormat(definitions);
+			case 'openai':
+				return this.toOpenAIFormat(definitions);
+			case 'generic':
+				return this.toGenericFormat(definitions);
+			default:
+				return this.toGenericFormat(definitions);
 		}
-
-		return {
-			name: toolDef.name,
-			description: toolDef.description,
-			parameters: {
-				type: 'object',
-				properties,
-				required: required.length > 0 ? required : undefined,
-			},
-		};
-	}
-
-	/**
-	 * Convert array of ToolDefinitions to API format
-	 */
-	static toApiFormatBatch(toolDefs: ToolDefinition[]): ApiTool[] {
-		return toolDefs.map(td => this.toApiFormat(td));
-	}
-
-	/**
-	 * Convert to Anthropic-specific format (if needed in future)
-	 * For now, unified format works for both
-	 */
-	static toAnthropicFormat(toolDef: ToolDefinition): any {
-		// Anthropic uses same format as our unified format
-		return this.toApiFormat(toolDef);
-	}
-
-	/**
-	 * Convert to OpenAI-specific format (if needed in future)
-	 * For now, unified format works for both
-	 */
-	static toOpenAIFormat(toolDef: ToolDefinition): any {
-		// OpenAI uses same format as our unified format
-		// With 'function' wrapper for function calling
-		const apiFormat = this.toApiFormat(toolDef);
-		return {
-			type: 'function',
-			function: {
-				name: apiFormat.name,
-				description: apiFormat.description,
-				parameters: apiFormat.parameters,
-			},
-		};
 	}
 }
