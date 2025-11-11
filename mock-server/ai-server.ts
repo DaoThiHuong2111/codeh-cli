@@ -320,7 +320,10 @@ export class MockAIServer {
 }
 
 // CLI interface for testing
-if (require.main === module) {
+// ES module equivalent of require.main === module
+const isMainModule = import.meta.url === `file://${process.argv[1]}`;
+
+if (isMainModule) {
 	const server = new MockAIServer(3456);
 
 	server
