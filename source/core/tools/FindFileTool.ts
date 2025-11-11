@@ -51,6 +51,10 @@ export class FindFileTool extends Tool {
 		};
 	}
 
+	validateParameters(parameters: Record<string, any>): boolean {
+		return typeof parameters.pattern === 'string';
+	}
+
 	async execute(parameters: Record<string, any>): Promise<ToolExecutionResult> {
 		const {pattern, directory = '.', maxResults = 100} =
 			parameters as FindFileOptions;

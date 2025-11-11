@@ -103,7 +103,7 @@ export class SerenaMCPAdapter {
 			return;
 		}
 
-		await this.mcpClient.disconnectFromServer(this.serverName);
+		await this.mcpClient.disconnect(this.serverName);
 		this.connected = false;
 	}
 

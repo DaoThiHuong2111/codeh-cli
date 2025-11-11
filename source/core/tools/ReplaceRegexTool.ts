@@ -56,6 +56,14 @@ export class ReplaceRegexTool extends Tool {
 		};
 	}
 
+	validateParameters(parameters: Record<string, any>): boolean {
+		return (
+			typeof parameters.filePath === 'string' &&
+			typeof parameters.pattern === 'string' &&
+			parameters.replacement !== undefined
+		);
+	}
+
 	async execute(parameters: Record<string, any>): Promise<ToolExecutionResult> {
 		const {filePath, pattern, replacement, flags = 'g'} =
 			parameters as ReplaceRegexOptions;

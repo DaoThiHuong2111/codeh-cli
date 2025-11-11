@@ -7,7 +7,7 @@ import {CodehClient} from '../../core/application/CodehClient.js';
 import type {Message} from '../../core/domain/models/Message.js';
 import {Message as MessageModel} from '../../core/domain/models/Message.js';
 import type {Todo} from '../../core/domain/models/Todo.js';
-import {Todo as TodoModel} from '../../core/domain/models/Todo.js';
+import {Todo as TodoModel, TodoStatus} from '../../core/domain/models/Todo.js';
 import type {Command} from '../../core/domain/valueObjects/Command.js';
 import type {ISessionManager} from '../../core/domain/interfaces/ISessionManager.js';
 import type {ICommandRegistry} from '../../core/domain/interfaces/ICommandRegistry.js';
@@ -431,7 +431,7 @@ export class HomePresenter {
 
 	addTodo = (
 		content: string,
-		status: 'pending' | 'in_progress' | 'completed' = 'pending',
+		status: TodoStatus = TodoStatus.Pending,
 	): void => {
 		const todo = TodoModel.create(content, {status});
 		this.state.todos.push(todo);
@@ -440,7 +440,7 @@ export class HomePresenter {
 
 	updateTodoStatus = (
 		todoId: string,
-		status: 'pending' | 'in_progress' | 'completed',
+		status: TodoStatus,
 	): void => {
 		const index = this.state.todos.findIndex(t => t.id === todoId);
 		if (index >= 0) {

@@ -3,7 +3,11 @@
  * Represents a task or action item from AI responses
  */
 
-export type TodoStatus = 'pending' | 'in_progress' | 'completed';
+export enum TodoStatus {
+	Pending = 'pending',
+	InProgress = 'in_progress',
+	Completed = 'completed',
+}
 
 export class Todo {
 	constructor(
@@ -24,22 +28,22 @@ export class Todo {
 		return new Todo(
 			this.generateId(),
 			content,
-			options?.status || 'pending',
+			options?.status || TodoStatus.Pending,
 			new Date(),
 			options?.metadata,
 		);
 	}
 
 	static pending(content: string): Todo {
-		return this.create(content, {status: 'pending'});
+		return this.create(content, {status: TodoStatus.Pending});
 	}
 
 	static inProgress(content: string): Todo {
-		return this.create(content, {status: 'in_progress'});
+		return this.create(content, {status: TodoStatus.InProgress});
 	}
 
 	static completed(content: string): Todo {
-		return this.create(content, {status: 'completed'});
+		return this.create(content, {status: TodoStatus.Completed});
 	}
 
 	private static generateId(): string {
@@ -48,15 +52,15 @@ export class Todo {
 
 	// Status checkers
 	isPending(): boolean {
-		return this.status === 'pending';
+		return this.status === TodoStatus.Pending;
 	}
 
 	isInProgress(): boolean {
-		return this.status === 'in_progress';
+		return this.status === TodoStatus.InProgress;
 	}
 
 	isCompleted(): boolean {
-		return this.status === 'completed';
+		return this.status === TodoStatus.Completed;
 	}
 
 	// Create new instance with updated status (immutability)
@@ -72,12 +76,12 @@ export class Todo {
 
 	// Mark as completed
 	complete(): Todo {
-		return this.withStatus('completed');
+		return this.withStatus(TodoStatus.Completed);
 	}
 
 	// Mark as in progress
 	start(): Todo {
-		return this.withStatus('in_progress');
+		return this.withStatus(TodoStatus.InProgress);
 	}
 
 	toJSON(): object {

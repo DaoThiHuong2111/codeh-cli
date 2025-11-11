@@ -195,14 +195,14 @@ export class WorkflowManager {
 	 * Mark todo as completed
 	 */
 	completeTodo(todoId: string): boolean {
-		return this.updateTodoStatus(todoId, 'completed');
+		return this.updateTodoStatus(todoId, TodoStatus.Completed);
 	}
 
 	/**
 	 * Mark todo as in progress
 	 */
 	startTodo(todoId: string): boolean {
-		return this.updateTodoStatus(todoId, 'in_progress');
+		return this.updateTodoStatus(todoId, TodoStatus.InProgress);
 	}
 
 	/**

@@ -56,6 +56,14 @@ export class ReplaceSymbolBodyTool extends Tool {
 		};
 	}
 
+	validateParameters(parameters: Record<string, any>): boolean {
+		return (
+			typeof parameters.namePath === 'string' &&
+			typeof parameters.filePath === 'string' &&
+			typeof parameters.newBody === 'string'
+		);
+	}
+
 	private getAnalyzer(): TypeScriptSymbolAnalyzer {
 		if (!this.analyzer) {
 			this.analyzer = new TypeScriptSymbolAnalyzer(this.projectRoot);

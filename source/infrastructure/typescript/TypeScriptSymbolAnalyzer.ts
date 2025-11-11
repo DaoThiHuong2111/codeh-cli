@@ -7,8 +7,8 @@
 import * as ts from 'typescript';
 import * as path from 'path';
 import * as fs from 'fs';
-import {Symbol, SymbolKind, SymbolLocation} from '../../domain/models/Symbol';
-import {Reference} from '../../domain/models/Reference';
+import {Symbol, SymbolKind, SymbolLocation} from '../../core/domain/models/Symbol';
+import {Reference} from '../../core/domain/models/Reference';
 
 /**
  * Maps TypeScript syntax kind to LSP Symbol Kind
@@ -170,8 +170,8 @@ export class TypeScriptSymbolAnalyzer {
 			return node.text;
 		}
 
-		if ('name' in node && node.name && ts.isIdentifier(node.name)) {
-			return node.name.text;
+		if ('name' in node && (node as any).name && ts.isIdentifier((node as any).name)) {
+			return ((node as any).name as ts.Identifier).text;
 		}
 
 		return 'anonymous';
@@ -416,7 +416,7 @@ export class TypeScriptSymbolAnalyzer {
 		// Get exact position of symbol from source file
 		const symbolPosition = sourceFile.getPositionOfLineAndCharacter(
 			symbolNode.location.startLine - 1,
-			symbolNode.location.startColumn,
+			symbolNode.location.startColumn ?? 0,
 		);
 
 		const referencedSymbols = this.languageService.findReferences(
@@ -547,7 +547,7 @@ export class TypeScriptSymbolAnalyzer {
 		// Get exact position
 		const symbolPosition = sourceFile.getPositionOfLineAndCharacter(
 			symbol.location.startLine - 1,
-			symbol.location.startColumn,
+			symbol.location.startColumn ?? 0,
 		);
 
 		// Find rename locations using Language Service

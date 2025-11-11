@@ -49,6 +49,14 @@ export class RenameSymbolTool extends Tool {
 		};
 	}
 
+	validateParameters(parameters: Record<string, any>): boolean {
+		return (
+			typeof parameters.namePath === 'string' &&
+			typeof parameters.filePath === 'string' &&
+			typeof parameters.newName === 'string'
+		);
+	}
+
 	private getAnalyzer(): TypeScriptSymbolAnalyzer {
 		if (!this.analyzer) {
 			this.analyzer = new TypeScriptSymbolAnalyzer(this.projectRoot);

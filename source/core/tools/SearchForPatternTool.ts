@@ -62,6 +62,10 @@ export class SearchForPatternTool extends Tool {
 		};
 	}
 
+	validateParameters(parameters: Record<string, any>): boolean {
+		return typeof parameters.pattern === 'string';
+	}
+
 	async execute(parameters: Record<string, any>): Promise<ToolExecutionResult> {
 		const {
 			pattern,
