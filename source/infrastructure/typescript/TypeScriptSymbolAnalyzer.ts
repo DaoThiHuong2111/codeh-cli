@@ -56,6 +56,8 @@ export class TypeScriptSymbolAnalyzer {
 	private program: ts.Program;
 	private checker: ts.TypeChecker;
 	private projectRoot: string;
+	private languageService: ts.LanguageService;
+	private files: Map<string, string> = new Map();
 
 	constructor(projectRoot: string, tsConfigPath?: string) {
 		this.projectRoot = projectRoot;
@@ -79,6 +81,31 @@ export class TypeScriptSymbolAnalyzer {
 		});
 
 		this.checker = this.program.getTypeChecker();
+
+		// Create Language Service for advanced features like findReferences
+		const servicesHost: ts.LanguageServiceHost = {
+			getScriptFileNames: () => parsedConfig.fileNames,
+			getScriptVersion: () => '0',
+			getScriptSnapshot: (fileName: string) => {
+				if (!fs.existsSync(fileName)) {
+					return undefined;
+				}
+				const text = fs.readFileSync(fileName, 'utf8');
+				this.files.set(fileName, text);
+				return ts.ScriptSnapshot.fromString(text);
+			},
+			getCurrentDirectory: () => this.projectRoot,
+			getCompilationSettings: () => parsedConfig.options,
+			getDefaultLibFileName: (options) => ts.getDefaultLibFilePath(options),
+			fileExists: ts.sys.fileExists,
+			readFile: ts.sys.readFile,
+			readDirectory: ts.sys.readDirectory,
+		};
+
+		this.languageService = ts.createLanguageService(
+			servicesHost,
+			ts.createDocumentRegistry(),
+		);
 	}
 
 	/**
@@ -381,17 +408,21 @@ export class TypeScriptSymbolAnalyzer {
 		const symbolNode = symbolNodes[0];
 		const references: Reference[] = [];
 
-		// Use TypeScript's findReferences API
+		// Use TypeScript's findReferences API via LanguageService
 		const absolutePath = path.isAbsolute(filePath)
 			? filePath
 			: path.join(this.projectRoot, filePath);
 
-		// Get position of symbol
-		const symbolPosition = (symbolNode.location.startLine - 1) * 1000; // Approximate
+		// Get exact position of symbol from source file
+		const symbolPosition = sourceFile.getPositionOfLineAndCharacter(
+			symbolNode.location.startLine - 1,
+			symbolNode.location.startColumn,
+		);
 
-		const referencedSymbols = this.program
-			.getLanguageService()
-			?.findReferences(absolutePath, symbolPosition);
+		const referencedSymbols = this.languageService.findReferences(
+			absolutePath,
+			symbolPosition,
+		);
 
 		if (referencedSymbols) {
 			for (const refSymbol of referencedSymbols) {
@@ -484,5 +515,84 @@ export class TypeScriptSymbolAnalyzer {
 	 */
 	getSymbolHierarchy(filePath: string): Symbol[] {
 		return this.findSymbol('', {filePath, depth: 1, substringMatching: true});
+	}
+
+	/**
+	 * Rename a symbol across the codebase
+	 * Returns locations that need to be renamed
+	 */
+	renameSymbol(
+		namePath: string,
+		filePath: string,
+		newName: string,
+	): Array<{fileName: string; textSpan: any; contextSnippet?: string}> {
+		const sourceFile = this.getSourceFile(filePath);
+		if (!sourceFile) {
+			throw new Error(`File not found: ${filePath}`);
+		}
+
+		// Find the symbol
+		const symbols = this.findSymbol(namePath, {filePath, includeBody: false});
+		if (symbols.length === 0) {
+			throw new Error(`Symbol not found: ${namePath}`);
+		}
+
+		const symbol = symbols[0];
+
+		// Get absolute path
+		const absolutePath = path.isAbsolute(filePath)
+			? filePath
+			: path.join(this.projectRoot, filePath);
+
+		// Get exact position
+		const symbolPosition = sourceFile.getPositionOfLineAndCharacter(
+			symbol.location.startLine - 1,
+			symbol.location.startColumn,
+		);
+
+		// Find rename locations using Language Service
+		const renameLocations = this.languageService.findRenameLocations(
+			absolutePath,
+			symbolPosition,
+			false, // findInStrings
+			false, // findInComments
+		);
+
+		if (!renameLocations) {
+			return [];
+		}
+
+		// Map to our format with context
+		const results: Array<{
+			fileName: string;
+			textSpan: any;
+			contextSnippet?: string;
+		}> = [];
+
+		for (const loc of renameLocations) {
+			const locSourceFile = this.program.getSourceFile(loc.fileName);
+			if (!locSourceFile) continue;
+
+			const lineAndChar = locSourceFile.getLineAndCharacterOfPosition(
+				loc.textSpan.start,
+			);
+
+			// Get context line
+			const lines = locSourceFile.text.split('\n');
+			const contextSnippet = lines[lineAndChar.line]?.trim() || '';
+
+			results.push({
+				fileName: path.relative(this.projectRoot, loc.fileName),
+				textSpan: {
+					start: loc.textSpan.start,
+					length: loc.textSpan.length,
+					line: lineAndChar.line,
+					character: lineAndChar.character,
+				},
+				contextSnippet,
+			});
+		}
+
+		return results;
 	}
 }

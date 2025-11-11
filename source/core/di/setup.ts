@@ -27,6 +27,13 @@ import {FileOpsTool} from '../tools/FileOps';
 import {SymbolSearchTool} from '../tools/SymbolSearchTool';
 import {FindReferencesTool} from '../tools/FindReferencesTool';
 import {GetSymbolsOverviewTool} from '../tools/GetSymbolsOverviewTool';
+import {RenameSymbolTool} from '../tools/RenameSymbolTool';
+import {ReplaceSymbolBodyTool} from '../tools/ReplaceSymbolBodyTool';
+import {InsertBeforeSymbolTool} from '../tools/InsertBeforeSymbolTool';
+import {InsertAfterSymbolTool} from '../tools/InsertAfterSymbolTool';
+import {ReplaceRegexTool} from '../tools/ReplaceRegexTool';
+import {FindFileTool} from '../tools/FindFileTool';
+import {SearchForPatternTool} from '../tools/SearchForPatternTool';
 import {IApiClient} from '../domain/interfaces/IApiClient';
 import {IHistoryRepository} from '../domain/interfaces/IHistoryRepository';
 import {IToolPermissionHandler} from '../domain/interfaces/IToolPermissionHandler';
@@ -99,9 +106,21 @@ export async function setupContainer(): Promise<Container> {
 			// Get project root from environment or use current working directory
 			const projectRoot = process.env.CODEH_PROJECT_ROOT || process.cwd();
 
+			// Symbol analysis tools
 			registry.register(new SymbolSearchTool(projectRoot));
 			registry.register(new FindReferencesTool(projectRoot));
 			registry.register(new GetSymbolsOverviewTool(projectRoot));
+
+			// Refactoring & editing tools
+			registry.register(new RenameSymbolTool(projectRoot));
+			registry.register(new ReplaceSymbolBodyTool(projectRoot));
+			registry.register(new InsertBeforeSymbolTool(projectRoot));
+			registry.register(new InsertAfterSymbolTool(projectRoot));
+
+			// File operations tools
+			registry.register(new ReplaceRegexTool(projectRoot));
+			registry.register(new FindFileTool(projectRoot));
+			registry.register(new SearchForPatternTool(projectRoot));
 
 			return registry;
 		},
