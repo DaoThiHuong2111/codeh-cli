@@ -24,6 +24,9 @@ import {OutputFormatter} from '../application/services/OutputFormatter';
 import {ToolRegistry} from '../tools/base/ToolRegistry';
 import {ShellTool} from '../tools/Shell';
 import {FileOpsTool} from '../tools/FileOps';
+import {SymbolSearchTool} from '../tools/SymbolSearchTool';
+import {FindReferencesTool} from '../tools/FindReferencesTool';
+import {GetSymbolsOverviewTool} from '../tools/GetSymbolsOverviewTool';
 import {IApiClient} from '../domain/interfaces/IApiClient';
 import {IHistoryRepository} from '../domain/interfaces/IHistoryRepository';
 import {IToolPermissionHandler} from '../domain/interfaces/IToolPermissionHandler';
@@ -88,9 +91,17 @@ export async function setupContainer(): Promise<Container> {
 			const shellExecutor = container.resolve<ShellExecutor>('ShellExecutor');
 			const fileOps = container.resolve<FileOperations>('FileOperations');
 
-			// Register tools
+			// Register basic tools
 			registry.register(new ShellTool(shellExecutor));
 			registry.register(new FileOpsTool(fileOps));
+
+			// Register TypeScript symbol tools
+			// Get project root from environment or use current working directory
+			const projectRoot = process.env.CODEH_PROJECT_ROOT || process.cwd();
+
+			registry.register(new SymbolSearchTool(projectRoot));
+			registry.register(new FindReferencesTool(projectRoot));
+			registry.register(new GetSymbolsOverviewTool(projectRoot));
 
 			return registry;
 		},
