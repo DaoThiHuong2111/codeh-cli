@@ -89,4 +89,14 @@ export class Todo {
 			metadata: this.metadata,
 		};
 	}
+
+	static fromJSON(data: any): Todo {
+		return new Todo(
+			data.id,
+			data.content,
+			data.status,
+			new Date(data.timestamp),
+			data.metadata,
+		);
+	}
 }
