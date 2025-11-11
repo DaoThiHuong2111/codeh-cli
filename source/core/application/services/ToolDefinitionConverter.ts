@@ -195,4 +195,54 @@ export class ToolDefinitionConverter {
 				return this.toGenericFormat(definitions);
 		}
 	}
+
+	/**
+	 * Static helper: Convert tool definitions to generic API format
+	 * This is used by CodehClient and ToolExecutionOrchestrator
+	 * Returns tools in a format compatible with IApiClient.Tool interface
+	 */
+	static toApiFormatBatch(definitions: ToolDefinition[]): any[] {
+		return definitions.map(def => {
+			const properties: Record<string, any> = {};
+			const required: string[] = [];
+
+			// Convert from our format
+			if (def.inputSchema) {
+				// Already in schema format
+				return {
+					name: def.name,
+					description: def.description,
+					parameters: {
+						type: 'object',
+						properties: def.inputSchema.properties || {},
+						required: def.inputSchema.required || [],
+					},
+				};
+			}
+
+			// Convert from parameters array format
+			if (def.parameters) {
+				for (const param of def.parameters) {
+					properties[param.name] = {
+						type: param.type,
+						description: param.description,
+					};
+
+					if (param.required) {
+						required.push(param.name);
+					}
+				}
+			}
+
+			return {
+				name: def.name,
+				description: def.description,
+				parameters: {
+					type: 'object',
+					properties,
+					required: required.length > 0 ? required : undefined,
+				},
+			};
+		});
+	}
 }
