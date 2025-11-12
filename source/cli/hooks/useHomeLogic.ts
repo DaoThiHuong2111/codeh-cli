@@ -4,6 +4,7 @@ import {HomePresenter} from '../presenters/HomePresenter.js';
 import {useCodehClient} from './useCodehClient.js';
 import {CommandService} from '../../core/application/services/CommandService.js';
 import {FileSessionManager} from '../../infrastructure/session/SessionManager.js';
+import {WorkflowManager} from '../../core/application/services/WorkflowManager.js';
 
 export interface UseHomeLogicReturn {
 	presenter: HomePresenter | null;
@@ -64,12 +65,16 @@ export function useHomeLogic(container: Container): UseHomeLogicReturn {
 
 				await sessionManager.init();
 
+				// Resolve WorkflowManager from container
+				const workflowManager = container.resolve<WorkflowManager>('WorkflowManager');
+
 				// Create presenter
 				const newPresenter = new HomePresenter(
 					initializedClient,
 					commandRegistry,
 					sessionManager,
 					config,
+					workflowManager,
 				);
 
 				// Setup view callback for reactive updates

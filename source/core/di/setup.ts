@@ -21,6 +21,7 @@ import {CodehClient} from '../application/CodehClient';
 import {CodehChat} from '../application/CodehChat';
 import {InputClassifier} from '../application/services/InputClassifier';
 import {OutputFormatter} from '../application/services/OutputFormatter';
+import {WorkflowManager} from '../application/services/WorkflowManager';
 import {ToolRegistry} from '../tools/base/ToolRegistry';
 import {ShellTool} from '../tools/Shell';
 import {FileOpsTool} from '../tools/FileOps';
@@ -34,6 +35,13 @@ import {InsertAfterSymbolTool} from '../tools/InsertAfterSymbolTool';
 import {ReplaceRegexTool} from '../tools/ReplaceRegexTool';
 import {FindFileTool} from '../tools/FindFileTool';
 import {SearchForPatternTool} from '../tools/SearchForPatternTool';
+import {
+	CreatePlanTool,
+	AddTodoTool,
+	UpdateTodoStatusTool,
+	RemoveTodoTool,
+	GetCurrentPlanTool,
+} from '../tools/WorkflowTools';
 import {IApiClient} from '../domain/interfaces/IApiClient';
 import {IHistoryRepository} from '../domain/interfaces/IHistoryRepository';
 import {IToolPermissionHandler} from '../domain/interfaces/IToolPermissionHandler';
@@ -89,6 +97,7 @@ export async function setupContainer(): Promise<Container> {
 	// Services
 	container.register('InputClassifier', () => new InputClassifier(), true);
 	container.register('OutputFormatter', () => new OutputFormatter(), true);
+	container.register('WorkflowManager', () => new WorkflowManager(), true);
 
 	// Tool Registry
 	container.register(
@@ -97,6 +106,7 @@ export async function setupContainer(): Promise<Container> {
 			const registry = new ToolRegistry();
 			const shellExecutor = container.resolve<ShellExecutor>('ShellExecutor');
 			const fileOps = container.resolve<FileOperations>('FileOperations');
+			const workflowManager = container.resolve<WorkflowManager>('WorkflowManager');
 
 			// Register basic tools
 			registry.register(new ShellTool(shellExecutor));
@@ -121,6 +131,13 @@ export async function setupContainer(): Promise<Container> {
 			registry.register(new ReplaceRegexTool(projectRoot));
 			registry.register(new FindFileTool(projectRoot));
 			registry.register(new SearchForPatternTool(projectRoot));
+
+			// Workflow management tools (AI plan/todo management)
+			registry.register(new CreatePlanTool(workflowManager));
+			registry.register(new AddTodoTool(workflowManager));
+			registry.register(new UpdateTodoStatusTool(workflowManager));
+			registry.register(new RemoveTodoTool(workflowManager));
+			registry.register(new GetCurrentPlanTool(workflowManager));
 
 			return registry;
 		},

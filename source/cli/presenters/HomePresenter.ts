@@ -12,6 +12,7 @@ import type {Command} from '../../core/domain/valueObjects/Command.js';
 import type {ISessionManager} from '../../core/domain/interfaces/ISessionManager.js';
 import type {ICommandRegistry} from '../../core/domain/interfaces/ICommandRegistry.js';
 import {Session} from '../../core/domain/valueObjects/Session.js';
+import {WorkflowManager} from '../../core/application/services/WorkflowManager.js';
 
 interface ViewState {
 	// Input
@@ -59,6 +60,7 @@ export class HomePresenter {
 		private commandRegistry: ICommandRegistry,
 		public sessionManager: ISessionManager,
 		private config: any,
+		private workflowManager?: WorkflowManager,
 	) {
 		this.sessionStartTime = Date.now();
 
@@ -213,6 +215,9 @@ export class HomePresenter {
 				} else {
 					this.state.messages.push(finalMessage);
 				}
+
+				// Sync todos from WorkflowManager after AI execution
+				this.syncTodosFromWorkflow();
 			} else {
 				throw new Error('Failed to get response from AI');
 			}
@@ -428,6 +433,27 @@ export class HomePresenter {
 	}
 
 	// === Todos Management ===
+
+	/**
+	 * Sync todos from WorkflowManager to presenter state
+	 * This ensures UI displays the latest todos from AI plans
+	 */
+	syncTodosFromWorkflow = (): void => {
+		if (!this.workflowManager) {
+			return;
+		}
+
+		const currentPlan = this.workflowManager.getCurrentPlan();
+		if (currentPlan) {
+			// Copy todos from current plan to state
+			this.state.todos = currentPlan.todos;
+			this._notifyView();
+		} else {
+			// No current plan, clear todos
+			this.state.todos = [];
+			this._notifyView();
+		}
+	};
 
 	addTodo = (
 		content: string,
