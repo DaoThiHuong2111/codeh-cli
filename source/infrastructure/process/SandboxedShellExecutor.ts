@@ -1,6 +1,36 @@
 /**
  * Sandboxed Shell Executor
- * Provides safe shell command execution with whitelist and validation
+ *
+ * Provides safe shell command execution with multiple layers of security:
+ * - Command whitelist (only safe commands allowed)
+ * - Dangerous pattern detection (rm -rf, curl|sh, etc.)
+ * - Command injection prevention (;, &, $(), etc.)
+ * - Output size limits (default: 10MB)
+ * - Execution timeouts (default: 30 seconds)
+ *
+ * This executor should be used by default for all shell operations to prevent
+ * security vulnerabilities. Use unrestricted executor only when absolutely necessary
+ * and with explicit user permission.
+ *
+ * @module infrastructure/process
+ * @extends {ShellExecutor}
+ *
+ * @example
+ * ```typescript
+ * const executor = new SandboxedShellExecutor({
+ *   maxOutputSize: 5 * 1024 * 1024,  // 5MB
+ *   maxExecutionTime: 10000           // 10 seconds
+ * });
+ *
+ * // Safe command - will execute
+ * await executor.execute('ls -la');
+ *
+ * // Dangerous command - will throw SecurityError
+ * await executor.execute('rm -rf /');
+ *
+ * // Not whitelisted - will throw SecurityError
+ * await executor.execute('curl http://example.com');
+ * ```
  */
 
 import {
@@ -10,27 +40,56 @@ import {
 } from './ShellExecutor.js';
 import {SecurityError} from '../../core/domain/errors/CodehErrors.js';
 
+/**
+ * Configuration options for sandboxed shell executor
+ *
+ * @interface SandboxConfig
+ */
 export interface SandboxConfig {
-	/** Commands allowed to execute */
+	/** Commands allowed to execute (default: safe read-only commands) */
 	allowedCommands?: Set<string>;
-	/** Maximum output size in bytes */
+	/** Maximum output size in bytes (default: 10MB) */
 	maxOutputSize?: number;
-	/** Maximum execution time in milliseconds */
+	/** Maximum execution time in milliseconds (default: 30s) */
 	maxExecutionTime?: number;
-	/** Enable dangerous pattern detection */
+	/** Enable dangerous pattern detection (default: true) */
 	detectDangerousPatterns?: boolean;
 }
 
 /**
  * Sandboxed shell executor with security constraints
+ *
+ * Implements multiple layers of security validation:
+ * 1. Command whitelist checking
+ * 2. Dangerous pattern detection
+ * 3. Command injection prevention
+ * 4. Output size limiting
+ * 5. Execution timeout enforcement
+ *
+ * @class SandboxedShellExecutor
+ * @extends {ShellExecutor}
  */
 export class SandboxedShellExecutor extends ShellExecutor {
+	/** Set of commands allowed to execute */
 	private readonly ALLOWED_COMMANDS: Set<string>;
+	/** Regex patterns for detecting dangerous commands */
 	private readonly DANGEROUS_PATTERNS: RegExp[];
+	/** Maximum output size in bytes */
 	private readonly MAX_OUTPUT_SIZE: number;
+	/** Maximum execution time in milliseconds */
 	private readonly MAX_EXECUTION_TIME: number;
+	/** Whether to check for dangerous patterns */
 	private readonly detectDangerousPatterns: boolean;
 
+	/**
+	 * Create a new SandboxedShellExecutor
+	 *
+	 * @param {SandboxConfig} [config] - Optional configuration
+	 * @param {Set<string>} [config.allowedCommands] - Custom command whitelist
+	 * @param {number} [config.maxOutputSize=10485760] - Max output size (default: 10MB)
+	 * @param {number} [config.maxExecutionTime=30000] - Max execution time (default: 30s)
+	 * @param {boolean} [config.detectDangerousPatterns=true] - Enable pattern detection
+	 */
 	constructor(config?: SandboxConfig) {
 		super();
 
