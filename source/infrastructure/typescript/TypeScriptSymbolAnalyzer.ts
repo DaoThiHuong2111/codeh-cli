@@ -682,4 +682,132 @@ export class TypeScriptSymbolAnalyzer {
 	resetCacheStats() {
 		this.resultCache.resetStats();
 	}
+
+	/**
+	 * Get type information for a symbol
+	 */
+	getTypeInformation(
+		filePath: string,
+		symbolName: string,
+		line?: number,
+	): TypeInformation | null {
+		const sourceFile = this.getSourceFile(filePath);
+		if (!sourceFile) {
+			return null;
+		}
+
+		// Find symbol at specific line or by name
+		let targetNode: ts.Node | undefined;
+
+		if (line !== undefined) {
+			// Find symbol at specific line
+			const position = sourceFile.getPositionOfLineAndCharacter(line - 1, 0);
+			targetNode = this.findNodeAtPosition(sourceFile, position, symbolName);
+		} else {
+			// Find symbol by name
+			const symbols = this.findSymbol(symbolName, {filePath, includeBody: false});
+			if (symbols.length === 0) {
+				return null;
+			}
+
+			// Get node from first symbol
+			const symbol = symbols[0];
+			const symbolPosition = sourceFile.getPositionOfLineAndCharacter(
+				symbol.location.startLine - 1,
+				symbol.location.startColumn ?? 0,
+			);
+			targetNode = this.findNodeAtPosition(sourceFile, symbolPosition, symbolName);
+		}
+
+		if (!targetNode) {
+			return null;
+		}
+
+		// Get type from TypeChecker
+		const type = this.checker.getTypeAtLocation(targetNode);
+		const typeString = this.checker.typeToString(type);
+
+		// Get symbol info
+		const tsSymbol = this.checker.getSymbolAtLocation(targetNode);
+		const documentation = tsSymbol
+			? ts.displayPartsToString(tsSymbol.getDocumentationComment(this.checker))
+			: '';
+
+		// Check if async
+		const isAsync = !!(targetNode as any).modifiers?.some(
+			(mod: any) => mod.kind === ts.SyntaxKind.AsyncKeyword,
+		);
+
+		// Check if optional
+		const isOptional = !!(targetNode as any).questionToken;
+
+		// Get signature for functions
+		let signature: string | undefined;
+		if (
+			ts.isFunctionDeclaration(targetNode) ||
+			ts.isMethodDeclaration(targetNode) ||
+			ts.isArrowFunction(targetNode)
+		) {
+			const sig = this.checker.getSignatureFromDeclaration(targetNode as any);
+			if (sig) {
+				signature = this.checker.signatureToString(sig);
+			}
+		}
+
+		return {
+			typeString,
+			kind: ts.SyntaxKind[targetNode.kind],
+			isOptional,
+			isAsync,
+			documentation,
+			signature,
+		};
+	}
+
+	/**
+	 * Find node at specific position with matching name
+	 */
+	private findNodeAtPosition(
+		sourceFile: ts.SourceFile,
+		position: number,
+		symbolName: string,
+	): ts.Node | undefined {
+		let result: ts.Node | undefined;
+
+		const visit = (node: ts.Node) => {
+			if (node.getStart() <= position && node.getEnd() >= position) {
+				// Check if this node has the matching name
+				if (
+					(ts.isVariableDeclaration(node) ||
+						ts.isFunctionDeclaration(node) ||
+						ts.isMethodDeclaration(node) ||
+						ts.isPropertyDeclaration(node) ||
+						ts.isParameter(node)) &&
+					node.name &&
+					ts.isIdentifier(node.name) &&
+					node.name.text === symbolName
+				) {
+					result = node;
+					return;
+				}
+
+				ts.forEachChild(node, visit);
+			}
+		};
+
+		visit(sourceFile);
+		return result;
+	}
+}
+
+/**
+ * Type information for a symbol
+ */
+export interface TypeInformation {
+	typeString: string; // e.g., "string", "Promise<number>", "User | null"
+	kind: string; // e.g., "VariableDeclaration", "FunctionDeclaration"
+	isOptional: boolean;
+	isAsync: boolean;
+	documentation: string;
+	signature?: string; // For functions: full signature
 }

@@ -86,11 +86,24 @@ export class ToolExecutionOrchestrator {
 
 			// Check if all approved
 			if (!handleResult.allApproved) {
-				// Some tools rejected, stop agentic loop
-				// TODO: Send rejection info back to LLM
-				console.log('❌ Some tools were rejected. Stopping orchestration.\n');
-				break;
+				// Some tools rejected - send rejection feedback to LLM
+				console.log('❌ Some tools were rejected. Sending rejection feedback to LLM...\n');
+
+				// Format rejection messages (formatToolResults handles rejected contexts)
+				const rejectionMessages = this.formatToolResults(handleResult.contexts);
+
+				// Send rejection feedback to LLM so it can understand and adjust
+				currentTurn = await this.continueWithToolResults(
+					currentTurn,
+					rejectionMessages,
+				);
+
+				console.log('📨 LLM received rejection feedback and can try alternative approach');
+
+				// Continue orchestration - allow LLM to try again
+				continue;
 			}
+
 
 			// Format tool results for LLM continuation
 			const toolResultMessages = this.formatToolResults(handleResult.contexts);
