@@ -7,8 +7,8 @@
 import * as ts from 'typescript';
 import * as path from 'path';
 import * as fs from 'fs';
-import {Symbol, SymbolKind, SymbolLocation} from '../../core/domain/models/Symbol';
-import {Reference} from '../../core/domain/models/Reference';
+import {Symbol, SymbolKind, SymbolLocation} from '../../core/domain/models/Symbol.js';
+import {Reference} from '../../core/domain/models/Reference.js';
 
 /**
  * Maps TypeScript syntax kind to LSP Symbol Kind

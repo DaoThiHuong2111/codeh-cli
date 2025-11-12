@@ -3,9 +3,9 @@
  * Provides semantic code navigation for TypeScript using TS Compiler API
  */
 
-import {TypeScriptSymbolAnalyzer} from '../../../infrastructure/typescript/TypeScriptSymbolAnalyzer';
-import {Symbol, SymbolKind} from '../../domain/models/Symbol';
-import {Reference} from '../../domain/models/Reference';
+import {TypeScriptSymbolAnalyzer} from '../../../infrastructure/typescript/TypeScriptSymbolAnalyzer.js';
+import {Symbol, SymbolKind} from '../../domain/models/Symbol.js';
+import {Reference} from '../../domain/models/Reference.js';
 
 export interface NavigationOptions {
 	includeBody?: boolean;

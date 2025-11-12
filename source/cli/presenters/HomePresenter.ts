@@ -14,6 +14,7 @@ import type {ICommandRegistry} from '../../core/domain/interfaces/ICommandRegist
 import {Session} from '../../core/domain/valueObjects/Session.js';
 import {WorkflowManager} from '../../core/application/services/WorkflowManager.js';
 import {InputHistoryService} from '../../core/application/services/InputHistoryService.js';
+import {TypeScriptCodeNavigator} from '../../core/application/services/TypeScriptCodeNavigator.js';
 
 interface ViewState {
 	// Input
@@ -49,6 +50,11 @@ export class HomePresenter {
 	private durationTimer?: NodeJS.Timeout;
 	private sessionStartTime: number;
 
+	// Symbol Explorer
+	private codeNavigator: TypeScriptCodeNavigator;
+	private cachedSymbols: Symbol[] = [];
+	private cachedFilePath?: string;
+
 	constructor(
 		private client: CodehClient,
 		private commandRegistry: ICommandRegistry,
@@ -58,6 +64,10 @@ export class HomePresenter {
 		private workflowManager?: WorkflowManager,
 	) {
 		this.sessionStartTime = Date.now();
+
+		// Initialize TypeScript Code Navigator
+		const projectRoot = process.cwd();
+		this.codeNavigator = new TypeScriptCodeNavigator(projectRoot);
 
 		// Initialize state
 		this.state = {
@@ -403,13 +413,48 @@ export class HomePresenter {
 
 	/**
 	 * Get symbols for Symbol Explorer
-	 * TODO: Implement real symbol fetching from current/selected file
-	 * For now, returns empty array (MVP)
+	 * Returns cached symbols from last fetch
 	 */
 	get symbols(): Symbol[] {
-		// TODO Phase 3.2: Integrate with TypeScriptCodeNavigator
-		// to fetch symbols from current file or workspace
-		return [];
+		return this.cachedSymbols;
+	}
+
+	/**
+	 * Fetch symbols from a TypeScript file
+	 * @param filePath - Relative path to file from project root
+	 * @returns Promise<Symbol[]>
+	 */
+	async fetchSymbols(filePath: string): Promise<Symbol[]> {
+		try {
+			// Check cache
+			if (this.cachedFilePath === filePath && this.cachedSymbols.length > 0) {
+				return this.cachedSymbols;
+			}
+
+			// Fetch symbol hierarchy from file
+			const symbols = await this.codeNavigator.getSymbolHierarchy(filePath);
+
+			// Update cache
+			this.cachedSymbols = symbols;
+			this.cachedFilePath = filePath;
+
+			// Notify view to update
+			this._notifyView();
+
+			return symbols;
+		} catch (error) {
+			console.error(`Failed to fetch symbols from ${filePath}:`, error);
+			return [];
+		}
+	}
+
+	/**
+	 * Clear symbol cache
+	 */
+	clearSymbolCache(): void {
+		this.cachedSymbols = [];
+		this.cachedFilePath = undefined;
+		this._notifyView();
 	}
 
 	// === Stats Management ===

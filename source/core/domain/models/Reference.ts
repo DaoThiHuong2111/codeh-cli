@@ -3,7 +3,7 @@
  * Represents a reference to a symbol in the codebase
  */
 
-import {Symbol} from './Symbol';
+import {Symbol} from './Symbol.js';
 
 /**
  * Reference to a symbol
