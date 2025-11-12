@@ -11,6 +11,8 @@ import {ConfigLoader} from '../../infrastructure/config/ConfigLoader';
 import {FileHistoryRepository} from '../../infrastructure/history/FileHistoryRepository';
 import {FileOperations} from '../../infrastructure/filesystem/FileOperations';
 import {ShellExecutor} from '../../infrastructure/process/ShellExecutor';
+import {SandboxedShellExecutor} from '../../infrastructure/process/SandboxedShellExecutor';
+import {SandboxModeManager} from '../../infrastructure/process/SandboxModeManager';
 import {CommandValidator} from '../../infrastructure/process/CommandValidator';
 import {SimplePermissionHandler} from '../../infrastructure/permissions/SimplePermissionHandler';
 import {PermissionModeManager} from '../../infrastructure/permissions/PermissionModeManager';
@@ -75,8 +77,18 @@ export async function setupContainer(): Promise<Container> {
 	// File Operations
 	container.register('FileOperations', () => new FileOperations(), true);
 
-	// Shell Executor
+	// Shell Executor & Sandbox Mode
+	container.register(
+		'SandboxModeManager',
+		() => new SandboxModeManager(),
+		true,
+	);
 	container.register('ShellExecutor', () => new ShellExecutor(), true);
+	container.register(
+		'SandboxedShellExecutor',
+		() => new SandboxedShellExecutor(),
+		true,
+	);
 	container.register('CommandValidator', () => new CommandValidator(), true);
 
 	// Permission Mode Manager (singleton shared across app)
@@ -113,12 +125,24 @@ export async function setupContainer(): Promise<Container> {
 		() => {
 			const registry = new ToolRegistry();
 			const shellExecutor = container.resolve<ShellExecutor>('ShellExecutor');
+			const sandboxedShellExecutor = container.resolve<SandboxedShellExecutor>(
+				'SandboxedShellExecutor',
+			);
+			const sandboxModeManager = container.resolve<SandboxModeManager>(
+				'SandboxModeManager',
+			);
 			const fileOps = container.resolve<FileOperations>('FileOperations');
 			const workflowManager =
 				container.resolve<WorkflowManager>('WorkflowManager');
 
 			// Register basic tools
-			registry.register(new ShellTool(shellExecutor));
+			registry.register(
+				new ShellTool(
+					shellExecutor,
+					sandboxedShellExecutor,
+					sandboxModeManager,
+				),
+			);
 			registry.register(new FileOpsTool(fileOps));
 
 			// Register TypeScript symbol tools

@@ -9,12 +9,11 @@ import {
 	ToolExecutionResult,
 } from '../domain/interfaces/IToolExecutor.js';
 import {TypeScriptSymbolAnalyzer} from '../../infrastructure/typescript/TypeScriptSymbolAnalyzer.js';
-
-interface GetTypeInformationArgs {
-	filePath: string;
-	symbolName: string;
-	line?: number; // Optional: specific line number
-}
+import {
+	GetTypeInfoArgsSchema,
+	type GetTypeInfoArgs,
+	validateAndParse,
+} from './schemas/ToolSchemas.js';
 
 export class GetTypeInformationTool extends Tool {
 	constructor(
@@ -54,11 +53,17 @@ export class GetTypeInformationTool extends Tool {
 		};
 	}
 
-	validateParameters(parameters: Record<string, any>): boolean {
-		return true; // Basic validation
+	validateParameters(parameters: unknown): parameters is GetTypeInfoArgs {
+		const result = validateAndParse(GetTypeInfoArgsSchema, parameters);
+		if (!result.success) {
+			console.error('Validation failed:', result.error);
+			return false;
+		}
+
+		return true;
 	}
 
-	async execute(args: GetTypeInformationArgs): Promise<ToolExecutionResult> {
+	async execute(args: GetTypeInfoArgs): Promise<ToolExecutionResult> {
 		try {
 			const {filePath, symbolName, line} = args;
 

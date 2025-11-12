@@ -1,6 +1,6 @@
 /**
  * Shell Tool
- * Executes shell commands
+ * Executes shell commands with optional sandbox protection
  */
 
 import {Tool} from './base/Tool';
@@ -8,10 +8,15 @@ import {
 	ToolDefinition,
 	ToolExecutionResult,
 } from '../domain/interfaces/IToolExecutor';
+import {SandboxModeManager} from '../../infrastructure/process/SandboxModeManager';
 
 export class ShellTool extends Tool {
-	constructor(private executor: any) {
-		// Executor will be injected (ShellExecutor from infrastructure)
+	constructor(
+		private executor: any,
+		private sandboxedExecutor: any,
+		private sandboxModeManager?: SandboxModeManager,
+	) {
+		// Executors will be injected (ShellExecutor, SandboxedShellExecutor)
 		super('shell', 'Execute shell commands');
 	}
 
@@ -45,8 +50,14 @@ export class ShellTool extends Tool {
 	async execute(parameters: Record<string, any>): Promise<ToolExecutionResult> {
 		const {command, cwd} = parameters;
 
+		// Select executor based on sandbox mode
+		const executor =
+			this.sandboxModeManager?.isEnabled() ?? false
+				? this.sandboxedExecutor
+				: this.executor;
+
 		try {
-			const result = await this.executor.execute(command, {cwd});
+			const result = await executor.execute(command, {cwd});
 
 			if (result.success) {
 				return this.createSuccessResult(result.stdout, {
