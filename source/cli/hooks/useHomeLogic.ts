@@ -5,6 +5,7 @@ import {useCodehClient} from './useCodehClient.js';
 import {CommandService} from '../../core/application/services/CommandService.js';
 import {FileSessionManager} from '../../infrastructure/session/SessionManager.js';
 import {WorkflowManager} from '../../core/application/services/WorkflowManager.js';
+import {InputHistoryService} from '../../core/application/services/InputHistoryService.js';
 
 export interface UseHomeLogicReturn {
 	presenter: HomePresenter | null;
@@ -62,6 +63,7 @@ export function useHomeLogic(container: Container): UseHomeLogicReturn {
 				// Create dependencies
 				const commandRegistry = new CommandService();
 				const sessionManager = new FileSessionManager();
+				const inputHistory = new InputHistoryService(50); // Keep last 50 inputs
 
 				await sessionManager.init();
 
@@ -74,6 +76,7 @@ export function useHomeLogic(container: Container): UseHomeLogicReturn {
 					commandRegistry,
 					sessionManager,
 					config,
+					inputHistory,
 					workflowManager,
 				);
 
