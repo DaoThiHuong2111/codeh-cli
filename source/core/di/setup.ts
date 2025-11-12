@@ -42,6 +42,13 @@ import {
 	RemoveTodoTool,
 	GetCurrentPlanTool,
 } from '../tools/WorkflowTools';
+import {GetTypeInformationTool} from '../tools/GetTypeInformationTool';
+import {GetCallHierarchyTool} from '../tools/GetCallHierarchyTool';
+import {FindImplementationsTool} from '../tools/FindImplementationsTool';
+import {ValidateCodeChangesTool} from '../tools/ValidateCodeChangesTool';
+import {SmartContextExtractorTool} from '../tools/SmartContextExtractorTool';
+import {DependencyGraphTool} from '../tools/DependencyGraphTool';
+import {TypeScriptSymbolAnalyzer} from '../../infrastructure/typescript/TypeScriptSymbolAnalyzer';
 import {IApiClient} from '../domain/interfaces/IApiClient';
 import {IHistoryRepository} from '../domain/interfaces/IHistoryRepository';
 import {IToolPermissionHandler} from '../domain/interfaces/IToolPermissionHandler';
@@ -131,6 +138,15 @@ export async function setupContainer(): Promise<Container> {
 			registry.register(new ReplaceRegexTool(projectRoot));
 			registry.register(new FindFileTool(projectRoot));
 			registry.register(new SearchForPatternTool(projectRoot));
+
+			// Advanced code intelligence tools (require TypeScript analyzer)
+			const analyzer = new TypeScriptSymbolAnalyzer(projectRoot);
+			registry.register(new GetTypeInformationTool(projectRoot, analyzer));
+			registry.register(new GetCallHierarchyTool(projectRoot, analyzer));
+			registry.register(new FindImplementationsTool(projectRoot, analyzer));
+			registry.register(new ValidateCodeChangesTool(projectRoot, analyzer));
+			registry.register(new SmartContextExtractorTool(projectRoot, analyzer));
+			registry.register(new DependencyGraphTool(projectRoot));
 
 			// Workflow management tools (AI plan/todo management)
 			registry.register(new CreatePlanTool(workflowManager));
