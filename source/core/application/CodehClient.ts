@@ -13,6 +13,7 @@ import {OutputFormatter} from './services/OutputFormatter';
 import {ToolRegistry} from '../tools/base/ToolRegistry';
 import {ToolExecutionOrchestrator} from './ToolExecutionOrchestrator';
 import {ToolDefinitionConverter} from './services/ToolDefinitionConverter';
+import {PLANNING_SYSTEM_PROMPT} from './prompts/PlanningSystemPrompt';
 
 export class CodehClient {
 	private inputClassifier: InputClassifier;
@@ -83,6 +84,7 @@ export class CodehClient {
 					{role: 'user', content: input},
 				],
 				tools,
+				systemPrompt: PLANNING_SYSTEM_PROMPT,
 			});
 
 			// Create response message with tool calls
@@ -186,6 +188,7 @@ export class CodehClient {
 						{role: 'user', content: input},
 					],
 					tools,
+					systemPrompt: PLANNING_SYSTEM_PROMPT,
 				},
 				chunk => {
 					if (chunk.content) {
