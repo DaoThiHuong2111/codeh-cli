@@ -3,23 +3,25 @@
  * Coordinates all application operations
  */
 
-import {IApiClient} from '../domain/interfaces/IApiClient';
-import {IHistoryRepository} from '../domain/interfaces/IHistoryRepository';
-import {IToolPermissionHandler} from '../domain/interfaces/IToolPermissionHandler';
-import {Turn} from '../domain/models/Turn';
-import {Message} from '../domain/models/Message';
-import {InputClassifier} from './services/InputClassifier';
-import {OutputFormatter} from './services/OutputFormatter';
-import {ToolRegistry} from '../tools/base/ToolRegistry';
-import {ToolExecutionOrchestrator} from './ToolExecutionOrchestrator';
-import {ToolDefinitionConverter} from './services/ToolDefinitionConverter';
-import {PLANNING_SYSTEM_PROMPT} from './prompts/PlanningSystemPrompt';
+import {IApiClient} from '../domain/interfaces/IApiClient.js';
+import {IHistoryRepository} from '../domain/interfaces/IHistoryRepository.js';
+import {IToolPermissionHandler} from '../domain/interfaces/IToolPermissionHandler.js';
+import {Turn} from '../domain/models/Turn.js';
+import {Message} from '../domain/models/Message.js';
+import {InputClassifier} from './services/InputClassifier.js';
+import {OutputFormatter} from './services/OutputFormatter.js';
+import {ToolRegistry} from '../tools/base/ToolRegistry.js';
+import {ToolExecutionOrchestrator} from './ToolExecutionOrchestrator.js';
+import {ToolDefinitionConverter} from './services/ToolDefinitionConverter.js';
+import {PLANNING_SYSTEM_PROMPT} from './prompts/PlanningSystemPrompt.js';
+import {CODE_NAVIGATION_SYSTEM_PROMPT} from './prompts/CodeNavigationSystemPrompt.js';
 
 export class CodehClient {
 	private inputClassifier: InputClassifier;
 	private outputFormatter: OutputFormatter;
 	private toolOrchestrator?: ToolExecutionOrchestrator;
 	private toolRegistry?: ToolRegistry;
+	private systemPrompt: string;
 
 	constructor(
 		private apiClient: IApiClient,
@@ -30,6 +32,11 @@ export class CodehClient {
 		this.toolRegistry = toolRegistry;
 		this.inputClassifier = new InputClassifier();
 		this.outputFormatter = new OutputFormatter();
+
+		// Combine system prompts
+		this.systemPrompt = `${PLANNING_SYSTEM_PROMPT}
+
+${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 
 		// Create tool orchestrator if tools are enabled
 		if (toolRegistry && permissionHandler) {
@@ -84,7 +91,7 @@ export class CodehClient {
 					{role: 'user', content: input},
 				],
 				tools,
-				systemPrompt: PLANNING_SYSTEM_PROMPT,
+				systemPrompt: this.systemPrompt,
 			});
 
 			// Create response message with tool calls
@@ -188,7 +195,7 @@ export class CodehClient {
 						{role: 'user', content: input},
 					],
 					tools,
-					systemPrompt: PLANNING_SYSTEM_PROMPT,
+					systemPrompt: this.systemPrompt,
 				},
 				chunk => {
 					if (chunk.content) {
