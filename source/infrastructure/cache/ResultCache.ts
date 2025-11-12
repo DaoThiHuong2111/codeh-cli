@@ -67,7 +67,11 @@ export class ResultCache {
 	/**
 	 * Get cached symbol search results
 	 */
-	getSymbolSearch(namePath: string, filePath: string, options?: any): Symbol[] | undefined {
+	getSymbolSearch(
+		namePath: string,
+		filePath: string,
+		options?: any,
+	): Symbol[] | undefined {
 		const key = this.makeSymbolSearchKey(namePath, filePath, options);
 		const result = this.symbolSearchCache.get(key);
 
@@ -83,12 +87,21 @@ export class ResultCache {
 	/**
 	 * Cache symbol search results
 	 */
-	setSymbolSearch(namePath: string, filePath: string, options: any, symbols: Symbol[]): void {
+	setSymbolSearch(
+		namePath: string,
+		filePath: string,
+		options: any,
+		symbols: Symbol[],
+	): void {
 		const key = this.makeSymbolSearchKey(namePath, filePath, options);
 		this.symbolSearchCache.set(key, symbols);
 	}
 
-	private makeSymbolSearchKey(namePath: string, filePath: string, options?: any): string {
+	private makeSymbolSearchKey(
+		namePath: string,
+		filePath: string,
+		options?: any,
+	): string {
 		const opts = options || {};
 		return `search:${namePath}:${filePath}:${opts.includeBody}:${opts.depth}:${opts.substringMatching}`;
 	}
@@ -116,7 +129,11 @@ export class ResultCache {
 	/**
 	 * Cache references
 	 */
-	setReferences(symbolName: string, filePath: string, references: Reference[]): void {
+	setReferences(
+		symbolName: string,
+		filePath: string,
+		references: Reference[],
+	): void {
 		const key = this.makeReferencesKey(symbolName, filePath);
 		this.referencesCache.set(key, references);
 	}
@@ -220,7 +237,9 @@ export class ResultCache {
 	 */
 	getStats(): CacheStats {
 		const totalHits =
-			this.stats.symbolSearchHits + this.stats.referencesHits + this.stats.hierarchyHits;
+			this.stats.symbolSearchHits +
+			this.stats.referencesHits +
+			this.stats.hierarchyHits;
 		const totalMisses =
 			this.stats.symbolSearchMisses +
 			this.stats.referencesMisses +

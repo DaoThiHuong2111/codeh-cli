@@ -65,8 +65,12 @@ export class ReplaceRegexTool extends Tool {
 	}
 
 	async execute(parameters: Record<string, any>): Promise<ToolExecutionResult> {
-		const {filePath, pattern, replacement, flags = 'g'} =
-			parameters as ReplaceRegexOptions;
+		const {
+			filePath,
+			pattern,
+			replacement,
+			flags = 'g',
+		} = parameters as ReplaceRegexOptions;
 
 		if (!filePath || !pattern || replacement === undefined) {
 			return this.createErrorResult(
@@ -91,16 +95,21 @@ export class ReplaceRegexTool extends Tool {
 			try {
 				regex = new RegExp(pattern, flags);
 			} catch (error: any) {
-				return this.createErrorResult(`Invalid regex pattern: ${error.message}`);
+				return this.createErrorResult(
+					`Invalid regex pattern: ${error.message}`,
+				);
 			}
 
 			// Find matches first
 			const matches = Array.from(fileContent.matchAll(regex));
 			if (matches.length === 0) {
-				return this.createSuccessResult(`No matches found for pattern: ${pattern}`, {
-					file: filePath,
-					matchesFound: 0,
-				});
+				return this.createSuccessResult(
+					`No matches found for pattern: ${pattern}`,
+					{
+						file: filePath,
+						matchesFound: 0,
+					},
+				);
 			}
 
 			// Perform replacement

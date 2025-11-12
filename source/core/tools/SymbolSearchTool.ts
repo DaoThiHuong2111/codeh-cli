@@ -4,7 +4,10 @@
  */
 
 import {Tool} from './base/Tool';
-import {ToolDefinition, ToolExecutionResult} from '../domain/interfaces/IToolExecutor';
+import {
+	ToolDefinition,
+	ToolExecutionResult,
+} from '../domain/interfaces/IToolExecutor';
 import {TypeScriptSymbolAnalyzer} from '../../infrastructure/typescript/TypeScriptSymbolAnalyzer';
 
 export class SymbolSearchTool extends Tool {
@@ -52,7 +55,8 @@ export class SymbolSearchTool extends Tool {
 					},
 					depth: {
 						type: 'number',
-						description: 'Include children symbols (0=no children, 1=direct children)',
+						description:
+							'Include children symbols (0=no children, 1=direct children)',
 						default: 0,
 					},
 					substringMatching: {

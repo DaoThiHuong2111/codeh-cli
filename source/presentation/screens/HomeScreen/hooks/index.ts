@@ -3,10 +3,7 @@
  */
 
 export {useStreamChat} from './useStreamChat';
-export type {
-	UseStreamChatOptions,
-	UseStreamChatReturn,
-} from './useStreamChat';
+export type {UseStreamChatOptions, UseStreamChatReturn} from './useStreamChat';
 
 export {useDebouncedStreamContent} from './useDebouncedStreamContent';
 

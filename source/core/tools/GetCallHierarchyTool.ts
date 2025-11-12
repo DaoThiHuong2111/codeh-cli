@@ -5,7 +5,10 @@
  */
 
 import {Tool} from './base/Tool.js';
-import {ToolDefinition, ToolExecutionResult} from '../domain/interfaces/IToolExecutor.js';
+import {
+	ToolDefinition,
+	ToolExecutionResult,
+} from '../domain/interfaces/IToolExecutor.js';
 import {TypeScriptSymbolAnalyzer} from '../../infrastructure/typescript/TypeScriptSymbolAnalyzer.js';
 
 interface GetCallHierarchyArgs {
@@ -20,7 +23,10 @@ export class GetCallHierarchyTool extends Tool {
 		private projectRoot: string,
 		private analyzer: TypeScriptSymbolAnalyzer,
 	) {
-		super('get_call_hierarchy', 'Get call hierarchy for a function - shows which functions call it (incoming) and which functions it calls (outgoing)');
+		super(
+			'get_call_hierarchy',
+			'Get call hierarchy for a function - shows which functions call it (incoming) and which functions it calls (outgoing)',
+		);
 	}
 
 	getDefinition(): ToolDefinition {
@@ -59,15 +65,15 @@ export class GetCallHierarchyTool extends Tool {
 		return true; // Basic validation
 	}
 
-
 	async execute(args: GetCallHierarchyArgs): Promise<ToolExecutionResult> {
 		try {
 			const {filePath, symbolName, direction = 'both', maxDepth = 2} = args;
 
 			// Get incoming calls (who calls this function)
-			const incomingCalls = direction === 'incoming' || direction === 'both'
-				? this.analyzer.findReferences(symbolName, filePath)
-				: [];
+			const incomingCalls =
+				direction === 'incoming' || direction === 'both'
+					? this.analyzer.findReferences(symbolName, filePath)
+					: [];
 
 			// Get outgoing calls (what this function calls) - use find references on called symbols
 			const outgoingCalls: string[] = [];

@@ -56,8 +56,11 @@ export class FindFileTool extends Tool {
 	}
 
 	async execute(parameters: Record<string, any>): Promise<ToolExecutionResult> {
-		const {pattern, directory = '.', maxResults = 100} =
-			parameters as FindFileOptions;
+		const {
+			pattern,
+			directory = '.',
+			maxResults = 100,
+		} = parameters as FindFileOptions;
 
 		if (!pattern) {
 			return this.createErrorResult('Missing required parameter: pattern');

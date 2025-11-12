@@ -34,7 +34,10 @@ export interface UseStreamChatReturn {
 	/** Final response after streaming completes */
 	finalResponse: ApiResponse | null;
 	/** Send a message and start streaming */
-	sendMessage: (content: string, options?: Partial<ApiRequest>) => Promise<void>;
+	sendMessage: (
+		content: string,
+		options?: Partial<ApiRequest>,
+	) => Promise<void>;
 	/** Cancel ongoing stream */
 	cancelStream: () => void;
 	/** Reset state */

@@ -11,7 +11,10 @@ import {FindReferencesTool} from '../../../source/core/tools/FindReferencesTool.
 import {GetSymbolsOverviewTool} from '../../../source/core/tools/GetSymbolsOverviewTool.ts';
 import {SymbolKind} from '../../../source/core/domain/models/Symbol.ts';
 
-const FIXTURES_ROOT = path.resolve(process.cwd(), 'test/fixtures/symbol-analysis');
+const FIXTURES_ROOT = path.resolve(
+	process.cwd(),
+	'test/fixtures/symbol-analysis',
+);
 
 // ========================================
 // Basic Sanity Tests
@@ -28,7 +31,10 @@ test('GetSymbolsOverviewTool: should find symbols in UserService.ts', async t =>
 	t.truthy(result.output, 'Should have output');
 
 	const symbols = result.metadata?.symbols || [];
-	t.true(symbols.length >= 2, 'Should find at least 2 symbols (User interface + UserService class)');
+	t.true(
+		symbols.length >= 2,
+		'Should find at least 2 symbols (User interface + UserService class)',
+	);
 
 	// Verify User interface exists
 	const hasUserInterface = symbols.some(
@@ -157,7 +163,10 @@ test('SymbolSearchTool: should find methods with substring matching', async t =>
 	const symbols = result.metadata?.symbols || [];
 
 	// Should find findById, findProductById, findByCategory
-	t.true(symbols.length >= 2, `Should find multiple "find*" methods, got ${symbols.length}`);
+	t.true(
+		symbols.length >= 2,
+		`Should find multiple "find*" methods, got ${symbols.length}`,
+	);
 });
 
 test('FindReferencesTool: should execute successfully', async t => {
@@ -182,5 +191,8 @@ test('Performance: Symbol search should be fast', async t => {
 	});
 	const duration = Date.now() - startTime;
 
-	t.true(duration < 2000, `Search should complete in < 2s (took ${duration}ms)`);
+	t.true(
+		duration < 2000,
+		`Search should complete in < 2s (took ${duration}ms)`,
+	);
 });

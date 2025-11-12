@@ -4,7 +4,10 @@
  */
 
 import {Tool} from './base/Tool.js';
-import {ToolDefinition, ToolExecutionResult} from '../domain/interfaces/IToolExecutor.js';
+import {
+	ToolDefinition,
+	ToolExecutionResult,
+} from '../domain/interfaces/IToolExecutor.js';
 import * as ts from 'typescript';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -16,7 +19,10 @@ interface DependencyGraphArgs {
 
 export class DependencyGraphTool extends Tool {
 	constructor(private projectRoot: string) {
-		super('get_dependency_graph', 'Analyze module dependencies - shows which modules a file/directory imports (dependencies) and which modules import it (dependents)');
+		super(
+			'get_dependency_graph',
+			'Analyze module dependencies - shows which modules a file/directory imports (dependencies) and which modules import it (dependents)',
+		);
 	}
 
 	getDefinition(): ToolDefinition {
@@ -33,7 +39,8 @@ export class DependencyGraphTool extends Tool {
 					},
 					module: {
 						type: 'string',
-						description: 'Optional: module directory to analyze (e.g., "src/auth")',
+						description:
+							'Optional: module directory to analyze (e.g., "src/auth")',
 					},
 				},
 			},
@@ -43,7 +50,6 @@ export class DependencyGraphTool extends Tool {
 	validateParameters(parameters: Record<string, any>): boolean {
 		return true; // Basic validation
 	}
-
 
 	async execute(args: DependencyGraphArgs): Promise<ToolExecutionResult> {
 		try {
@@ -95,7 +101,11 @@ export class DependencyGraphTool extends Tool {
 					ts.isVariableStatement(node)
 				) {
 					// Check for export keyword
-					if (node.modifiers?.some(mod => mod.kind === ts.SyntaxKind.ExportKeyword)) {
+					if (
+						node.modifiers?.some(
+							mod => mod.kind === ts.SyntaxKind.ExportKeyword,
+						)
+					) {
 						if (ts.isFunctionDeclaration(node) || ts.isClassDeclaration(node)) {
 							if (node.name) {
 								exports.push(node.name.text);

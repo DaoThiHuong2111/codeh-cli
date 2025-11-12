@@ -4,7 +4,10 @@
  */
 
 import {Tool} from './base/Tool';
-import {ToolDefinition, ToolExecutionResult} from '../domain/interfaces/IToolExecutor';
+import {
+	ToolDefinition,
+	ToolExecutionResult,
+} from '../domain/interfaces/IToolExecutor';
 import {TypeScriptSymbolAnalyzer} from '../../infrastructure/typescript/TypeScriptSymbolAnalyzer';
 
 export class GetSymbolsOverviewTool extends Tool {

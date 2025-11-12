@@ -110,7 +110,8 @@ export class WorkflowManager {
 	 */
 	getActivePlans(): Plan[] {
 		return Array.from(this.plans.values()).filter(
-			p => p.status === PlanStatus.InProgress || p.status === PlanStatus.Pending,
+			p =>
+				p.status === PlanStatus.InProgress || p.status === PlanStatus.Pending,
 		);
 	}
 

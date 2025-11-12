@@ -10,7 +10,9 @@ import {
 } from '../../core/domain/interfaces/IToolPermissionHandler';
 
 export interface PermissionUICallback {
-	requestPermission: (context: ToolPermissionContext) => Promise<PermissionResult>;
+	requestPermission: (
+		context: ToolPermissionContext,
+	) => Promise<PermissionResult>;
 }
 
 export class InteractivePermissionHandler implements IToolPermissionHandler {
@@ -49,7 +51,9 @@ export class InteractivePermissionHandler implements IToolPermissionHandler {
 		}
 
 		// Delegate to UI layer
-		console.log(`\n🔧 Requesting permission for tool: ${context.toolCall.name}...`);
+		console.log(
+			`\n🔧 Requesting permission for tool: ${context.toolCall.name}...`,
+		);
 		const result = await this.uiCallback.requestPermission(context);
 		console.log(
 			result.approved

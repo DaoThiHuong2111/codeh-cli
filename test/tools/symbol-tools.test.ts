@@ -10,7 +10,10 @@ import {FindReferencesTool} from '../../source/core/tools/FindReferencesTool';
 import {GetSymbolsOverviewTool} from '../../source/core/tools/GetSymbolsOverviewTool';
 
 // Test fixtures
-const TEST_PROJECT_ROOT = path.join(process.cwd(), 'test/fixtures/typescript-project');
+const TEST_PROJECT_ROOT = path.join(
+	process.cwd(),
+	'test/fixtures/typescript-project',
+);
 const TEST_FILE = 'source/example.ts';
 
 // Setup: Create test TypeScript files
@@ -252,7 +255,9 @@ test('FindReferencesTool: should return empty for unused symbol', async t => {
 	});
 
 	t.true(result.success);
-	t.true(result.output!.includes('No references') || result.metadata?.count === 0);
+	t.true(
+		result.output!.includes('No references') || result.metadata?.count === 0,
+	);
 });
 
 test('FindReferencesTool: should fail for non-existent symbol', async t => {
@@ -273,9 +278,7 @@ test('FindReferencesTool: should validate parameters', async t => {
 	t.false(tool.validateParameters({}));
 	t.false(tool.validateParameters({namePath: 'Test'}));
 	t.false(tool.validateParameters({filePath: 'test.ts'}));
-	t.true(
-		tool.validateParameters({namePath: 'Test', filePath: 'test.ts'}),
-	);
+	t.true(tool.validateParameters({namePath: 'Test', filePath: 'test.ts'}));
 });
 
 test('FindReferencesTool: should return correct definition', t => {

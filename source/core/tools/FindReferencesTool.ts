@@ -4,7 +4,10 @@
  */
 
 import {Tool} from './base/Tool';
-import {ToolDefinition, ToolExecutionResult} from '../domain/interfaces/IToolExecutor';
+import {
+	ToolDefinition,
+	ToolExecutionResult,
+} from '../domain/interfaces/IToolExecutor';
 import {TypeScriptSymbolAnalyzer} from '../../infrastructure/typescript/TypeScriptSymbolAnalyzer';
 
 export class FindReferencesTool extends Tool {
@@ -37,8 +40,7 @@ export class FindReferencesTool extends Tool {
 				properties: {
 					namePath: {
 						type: 'string',
-						description:
-							'Symbol name path (e.g., "MyClass/myMethod")',
+						description: 'Symbol name path (e.g., "MyClass/myMethod")',
 					},
 					filePath: {
 						type: 'string',

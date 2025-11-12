@@ -7,7 +7,11 @@
 import * as ts from 'typescript';
 import * as path from 'path';
 import * as fs from 'fs';
-import {Symbol, SymbolKind, SymbolLocation} from '../../core/domain/models/Symbol.js';
+import {
+	Symbol,
+	SymbolKind,
+	SymbolLocation,
+} from '../../core/domain/models/Symbol.js';
 import {Reference} from '../../core/domain/models/Reference.js';
 import {ResultCache} from '../cache/ResultCache.js';
 
@@ -69,7 +73,9 @@ export class TypeScriptSymbolAnalyzer {
 
 		// Find tsconfig.json
 		this.configPath =
-			tsConfigPath || this.findTsConfig() || path.join(projectRoot, 'tsconfig.json');
+			tsConfigPath ||
+			this.findTsConfig() ||
+			path.join(projectRoot, 'tsconfig.json');
 
 		// Parse tsconfig
 		const configFile = ts.readConfigFile(this.configPath, ts.sys.readFile);
@@ -103,7 +109,7 @@ export class TypeScriptSymbolAnalyzer {
 			},
 			getCurrentDirectory: () => this.projectRoot,
 			getCompilationSettings: () => this.parsedConfig.options,
-			getDefaultLibFileName: (options) => ts.getDefaultLibFilePath(options),
+			getDefaultLibFileName: options => ts.getDefaultLibFilePath(options),
 			fileExists: ts.sys.fileExists,
 			readFile: ts.sys.readFile,
 			readDirectory: ts.sys.readDirectory,
@@ -221,7 +227,11 @@ export class TypeScriptSymbolAnalyzer {
 			return node.text;
 		}
 
-		if ('name' in node && (node as any).name && ts.isIdentifier((node as any).name)) {
+		if (
+			'name' in node &&
+			(node as any).name &&
+			ts.isIdentifier((node as any).name)
+		) {
 			return ((node as any).name as ts.Identifier).text;
 		}
 
@@ -354,11 +364,18 @@ export class TypeScriptSymbolAnalyzer {
 		} = {},
 	): Symbol[] {
 		const results: Symbol[] = [];
-		const {filePath, includeBody = false, depth = 0, substringMatching = false} = options;
+		const {
+			filePath,
+			includeBody = false,
+			depth = 0,
+			substringMatching = false,
+		} = options;
 
 		// Get source files to search
 		const sourceFiles = filePath
-			? [this.getSourceFile(filePath)].filter((f): f is ts.SourceFile => f !== undefined)
+			? [this.getSourceFile(filePath)].filter(
+					(f): f is ts.SourceFile => f !== undefined,
+				)
 			: this.program.getSourceFiles().filter(sf => !sf.isDeclarationFile);
 
 		// Parse name pattern (e.g., "ClassName/methodName")
@@ -457,7 +474,10 @@ export class TypeScriptSymbolAnalyzer {
 		}
 
 		// Find the symbol node
-		const symbolNodes = this.findSymbol(namePath, {filePath, includeBody: false});
+		const symbolNodes = this.findSymbol(namePath, {
+			filePath,
+			includeBody: false,
+		});
 		if (symbolNodes.length === 0) {
 			return [];
 		}
@@ -581,7 +601,11 @@ export class TypeScriptSymbolAnalyzer {
 		}
 
 		// Compute hierarchy
-		const hierarchy = this.findSymbol('', {filePath, depth: 1, substringMatching: true});
+		const hierarchy = this.findSymbol('', {
+			filePath,
+			depth: 1,
+			substringMatching: true,
+		});
 
 		// Store in cache
 		this.resultCache.setHierarchy(filePath, hierarchy);
@@ -705,7 +729,10 @@ export class TypeScriptSymbolAnalyzer {
 			targetNode = this.findNodeAtPosition(sourceFile, position, symbolName);
 		} else {
 			// Find symbol by name
-			const symbols = this.findSymbol(symbolName, {filePath, includeBody: false});
+			const symbols = this.findSymbol(symbolName, {
+				filePath,
+				includeBody: false,
+			});
 			if (symbols.length === 0) {
 				return null;
 			}
@@ -716,7 +743,11 @@ export class TypeScriptSymbolAnalyzer {
 				symbol.location.startLine - 1,
 				symbol.location.startColumn ?? 0,
 			);
-			targetNode = this.findNodeAtPosition(sourceFile, symbolPosition, symbolName);
+			targetNode = this.findNodeAtPosition(
+				sourceFile,
+				symbolPosition,
+				symbolName,
+			);
 		}
 
 		if (!targetNode) {

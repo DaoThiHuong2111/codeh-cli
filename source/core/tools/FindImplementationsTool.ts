@@ -4,7 +4,10 @@
  */
 
 import {Tool} from './base/Tool.js';
-import {ToolDefinition, ToolExecutionResult} from '../domain/interfaces/IToolExecutor.js';
+import {
+	ToolDefinition,
+	ToolExecutionResult,
+} from '../domain/interfaces/IToolExecutor.js';
 import {TypeScriptSymbolAnalyzer} from '../../infrastructure/typescript/TypeScriptSymbolAnalyzer.js';
 
 interface FindImplementationsArgs {
@@ -17,7 +20,10 @@ export class FindImplementationsTool extends Tool {
 		private projectRoot: string,
 		private analyzer: TypeScriptSymbolAnalyzer,
 	) {
-		super('find_implementations', 'Find all classes that implement a specific interface or extend an abstract class');
+		super(
+			'find_implementations',
+			'Find all classes that implement a specific interface or extend an abstract class',
+		);
 	}
 
 	getDefinition(): ToolDefinition {
@@ -45,7 +51,6 @@ export class FindImplementationsTool extends Tool {
 	validateParameters(parameters: Record<string, any>): boolean {
 		return true; // Basic validation
 	}
-
 
 	async execute(args: FindImplementationsArgs): Promise<ToolExecutionResult> {
 		try {

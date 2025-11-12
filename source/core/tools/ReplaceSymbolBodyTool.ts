@@ -72,7 +72,8 @@ export class ReplaceSymbolBodyTool extends Tool {
 	}
 
 	async execute(parameters: Record<string, any>): Promise<ToolExecutionResult> {
-		const {namePath, filePath, newBody} = parameters as ReplaceSymbolBodyOptions;
+		const {namePath, filePath, newBody} =
+			parameters as ReplaceSymbolBodyOptions;
 
 		if (!namePath || !filePath || newBody === undefined) {
 			return this.createErrorResult(
@@ -163,6 +164,8 @@ export class ReplaceSymbolBodyTool extends Tool {
 
 	private indentCode(code: string, indentation: string): string {
 		const lines = code.split('\n');
-		return lines.map(line => (line.trim() ? indentation + line : line)).join('\n');
+		return lines
+			.map(line => (line.trim() ? indentation + line : line))
+			.join('\n');
 	}
 }

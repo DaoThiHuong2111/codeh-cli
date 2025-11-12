@@ -21,19 +21,24 @@ export class RenameSymbolTool extends Tool {
 	private analyzer?: TypeScriptSymbolAnalyzer;
 
 	constructor(private projectRoot: string) {
-		super('rename_symbol', 'Rename symbols across the codebase using language server refactoring');
+		super(
+			'rename_symbol',
+			'Rename symbols across the codebase using language server refactoring',
+		);
 	}
 
 	getDefinition(): ToolDefinition {
 		return {
 			name: 'rename_symbol',
-			description: 'Rename a symbol (class, function, method, variable) throughout the entire codebase safely. Uses TypeScript Language Service for accurate refactoring.',
+			description:
+				'Rename a symbol (class, function, method, variable) throughout the entire codebase safely. Uses TypeScript Language Service for accurate refactoring.',
 			inputSchema: {
 				type: 'object',
 				properties: {
 					namePath: {
 						type: 'string',
-						description: 'Symbol name path to rename (e.g., "UserService" or "UserService/createUser" for methods)',
+						description:
+							'Symbol name path to rename (e.g., "UserService" or "UserService/createUser" for methods)',
 					},
 					filePath: {
 						type: 'string',
@@ -124,7 +129,9 @@ export class RenameSymbolTool extends Tool {
 				changes: renameLocations,
 			});
 		} catch (error: any) {
-			return this.createErrorResult(`Failed to rename symbol: ${error.message}`);
+			return this.createErrorResult(
+				`Failed to rename symbol: ${error.message}`,
+			);
 		}
 	}
 

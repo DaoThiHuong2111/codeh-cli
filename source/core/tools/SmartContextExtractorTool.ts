@@ -5,7 +5,10 @@
  */
 
 import {Tool} from './base/Tool.js';
-import {ToolDefinition, ToolExecutionResult} from '../domain/interfaces/IToolExecutor.js';
+import {
+	ToolDefinition,
+	ToolExecutionResult,
+} from '../domain/interfaces/IToolExecutor.js';
 import {TypeScriptSymbolAnalyzer} from '../../infrastructure/typescript/TypeScriptSymbolAnalyzer.js';
 
 interface SmartContextExtractorArgs {
@@ -22,7 +25,10 @@ export class SmartContextExtractorTool extends Tool {
 		private projectRoot: string,
 		private analyzer: TypeScriptSymbolAnalyzer,
 	) {
-		super('smart_context_extractor', 'Intelligently extract all relevant context needed to understand a symbol (function, class, etc');
+		super(
+			'smart_context_extractor',
+			'Intelligently extract all relevant context needed to understand a symbol (function, class, etc',
+		);
 	}
 
 	getDefinition(): ToolDefinition {
@@ -43,7 +49,8 @@ export class SmartContextExtractorTool extends Tool {
 					},
 					includeCallers: {
 						type: 'boolean',
-						description: 'Include functions that call this symbol (default: true)',
+						description:
+							'Include functions that call this symbol (default: true)',
 					},
 					includeDependencies: {
 						type: 'boolean',
@@ -51,7 +58,8 @@ export class SmartContextExtractorTool extends Tool {
 					},
 					includeTypes: {
 						type: 'boolean',
-						description: 'Include type definitions used by this symbol (default: true)',
+						description:
+							'Include type definitions used by this symbol (default: true)',
 					},
 					maxDepth: {
 						type: 'number',
@@ -66,7 +74,6 @@ export class SmartContextExtractorTool extends Tool {
 	validateParameters(parameters: Record<string, any>): boolean {
 		return true; // Basic validation
 	}
-
 
 	async execute(args: SmartContextExtractorArgs): Promise<ToolExecutionResult> {
 		try {
@@ -127,7 +134,7 @@ export class SmartContextExtractorTool extends Tool {
 							isOptional: typeInfo.isOptional,
 							isAsync: typeInfo.isAsync,
 							signature: typeInfo.signature,
-					  }
+						}
 					: null,
 				children: targetSymbol.children?.map(child => ({
 					name: child.name,

@@ -68,7 +68,8 @@ export function useHomeLogic(container: Container): UseHomeLogicReturn {
 				await sessionManager.init();
 
 				// Resolve WorkflowManager from container
-				const workflowManager = container.resolve<WorkflowManager>('WorkflowManager');
+				const workflowManager =
+					container.resolve<WorkflowManager>('WorkflowManager');
 
 				// Create presenter
 				const newPresenter = new HomePresenter(

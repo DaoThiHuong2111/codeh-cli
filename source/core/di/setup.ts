@@ -90,8 +90,9 @@ export async function setupContainer(): Promise<Container> {
 	container.register(
 		'PermissionHandler',
 		() => {
-			const modeManager =
-				container.resolve<PermissionModeManager>('PermissionModeManager');
+			const modeManager = container.resolve<PermissionModeManager>(
+				'PermissionModeManager',
+			);
 			return new HybridPermissionHandler(modeManager);
 		},
 		true,
@@ -113,7 +114,8 @@ export async function setupContainer(): Promise<Container> {
 			const registry = new ToolRegistry();
 			const shellExecutor = container.resolve<ShellExecutor>('ShellExecutor');
 			const fileOps = container.resolve<FileOperations>('FileOperations');
-			const workflowManager = container.resolve<WorkflowManager>('WorkflowManager');
+			const workflowManager =
+				container.resolve<WorkflowManager>('WorkflowManager');
 
 			// Register basic tools
 			registry.register(new ShellTool(shellExecutor));
@@ -202,7 +204,12 @@ export async function createCodehClient(
 	const configuration = Configuration.create(config);
 	const apiClient = factory.create(configuration);
 
-	return new CodehClient(apiClient, historyRepo, toolRegistry, permissionHandler);
+	return new CodehClient(
+		apiClient,
+		historyRepo,
+		toolRegistry,
+		permissionHandler,
+	);
 }
 
 /**

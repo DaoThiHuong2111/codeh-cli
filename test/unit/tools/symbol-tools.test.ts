@@ -14,7 +14,10 @@ import {SymbolKind} from '../../../dist/core/domain/models/Symbol.js';
 // Test Configuration
 // ========================================
 
-const FIXTURES_ROOT = path.resolve(process.cwd(), 'test/fixtures/symbol-analysis');
+const FIXTURES_ROOT = path.resolve(
+	process.cwd(),
+	'test/fixtures/symbol-analysis',
+);
 
 const USER_SERVICE_FILE = path.join(FIXTURES_ROOT, 'UserService.ts');
 const CALCULATOR_FILE = path.join(FIXTURES_ROOT, 'Calculator.ts');
@@ -70,7 +73,11 @@ test('GetSymbolsOverviewTool: should find all symbols in Calculator.ts', async t
 		(s: any) => s.name === 'Calculator' && s.kind === SymbolKind.Class,
 	);
 	t.truthy(calculatorClass, 'Should find Calculator class');
-	t.is(symbols.length, 1, 'Should have exactly 1 top-level symbol (Calculator class)');
+	t.is(
+		symbols.length,
+		1,
+		'Should have exactly 1 top-level symbol (Calculator class)',
+	);
 });
 
 test('GetSymbolsOverviewTool: should find all exports in index.ts', async t => {
@@ -237,8 +244,12 @@ test('SymbolSearchTool: should find multiple methods with substring matching', a
 	t.true(symbols.length >= 3, 'Should find multiple methods containing "find"');
 
 	const hasFindById = symbols.some((s: any) => s.name === 'findById');
-	const hasFindProductById = symbols.some((s: any) => s.name === 'findProductById');
-	const hasFindByCategory = symbols.some((s: any) => s.name === 'findByCategory');
+	const hasFindProductById = symbols.some(
+		(s: any) => s.name === 'findProductById',
+	);
+	const hasFindByCategory = symbols.some(
+		(s: any) => s.name === 'findByCategory',
+	);
 
 	t.true(hasFindById || hasFindProductById || hasFindByCategory);
 });
@@ -437,7 +448,10 @@ test('FindReferencesTool: should find references to UserService', async t => {
 	// ProductRepository imports and uses UserService
 	// utils.ts imports UserService
 	// index.ts exports UserService
-	t.true(references.length >= 1, 'Should find at least 1 reference to UserService');
+	t.true(
+		references.length >= 1,
+		'Should find at least 1 reference to UserService',
+	);
 
 	// Check if ProductRepository.ts is in references
 	const hasProductRepoRef = references.some((r: any) =>
@@ -611,7 +625,10 @@ test('Performance: Symbol search should be fast', async t => {
 	});
 	const duration = Date.now() - startTime;
 
-	t.true(duration < 1000, `Search should complete in < 1s (took ${duration}ms)`);
+	t.true(
+		duration < 1000,
+		`Search should complete in < 1s (took ${duration}ms)`,
+	);
 });
 
 test('Performance: Get overview should be fast', async t => {
@@ -623,5 +640,8 @@ test('Performance: Get overview should be fast', async t => {
 	});
 	const duration = Date.now() - startTime;
 
-	t.true(duration < 500, `Overview should complete in < 500ms (took ${duration}ms)`);
+	t.true(
+		duration < 500,
+		`Overview should complete in < 500ms (took ${duration}ms)`,
+	);
 });

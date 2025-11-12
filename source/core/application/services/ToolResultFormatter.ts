@@ -57,7 +57,10 @@ export class ToolResultFormatter {
 		}
 
 		// Metadata (if available)
-		if (standardized.metadata && Object.keys(standardized.metadata).length > 0) {
+		if (
+			standardized.metadata &&
+			Object.keys(standardized.metadata).length > 0
+		) {
 			markdown += `### Metadata\n`;
 			for (const [key, value] of Object.entries(standardized.metadata)) {
 				markdown += `- **${key}**: ${JSON.stringify(value)}\n`;
@@ -101,7 +104,8 @@ export class ToolResultFormatter {
 	private standardize(context: ToolExecutionContext): StandardizedToolResult {
 		const result: StandardizedToolResult = {
 			tool: context.toolCall.name,
-			status: context.isCompleted() && context.result?.success ? 'success' : 'error',
+			status:
+				context.isCompleted() && context.result?.success ? 'success' : 'error',
 			timestamp:
 				context.executionStartedAt?.toISOString() || new Date().toISOString(),
 			summary: this.generateSummary(context),
@@ -184,8 +188,12 @@ export class ToolResultFormatter {
 
 		if (Array.isArray(data)) {
 			return markdown
-				? data.map((item, idx) => `${idx + 1}. ${JSON.stringify(item)}`).join('\n') + '\n'
-				: data.map((item, idx) => `${idx + 1}. ${JSON.stringify(item)}`).join('\n');
+				? data
+						.map((item, idx) => `${idx + 1}. ${JSON.stringify(item)}`)
+						.join('\n') + '\n'
+				: data
+						.map((item, idx) => `${idx + 1}. ${JSON.stringify(item)}`)
+						.join('\n');
 		}
 
 		if (typeof data === 'object') {

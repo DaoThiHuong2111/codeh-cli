@@ -4,7 +4,10 @@
  */
 
 import {Tool} from './base/Tool.js';
-import {ToolDefinition, ToolExecutionResult} from '../domain/interfaces/IToolExecutor.js';
+import {
+	ToolDefinition,
+	ToolExecutionResult,
+} from '../domain/interfaces/IToolExecutor.js';
 import {TypeScriptSymbolAnalyzer} from '../../infrastructure/typescript/TypeScriptSymbolAnalyzer.js';
 import * as ts from 'typescript';
 
@@ -17,7 +20,10 @@ export class ValidateCodeChangesTool extends Tool {
 		private projectRoot: string,
 		private analyzer: TypeScriptSymbolAnalyzer,
 	) {
-		super('validate_code_changes', 'Validate TypeScript code for errors and warnings');
+		super(
+			'validate_code_changes',
+			'Validate TypeScript code for errors and warnings',
+		);
 	}
 
 	getDefinition(): ToolDefinition {
@@ -31,7 +37,8 @@ export class ValidateCodeChangesTool extends Tool {
 					files: {
 						type: 'array',
 						items: {type: 'string'},
-						description: 'Optional: specific files to validate. If not provided, validates entire project.',
+						description:
+							'Optional: specific files to validate. If not provided, validates entire project.',
 					},
 				},
 			},
@@ -41,7 +48,6 @@ export class ValidateCodeChangesTool extends Tool {
 	validateParameters(parameters: Record<string, any>): boolean {
 		return true; // Basic validation
 	}
-
 
 	async execute(args: ValidateCodeChangesArgs): Promise<ToolExecutionResult> {
 		try {
@@ -62,8 +68,12 @@ export class ValidateCodeChangesTool extends Tool {
 			}
 
 			// Categorize diagnostics
-			const errors = diagnostics.filter(d => d.category === ts.DiagnosticCategory.Error);
-			const warnings = diagnostics.filter(d => d.category === ts.DiagnosticCategory.Warning);
+			const errors = diagnostics.filter(
+				d => d.category === ts.DiagnosticCategory.Error,
+			);
+			const warnings = diagnostics.filter(
+				d => d.category === ts.DiagnosticCategory.Warning,
+			);
 
 			// Format diagnostics
 			const formattedErrors = errors.map(d => this.formatDiagnostic(d));
@@ -99,7 +109,9 @@ export class ValidateCodeChangesTool extends Tool {
 			};
 		}
 
-		const {line, character} = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
+		const {line, character} = diagnostic.file.getLineAndCharacterOfPosition(
+			diagnostic.start!,
+		);
 		return {
 			file: diagnostic.file.fileName,
 			line: line + 1,

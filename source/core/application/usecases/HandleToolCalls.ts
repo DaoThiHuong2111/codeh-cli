@@ -45,7 +45,10 @@ export class HandleToolCalls {
 		return Promise.race([
 			promise,
 			new Promise<T>((_, reject) =>
-				setTimeout(() => reject(new Error(`Timeout after ${timeoutMs}ms`)), timeoutMs),
+				setTimeout(
+					() => reject(new Error(`Timeout after ${timeoutMs}ms`)),
+					timeoutMs,
+				),
 			),
 		]);
 	}
@@ -67,7 +70,9 @@ export class HandleToolCalls {
 				lastError = error instanceof Error ? error : new Error(String(error));
 
 				if (attempt < maxRetries) {
-					console.log(`  ⚠️  Retry ${attempt + 1}/${maxRetries} after ${retryDelay}ms...`);
+					console.log(
+						`  ⚠️  Retry ${attempt + 1}/${maxRetries} after ${retryDelay}ms...`,
+					);
 					await new Promise(resolve => setTimeout(resolve, retryDelay));
 				}
 			}
@@ -84,7 +89,9 @@ export class HandleToolCalls {
 
 		for (let i = 0; i < toolCalls.length; i++) {
 			const toolCall = toolCalls[i];
-			console.log(`\n  [${i + 1}/${toolCalls.length}] Processing tool: ${toolCall.name}`);
+			console.log(
+				`\n  [${i + 1}/${toolCalls.length}] Processing tool: ${toolCall.name}`,
+			);
 
 			let context = ToolExecutionContext.create(toolCall);
 
@@ -142,7 +149,10 @@ export class HandleToolCalls {
 
 					// Apply timeout if configured
 					if (this.config.timeout) {
-						return await this.executeWithTimeout(execution, this.config.timeout);
+						return await this.executeWithTimeout(
+							execution,
+							this.config.timeout,
+						);
 					}
 
 					return await execution;
@@ -164,7 +174,9 @@ export class HandleToolCalls {
 				if (result.success) {
 					console.log(`  ✅ ${toolCall.name} completed (${duration}ms)`);
 					const preview = result.output.substring(0, 100);
-					console.log(`     Output preview: ${preview}${result.output.length > 100 ? '...' : ''}`);
+					console.log(
+						`     Output preview: ${preview}${result.output.length > 100 ? '...' : ''}`,
+					);
 				} else {
 					console.log(`  ❌ ${toolCall.name} failed: ${result.error}`);
 				}
@@ -181,7 +193,9 @@ export class HandleToolCalls {
 		const allApproved = contexts.every(c => !c.isRejected());
 		const allCompleted = contexts.every(c => c.isCompleted());
 
-		console.log(`\n  Summary: ${contexts.filter(c => c.isCompleted()).length}/${contexts.length} succeeded`);
+		console.log(
+			`\n  Summary: ${contexts.filter(c => c.isCompleted()).length}/${contexts.length} succeeded`,
+		);
 
 		return {
 			contexts,

@@ -227,9 +227,10 @@ class MockPermissionHandler implements IToolPermissionHandler {
 // Helper Functions
 // ========================================
 
-function createCodehClientForTest(
-	apiClient: IApiClient,
-): {client: CodehClient; registry: ToolRegistry} {
+function createCodehClientForTest(apiClient: IApiClient): {
+	client: CodehClient;
+	registry: ToolRegistry;
+} {
 	const historyRepo = new MockHistoryRepository();
 	const permissionHandler = new MockPermissionHandler();
 	const toolRegistry = new ToolRegistry();
@@ -260,12 +261,20 @@ test('E2E: AI discovers and uses symbol_search tool', async t => {
 	const turn = await client.execute('Find the UserService class');
 
 	// Verify AI was called multiple times (tool calling loop)
-	t.is(mockAI.getCallCount(), 2, 'AI should be called twice (request + continue)');
+	t.is(
+		mockAI.getCallCount(),
+		2,
+		'AI should be called twice (request + continue)',
+	);
 
 	// Verify turn has tool calls
 	t.true(turn.hasToolCalls(), 'Turn should have tool calls');
 	t.is(turn.toolCalls?.length, 1, 'Should have 1 tool call');
-	t.is(turn.toolCalls?.[0].name, 'symbol_search', 'Tool should be symbol_search');
+	t.is(
+		turn.toolCalls?.[0].name,
+		'symbol_search',
+		'Tool should be symbol_search',
+	);
 
 	// Verify final response
 	t.truthy(turn.response, 'Should have response');

@@ -23,9 +23,7 @@ export interface IToolPermissionHandler {
 	 * Request permission to execute a tool
 	 * Returns permission result
 	 */
-	requestPermission(
-		context: ToolPermissionContext,
-	): Promise<PermissionResult>;
+	requestPermission(context: ToolPermissionContext): Promise<PermissionResult>;
 
 	/**
 	 * Check if a tool has been pre-approved

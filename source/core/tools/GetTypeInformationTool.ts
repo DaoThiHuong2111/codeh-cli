@@ -4,7 +4,10 @@
  */
 
 import {Tool} from './base/Tool.js';
-import {ToolDefinition, ToolExecutionResult} from '../domain/interfaces/IToolExecutor.js';
+import {
+	ToolDefinition,
+	ToolExecutionResult,
+} from '../domain/interfaces/IToolExecutor.js';
 import {TypeScriptSymbolAnalyzer} from '../../infrastructure/typescript/TypeScriptSymbolAnalyzer.js';
 
 interface GetTypeInformationArgs {
@@ -18,7 +21,10 @@ export class GetTypeInformationTool extends Tool {
 		private projectRoot: string,
 		private analyzer: TypeScriptSymbolAnalyzer,
 	) {
-		super('get_type_information', 'Get type information for a symbol (variable, function, parameter, etc');
+		super(
+			'get_type_information',
+			'Get type information for a symbol (variable, function, parameter, etc',
+		);
 	}
 
 	getDefinition(): ToolDefinition {
@@ -39,7 +45,8 @@ export class GetTypeInformationTool extends Tool {
 					},
 					line: {
 						type: 'number',
-						description: 'Optional: specific line number where symbol is located',
+						description:
+							'Optional: specific line number where symbol is located',
 					},
 				},
 				required: ['filePath', 'symbolName'],
@@ -51,13 +58,16 @@ export class GetTypeInformationTool extends Tool {
 		return true; // Basic validation
 	}
 
-
 	async execute(args: GetTypeInformationArgs): Promise<ToolExecutionResult> {
 		try {
 			const {filePath, symbolName, line} = args;
 
 			// Get type information using TypeScript Compiler API
-			const typeInfo = this.analyzer.getTypeInformation(filePath, symbolName, line);
+			const typeInfo = this.analyzer.getTypeInformation(
+				filePath,
+				symbolName,
+				line,
+			);
 
 			if (!typeInfo) {
 				return {

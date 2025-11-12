@@ -39,7 +39,8 @@ export class ConfigurablePermissionHandler implements IToolPermissionHandler {
 		this.config = {
 			mode: config?.mode ?? PermissionMode.AUTO_APPROVE,
 			preApprovedTools: config?.preApprovedTools ?? [],
-			dangerousToolsRequireApproval: config?.dangerousToolsRequireApproval ?? true,
+			dangerousToolsRequireApproval:
+				config?.dangerousToolsRequireApproval ?? true,
 		};
 
 		this.preApprovedTools = new Set(this.config.preApprovedTools);
@@ -62,7 +63,11 @@ export class ConfigurablePermissionHandler implements IToolPermissionHandler {
 
 		// Handle dangerous tools
 		if (isDangerous && this.config.dangerousToolsRequireApproval) {
-			this.logPermission(context, 'denied', 'Dangerous tool requires explicit approval');
+			this.logPermission(
+				context,
+				'denied',
+				'Dangerous tool requires explicit approval',
+			);
 			return {
 				approved: false,
 				reason:
@@ -73,7 +78,11 @@ export class ConfigurablePermissionHandler implements IToolPermissionHandler {
 		// Apply permission mode
 		switch (this.config.mode) {
 			case PermissionMode.AUTO_APPROVE:
-				this.logPermission(context, 'approved', 'Auto-approved (mode: auto_approve)');
+				this.logPermission(
+					context,
+					'approved',
+					'Auto-approved (mode: auto_approve)',
+				);
 				return {
 					approved: true,
 					reason: 'Auto-approved',
@@ -94,15 +103,21 @@ export class ConfigurablePermissionHandler implements IToolPermissionHandler {
 					);
 					return {
 						approved: false,
-						reason: 'Tool requires pre-approval. Add to preApprovedTools to enable.',
+						reason:
+							'Tool requires pre-approval. Add to preApprovedTools to enable.',
 					};
 				}
 
 			case PermissionMode.DENY_BY_DEFAULT:
-				this.logPermission(context, 'denied', 'Denied by default (mode: deny_by_default)');
+				this.logPermission(
+					context,
+					'denied',
+					'Denied by default (mode: deny_by_default)',
+				);
 				return {
 					approved: false,
-					reason: 'Permission denied by default. Change mode or add to preApprovedTools.',
+					reason:
+						'Permission denied by default. Change mode or add to preApprovedTools.',
 				};
 
 			default:

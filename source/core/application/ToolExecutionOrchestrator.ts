@@ -40,11 +40,15 @@ export class ToolExecutionOrchestrator {
 		private historyRepo: IHistoryRepository,
 		private config: ToolExecutionConfig = {},
 	) {
-		this.handleToolCalls = new HandleToolCalls(toolRegistry, permissionHandler, {
-			timeout: config.timeout,
-			maxRetries: 2, // Default: retry up to 2 times
-			retryDelay: 1000, // Default: 1 second delay
-		});
+		this.handleToolCalls = new HandleToolCalls(
+			toolRegistry,
+			permissionHandler,
+			{
+				timeout: config.timeout,
+				maxRetries: 2, // Default: retry up to 2 times
+				retryDelay: 1000, // Default: 1 second delay
+			},
+		);
 		this.resultFormatter = new ToolResultFormatter();
 	}
 
@@ -73,7 +77,9 @@ export class ToolExecutionOrchestrator {
 			const toolCalls = currentTurn.response?.toolCalls;
 			if (!toolCalls || toolCalls.length === 0) {
 				// No more tools to execute, done
-				console.log('✅ No more tool calls detected. Orchestration complete.\n');
+				console.log(
+					'✅ No more tool calls detected. Orchestration complete.\n',
+				);
 				break;
 			}
 
@@ -81,13 +87,18 @@ export class ToolExecutionOrchestrator {
 
 			// Execute tools with permission handling
 			console.log('⚙️  Executing tools...');
-			const handleResult = await this.executeTools(toolCalls, conversationContext);
+			const handleResult = await this.executeTools(
+				toolCalls,
+				conversationContext,
+			);
 			allExecutionContexts.push(...handleResult.contexts);
 
 			// Check if all approved
 			if (!handleResult.allApproved) {
 				// Some tools rejected - send rejection feedback to LLM
-				console.log('❌ Some tools were rejected. Sending rejection feedback to LLM...\n');
+				console.log(
+					'❌ Some tools were rejected. Sending rejection feedback to LLM...\n',
+				);
 
 				// Format rejection messages (formatToolResults handles rejected contexts)
 				const rejectionMessages = this.formatToolResults(handleResult.contexts);
@@ -98,16 +109,19 @@ export class ToolExecutionOrchestrator {
 					rejectionMessages,
 				);
 
-				console.log('📨 LLM received rejection feedback and can try alternative approach');
+				console.log(
+					'📨 LLM received rejection feedback and can try alternative approach',
+				);
 
 				// Continue orchestration - allow LLM to try again
 				continue;
 			}
 
-
 			// Format tool results for LLM continuation
 			const toolResultMessages = this.formatToolResults(handleResult.contexts);
-			console.log(`✅ Tools executed successfully. Sending results back to LLM...`);
+			console.log(
+				`✅ Tools executed successfully. Sending results back to LLM...`,
+			);
 
 			// Continue conversation with tool results
 			currentTurn = await this.continueWithToolResults(
@@ -118,8 +132,13 @@ export class ToolExecutionOrchestrator {
 			console.log('📨 Received LLM response');
 
 			// If LLM response has no tool calls, we're done
-			if (!currentTurn.response?.toolCalls || currentTurn.response.toolCalls.length === 0) {
-				console.log('✅ LLM completed without requesting more tools. Orchestration complete.\n');
+			if (
+				!currentTurn.response?.toolCalls ||
+				currentTurn.response.toolCalls.length === 0
+			) {
+				console.log(
+					'✅ LLM completed without requesting more tools. Orchestration complete.\n',
+				);
 				break;
 			}
 		}
@@ -131,7 +150,9 @@ export class ToolExecutionOrchestrator {
 		console.log(`🎯 Orchestration Summary:`);
 		console.log(`   - Total iterations: ${iterations}`);
 		console.log(`   - Tools executed: ${allExecutionContexts.length}`);
-		console.log(`   - Final response length: ${currentTurn.response?.content.length || 0} chars\n`);
+		console.log(
+			`   - Final response length: ${currentTurn.response?.content.length || 0} chars\n`,
+		);
 
 		return {
 			finalTurn: currentTurn,
@@ -171,35 +192,41 @@ export class ToolExecutionOrchestrator {
 			if (context.isCompleted() && context.result) {
 				// Format successful tool result
 				const content = this.formatToolResultContent(context);
-				messages.push(Message.create('user', content, {
-					metadata: {
-						toolCallId: context.toolCall.id,
-						toolName: context.toolCall.name,
-						isToolResult: true,
-					},
-				}));
+				messages.push(
+					Message.create('user', content, {
+						metadata: {
+							toolCallId: context.toolCall.id,
+							toolName: context.toolCall.name,
+							isToolResult: true,
+						},
+					}),
+				);
 			} else if (context.isFailed()) {
 				// Format error result
 				const errorContent = `Tool "${context.toolCall.name}" failed: ${context.error}`;
-				messages.push(Message.create('user', errorContent, {
-					metadata: {
-						toolCallId: context.toolCall.id,
-						toolName: context.toolCall.name,
-						isToolResult: true,
-						isError: true,
-					},
-				}));
+				messages.push(
+					Message.create('user', errorContent, {
+						metadata: {
+							toolCallId: context.toolCall.id,
+							toolName: context.toolCall.name,
+							isToolResult: true,
+							isError: true,
+						},
+					}),
+				);
 			} else if (context.isRejected()) {
 				// Format rejection
 				const rejectionContent = `Tool "${context.toolCall.name}" was rejected by user.`;
-				messages.push(Message.create('user', rejectionContent, {
-					metadata: {
-						toolCallId: context.toolCall.id,
-						toolName: context.toolCall.name,
-						isToolResult: true,
-						isRejection: true,
-					},
-				}));
+				messages.push(
+					Message.create('user', rejectionContent, {
+						metadata: {
+							toolCallId: context.toolCall.id,
+							toolName: context.toolCall.name,
+							isToolResult: true,
+							isRejection: true,
+						},
+					}),
+				);
 			}
 		}
 

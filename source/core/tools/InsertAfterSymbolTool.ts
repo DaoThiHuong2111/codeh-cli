@@ -70,7 +70,8 @@ export class InsertAfterSymbolTool extends Tool {
 	}
 
 	async execute(parameters: Record<string, any>): Promise<ToolExecutionResult> {
-		const {namePath, filePath, content} = parameters as InsertAfterSymbolOptions;
+		const {namePath, filePath, content} =
+			parameters as InsertAfterSymbolOptions;
 
 		if (!namePath || !filePath || content === undefined) {
 			return this.createErrorResult(

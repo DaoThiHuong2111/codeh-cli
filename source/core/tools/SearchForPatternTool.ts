@@ -53,7 +53,8 @@ export class SearchForPatternTool extends Tool {
 					},
 					contextLines: {
 						type: 'number',
-						description: 'Number of context lines to show around each match (default: 2)',
+						description:
+							'Number of context lines to show around each match (default: 2)',
 						default: 2,
 					},
 				},
@@ -91,7 +92,9 @@ export class SearchForPatternTool extends Tool {
 			try {
 				searchRegex = new RegExp(pattern, 'g');
 			} catch (error: any) {
-				return this.createErrorResult(`Invalid regex pattern: ${error.message}`);
+				return this.createErrorResult(
+					`Invalid regex pattern: ${error.message}`,
+				);
 			}
 
 			// Optional file pattern filter
@@ -195,7 +198,13 @@ export class SearchForPatternTool extends Tool {
 					}
 
 					// Search in file
-					this.searchInFile(fullPath, pattern, contextLines, results, maxResults);
+					this.searchInFile(
+						fullPath,
+						pattern,
+						contextLines,
+						results,
+						maxResults,
+					);
 				}
 			}
 

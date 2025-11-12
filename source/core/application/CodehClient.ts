@@ -77,7 +77,9 @@ ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 
 		// Get tool definitions if available
 		const tools = this.toolRegistry
-			? ToolDefinitionConverter.toApiFormatBatch(this.toolRegistry.getDefinitions())
+			? ToolDefinitionConverter.toApiFormatBatch(
+					this.toolRegistry.getDefinitions(),
+				)
 			: undefined;
 
 		// Call AI API
@@ -178,7 +180,9 @@ ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 
 		// Get tool definitions if available
 		const tools = this.toolRegistry
-			? ToolDefinitionConverter.toApiFormatBatch(this.toolRegistry.getDefinitions())
+			? ToolDefinitionConverter.toApiFormatBatch(
+					this.toolRegistry.getDefinitions(),
+				)
 			: undefined;
 
 		let fullResponse = '';
