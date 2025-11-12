@@ -7,14 +7,12 @@ import {CodehClient} from '../../core/application/CodehClient.js';
 import type {Message} from '../../core/domain/models/Message.js';
 import {Message as MessageModel} from '../../core/domain/models/Message.js';
 import type {Todo} from '../../core/domain/models/Todo.js';
-import type {Symbol} from '../../core/domain/models/Symbol.js';
 import type {Command} from '../../core/domain/valueObjects/Command.js';
 import type {ISessionManager} from '../../core/domain/interfaces/ISessionManager.js';
 import type {ICommandRegistry} from '../../core/domain/interfaces/ICommandRegistry.js';
 import {Session} from '../../core/domain/valueObjects/Session.js';
 import {WorkflowManager} from '../../core/application/services/WorkflowManager.js';
 import {InputHistoryService} from '../../core/application/services/InputHistoryService.js';
-import {TypeScriptCodeNavigator} from '../../core/application/services/TypeScriptCodeNavigator.js';
 
 interface ViewState {
 	// Input
@@ -50,11 +48,6 @@ export class HomePresenter {
 	private durationTimer?: NodeJS.Timeout;
 	private sessionStartTime: number;
 
-	// Symbol Explorer
-	private codeNavigator: TypeScriptCodeNavigator;
-	private cachedSymbols: Symbol[] = [];
-	private cachedFilePath?: string;
-
 	constructor(
 		private client: CodehClient,
 		private commandRegistry: ICommandRegistry,
@@ -64,10 +57,6 @@ export class HomePresenter {
 		private workflowManager?: WorkflowManager,
 	) {
 		this.sessionStartTime = Date.now();
-
-		// Initialize TypeScript Code Navigator
-		const projectRoot = process.cwd();
-		this.codeNavigator = new TypeScriptCodeNavigator(projectRoot);
 
 		// Initialize state
 		this.state = {
@@ -409,52 +398,6 @@ export class HomePresenter {
 
 		const currentPlan = this.workflowManager.getCurrentPlan();
 		return currentPlan?.todos || [];
-	}
-
-	/**
-	 * Get symbols for Symbol Explorer
-	 * Returns cached symbols from last fetch
-	 */
-	get symbols(): Symbol[] {
-		return this.cachedSymbols;
-	}
-
-	/**
-	 * Fetch symbols from a TypeScript file
-	 * @param filePath - Relative path to file from project root
-	 * @returns Promise<Symbol[]>
-	 */
-	async fetchSymbols(filePath: string): Promise<Symbol[]> {
-		try {
-			// Check cache
-			if (this.cachedFilePath === filePath && this.cachedSymbols.length > 0) {
-				return this.cachedSymbols;
-			}
-
-			// Fetch symbol hierarchy from file
-			const symbols = await this.codeNavigator.getSymbolHierarchy(filePath);
-
-			// Update cache
-			this.cachedSymbols = symbols;
-			this.cachedFilePath = filePath;
-
-			// Notify view to update
-			this._notifyView();
-
-			return symbols;
-		} catch (error) {
-			console.error(`Failed to fetch symbols from ${filePath}:`, error);
-			return [];
-		}
-	}
-
-	/**
-	 * Clear symbol cache
-	 */
-	clearSymbolCache(): void {
-		this.cachedSymbols = [];
-		this.cachedFilePath = undefined;
-		this._notifyView();
 	}
 
 	// === Stats Management ===
