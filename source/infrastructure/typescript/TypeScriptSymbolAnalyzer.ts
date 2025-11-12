@@ -9,6 +9,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import {Symbol, SymbolKind, SymbolLocation} from '../../core/domain/models/Symbol.js';
 import {Reference} from '../../core/domain/models/Reference.js';
+import {ResultCache} from '../cache/ResultCache.js';
 
 /**
  * Maps TypeScript syntax kind to LSP Symbol Kind
@@ -61,6 +62,7 @@ export class TypeScriptSymbolAnalyzer {
 	private fileVersions: Map<string, number> = new Map();
 	private configPath: string;
 	private parsedConfig: ts.ParsedCommandLine;
+	private resultCache: ResultCache;
 
 	constructor(projectRoot: string, tsConfigPath?: string) {
 		this.projectRoot = projectRoot;
@@ -111,6 +113,9 @@ export class TypeScriptSymbolAnalyzer {
 			servicesHost,
 			ts.createDocumentRegistry(),
 		);
+
+		// Initialize result cache (default: 500 entries)
+		this.resultCache = new ResultCache(500);
 	}
 
 	/**
@@ -145,6 +150,9 @@ export class TypeScriptSymbolAnalyzer {
 
 		// Remove from files cache
 		this.files.delete(absolutePath);
+
+		// Invalidate result cache for this file
+		this.resultCache.invalidateFile(absolutePath);
 	}
 
 	/**
@@ -163,6 +171,9 @@ export class TypeScriptSymbolAnalyzer {
 		});
 
 		this.checker = this.program.getTypeChecker();
+
+		// Clear all result caches
+		this.resultCache.clearAll();
 	}
 
 	/**
@@ -434,6 +445,12 @@ export class TypeScriptSymbolAnalyzer {
 	 * Find references to a symbol
 	 */
 	findReferences(namePath: string, filePath: string): Reference[] {
+		// Check cache first
+		const cached = this.resultCache.getReferences(namePath, filePath);
+		if (cached) {
+			return cached;
+		}
+
 		const sourceFile = this.getSourceFile(filePath);
 		if (!sourceFile) {
 			throw new Error(`File not found: ${filePath}`);
@@ -507,6 +524,9 @@ export class TypeScriptSymbolAnalyzer {
 			}
 		}
 
+		// Store in cache
+		this.resultCache.setReferences(namePath, filePath, references);
+
 		return references;
 	}
 
@@ -554,7 +574,19 @@ export class TypeScriptSymbolAnalyzer {
 	 * Get symbol hierarchy for a file
 	 */
 	getSymbolHierarchy(filePath: string): Symbol[] {
-		return this.findSymbol('', {filePath, depth: 1, substringMatching: true});
+		// Check cache first
+		const cached = this.resultCache.getHierarchy(filePath);
+		if (cached) {
+			return cached;
+		}
+
+		// Compute hierarchy
+		const hierarchy = this.findSymbol('', {filePath, depth: 1, substringMatching: true});
+
+		// Store in cache
+		this.resultCache.setHierarchy(filePath, hierarchy);
+
+		return hierarchy;
 	}
 
 	/**
@@ -634,5 +666,20 @@ export class TypeScriptSymbolAnalyzer {
 		}
 
 		return results;
+	}
+
+	/**
+	 * Get cache performance statistics
+	 * Useful for monitoring cache effectiveness
+	 */
+	getCacheStats() {
+		return this.resultCache.getStats();
+	}
+
+	/**
+	 * Clear result cache statistics
+	 */
+	resetCacheStats() {
+		this.resultCache.resetStats();
 	}
 }
