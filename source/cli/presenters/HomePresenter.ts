@@ -7,6 +7,7 @@ import {CodehClient} from '../../core/application/CodehClient.js';
 import type {Message} from '../../core/domain/models/Message.js';
 import {Message as MessageModel} from '../../core/domain/models/Message.js';
 import type {Todo} from '../../core/domain/models/Todo.js';
+import type {Symbol} from '../../core/domain/models/Symbol.js';
 import type {Command} from '../../core/domain/valueObjects/Command.js';
 import type {ISessionManager} from '../../core/domain/interfaces/ISessionManager.js';
 import type {ICommandRegistry} from '../../core/domain/interfaces/ICommandRegistry.js';
@@ -398,6 +399,17 @@ export class HomePresenter {
 
 		const currentPlan = this.workflowManager.getCurrentPlan();
 		return currentPlan?.todos || [];
+	}
+
+	/**
+	 * Get symbols for Symbol Explorer
+	 * TODO: Implement real symbol fetching from current/selected file
+	 * For now, returns empty array (MVP)
+	 */
+	get symbols(): Symbol[] {
+		// TODO Phase 3.2: Integrate with TypeScriptCodeNavigator
+		// to fetch symbols from current file or workspace
+		return [];
 	}
 
 	// === Stats Management ===

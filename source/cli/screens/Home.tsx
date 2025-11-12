@@ -9,6 +9,7 @@ import {ConversationArea} from '../components/organisms/ConversationArea.js';
 import {SlashSuggestions} from '../components/organisms/SlashSuggestions.js';
 import {Footer} from '../components/organisms/Footer.js';
 import {TodosDisplay} from '../components/organisms/TodosDisplay.js';
+import {SymbolExplorer} from '../components/organisms/SymbolExplorer.js';
 import {useShortcut} from '../../core/input/index.js';
 import type {PermissionModeManager} from '../../infrastructure/permissions/PermissionModeManager.js';
 import type {PermissionMode} from '../../infrastructure/permissions/PermissionModeManager.js';
@@ -26,6 +27,9 @@ export default function Home({container, exitConfirmation = false}: HomeProps) {
 	const [modeManager, setModeManager] = useState<PermissionModeManager | null>(
 		null,
 	);
+
+	// Symbol Explorer state
+	const [showSymbolExplorer, setShowSymbolExplorer] = useState(false);
 
 	// Initialize mode manager from container
 	useEffect(() => {
@@ -147,6 +151,17 @@ export default function Home({container, exitConfirmation = false}: HomeProps) {
 		source: 'Home',
 	});
 
+	// Ctrl+E: Toggle Symbol Explorer
+	useShortcut({
+		key: 'ctrl+e',
+		handler: () => {
+			setShowSymbolExplorer(prev => !prev);
+		},
+		layer: 'input',
+		description: 'Toggle Symbol Explorer',
+		source: 'Home',
+	});
+
 	// Loading state
 	if (loading) {
 		return (
@@ -194,6 +209,15 @@ export default function Home({container, exitConfirmation = false}: HomeProps) {
 			{/* Todos Display (show when there are todos) */}
 			{presenter.todos.length > 0 && <TodosDisplay todos={presenter.todos} />}
 
+			{/* Symbol Explorer (show when toggled with Ctrl+E) */}
+			{showSymbolExplorer && (
+				<SymbolExplorer
+					symbols={presenter.symbols}
+					title="🔍 Symbol Explorer"
+					showLocation={true}
+				/>
+			)}
+
 			{/* Slash Command Suggestions */}
 			{presenter.hasSuggestions() && (
 				<SlashSuggestions
@@ -235,7 +259,7 @@ export default function Home({container, exitConfirmation = false}: HomeProps) {
 					<Text>Press Ctrl+C again to exit</Text>
 				) : (
 					<Text dimColor>
-						Press <Text color="green">Ctrl+C</Text> to exit
+						Press <Text color="green">Ctrl+C</Text> to exit | <Text color="cyan">Ctrl+E</Text> Symbol Explorer
 					</Text>
 				)}
 			</Box>
