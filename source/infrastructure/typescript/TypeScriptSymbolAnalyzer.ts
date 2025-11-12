@@ -58,34 +58,39 @@ export class TypeScriptSymbolAnalyzer {
 	private projectRoot: string;
 	private languageService: ts.LanguageService;
 	private files: Map<string, string> = new Map();
+	private fileVersions: Map<string, number> = new Map();
+	private configPath: string;
+	private parsedConfig: ts.ParsedCommandLine;
 
 	constructor(projectRoot: string, tsConfigPath?: string) {
 		this.projectRoot = projectRoot;
 
 		// Find tsconfig.json
-		const configPath =
+		this.configPath =
 			tsConfigPath || this.findTsConfig() || path.join(projectRoot, 'tsconfig.json');
 
 		// Parse tsconfig
-		const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
-		const parsedConfig = ts.parseJsonConfigFileContent(
+		const configFile = ts.readConfigFile(this.configPath, ts.sys.readFile);
+		this.parsedConfig = ts.parseJsonConfigFileContent(
 			configFile.config,
 			ts.sys,
-			path.dirname(configPath),
+			path.dirname(this.configPath),
 		);
 
 		// Create program
 		this.program = ts.createProgram({
-			rootNames: parsedConfig.fileNames,
-			options: parsedConfig.options,
+			rootNames: this.parsedConfig.fileNames,
+			options: this.parsedConfig.options,
 		});
 
 		this.checker = this.program.getTypeChecker();
 
 		// Create Language Service for advanced features like findReferences
 		const servicesHost: ts.LanguageServiceHost = {
-			getScriptFileNames: () => parsedConfig.fileNames,
-			getScriptVersion: () => '0',
+			getScriptFileNames: () => this.parsedConfig.fileNames,
+			getScriptVersion: (fileName: string) => {
+				return (this.fileVersions.get(fileName) || 0).toString();
+			},
 			getScriptSnapshot: (fileName: string) => {
 				if (!fs.existsSync(fileName)) {
 					return undefined;
@@ -95,7 +100,7 @@ export class TypeScriptSymbolAnalyzer {
 				return ts.ScriptSnapshot.fromString(text);
 			},
 			getCurrentDirectory: () => this.projectRoot,
-			getCompilationSettings: () => parsedConfig.options,
+			getCompilationSettings: () => this.parsedConfig.options,
 			getDefaultLibFileName: (options) => ts.getDefaultLibFilePath(options),
 			fileExists: ts.sys.fileExists,
 			readFile: ts.sys.readFile,
@@ -123,6 +128,41 @@ export class TypeScriptSymbolAnalyzer {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Invalidate cache for specific file
+	 * Call this when a file changes to force reanalysis
+	 */
+	invalidateFile(filePath: string): void {
+		const absolutePath = path.isAbsolute(filePath)
+			? filePath
+			: path.join(this.projectRoot, filePath);
+
+		// Increment version to invalidate Language Service cache
+		const currentVersion = this.fileVersions.get(absolutePath) || 0;
+		this.fileVersions.set(absolutePath, currentVersion + 1);
+
+		// Remove from files cache
+		this.files.delete(absolutePath);
+	}
+
+	/**
+	 * Invalidate all caches and reload program
+	 * Call this when project structure changes
+	 */
+	invalidateAll(): void {
+		// Clear all caches
+		this.files.clear();
+		this.fileVersions.clear();
+
+		// Recreate program
+		this.program = ts.createProgram({
+			rootNames: this.parsedConfig.fileNames,
+			options: this.parsedConfig.options,
+		});
+
+		this.checker = this.program.getTypeChecker();
 	}
 
 	/**

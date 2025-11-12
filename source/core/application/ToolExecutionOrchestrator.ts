@@ -15,6 +15,7 @@ import {ToolExecutionContext} from '../domain/models/ToolExecutionContext';
 import {Message} from '../domain/models/Message';
 import {Turn} from '../domain/models/Turn';
 import {ToolDefinitionConverter} from './services/ToolDefinitionConverter';
+import {ToolResultFormatter} from './services/ToolResultFormatter';
 
 export interface ToolExecutionConfig {
 	maxIterations?: number; // Max agentic loop iterations
@@ -30,6 +31,7 @@ export interface ToolExecutionResult {
 
 export class ToolExecutionOrchestrator {
 	private handleToolCalls: HandleToolCalls;
+	private resultFormatter: ToolResultFormatter;
 
 	constructor(
 		private toolRegistry: ToolRegistry,
@@ -38,10 +40,12 @@ export class ToolExecutionOrchestrator {
 		private historyRepo: IHistoryRepository,
 		private config: ToolExecutionConfig = {},
 	) {
-		this.handleToolCalls = new HandleToolCalls(
-			toolRegistry,
-			permissionHandler,
-		);
+		this.handleToolCalls = new HandleToolCalls(toolRegistry, permissionHandler, {
+			timeout: config.timeout,
+			maxRetries: 2, // Default: retry up to 2 times
+			retryDelay: 1000, // Default: 1 second delay
+		});
+		this.resultFormatter = new ToolResultFormatter();
 	}
 
 	/**
@@ -191,23 +195,13 @@ export class ToolExecutionOrchestrator {
 
 	/**
 	 * Format tool result content
-	 * For now, simple text format. In future, support structured formats.
+	 * Uses standardized formatter for consistent, human-readable output
 	 */
 	private formatToolResultContent(context: ToolExecutionContext): string {
 		if (!context.result) return '';
 
-		const result = context.result;
-		let content = `Tool "${context.toolCall.name}" executed successfully.\n`;
-
-		if (result.output) {
-			content += `Output:\n${result.output}\n`;
-		}
-
-		if (result.metadata) {
-			content += `Metadata: ${JSON.stringify(result.metadata)}\n`;
-		}
-
-		return content.trim();
+		// Use markdown formatter for rich, structured output
+		return this.resultFormatter.formatAsMarkdown(context);
 	}
 
 	/**
