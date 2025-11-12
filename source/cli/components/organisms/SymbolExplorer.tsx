@@ -10,6 +10,7 @@ import {Symbol, SymbolKind} from '../../../core/domain/models/Symbol.js';
 export interface SymbolExplorerProps {
 	symbols: Symbol[];
 	title?: string;
+	filePath?: string;
 	maxHeight?: number;
 	showLocation?: boolean;
 }
@@ -107,6 +108,7 @@ const SymbolItem: React.FC<SymbolItemProps> = ({
 export const SymbolExplorer: React.FC<SymbolExplorerProps> = ({
 	symbols,
 	title = '🔍 Symbol Explorer',
+	filePath,
 	maxHeight,
 	showLocation = false,
 }) => {
@@ -127,13 +129,21 @@ export const SymbolExplorer: React.FC<SymbolExplorerProps> = ({
 			marginY={1}
 		>
 			{/* Header */}
-			<Box>
-				<Text bold color="cyan">
-					{title}
-				</Text>
-				<Box marginLeft={1}>
-					<Text dimColor>({totalSymbols} symbols)</Text>
+			<Box flexDirection="column">
+				<Box>
+					<Text bold color="cyan">
+						{title}
+					</Text>
+					<Box marginLeft={1}>
+						<Text dimColor>({totalSymbols} symbols)</Text>
+					</Box>
 				</Box>
+				{filePath && (
+					<Box marginTop={0}>
+						<Text dimColor>📄 </Text>
+						<Text color="white">{filePath}</Text>
+					</Box>
+				)}
 			</Box>
 
 			{/* Symbol kind summary */}

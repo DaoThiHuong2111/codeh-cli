@@ -30,6 +30,9 @@ export default function Home({container, exitConfirmation = false}: HomeProps) {
 
 	// Symbol Explorer state
 	const [showSymbolExplorer, setShowSymbolExplorer] = useState(false);
+	const [currentFilePath, setCurrentFilePath] = useState<string>(
+		'source/cli/presenters/HomePresenter.ts',
+	);
 
 	// Initialize mode manager from container
 	useEffect(() => {
@@ -55,6 +58,15 @@ export default function Home({container, exitConfirmation = false}: HomeProps) {
 			console.error('Failed to resolve PermissionModeManager:', err);
 		}
 	}, [container]);
+
+	// Auto-fetch symbols when Symbol Explorer is opened
+	useEffect(() => {
+		if (showSymbolExplorer && presenter && currentFilePath) {
+			presenter.fetchSymbols(currentFilePath).catch(error => {
+				console.error('Failed to fetch symbols:', error);
+			});
+		}
+	}, [showSymbolExplorer, presenter, currentFilePath]);
 
 	// Register input-level keyboard shortcuts
 	// These shortcuts need to work even when the input box is focused
@@ -214,6 +226,7 @@ export default function Home({container, exitConfirmation = false}: HomeProps) {
 				<SymbolExplorer
 					symbols={presenter.symbols}
 					title="🔍 Symbol Explorer"
+					filePath={currentFilePath}
 					showLocation={true}
 				/>
 			)}
