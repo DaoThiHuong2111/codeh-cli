@@ -35,7 +35,8 @@ export class PermissionModeManager {
 	 * Toggle between MVP and Interactive modes
 	 */
 	toggleMode(): void {
-		const newMode: PermissionMode = this.currentMode === 'mvp' ? 'interactive' : 'mvp';
+		const newMode: PermissionMode =
+			this.currentMode === 'mvp' ? 'interactive' : 'mvp';
 		this.setMode(newMode);
 	}
 

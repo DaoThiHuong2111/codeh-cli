@@ -32,7 +32,8 @@
 		"lowlight": "^3.3.0",
 		"meow": "^14.0.0",
 		"node-fetch": "^3.3.2",
-		"react": "^19.2.0"
+		"react": "^19.2.0",
+		"zod": "^4.1.12"
 	},
 	"devDependencies": {
 		"@babel/cli": "^7.21.0",

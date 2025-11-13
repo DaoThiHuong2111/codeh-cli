@@ -22,11 +22,64 @@ export interface HandleToolCallsResponse {
 	allCompleted: boolean;
 }
 
+export interface HandleToolCallsConfig {
+	timeout?: number; // Timeout per tool execution (ms)
+	maxRetries?: number; // Max retry attempts
+	retryDelay?: number; // Delay between retries (ms)
+}
+
 export class HandleToolCalls {
 	constructor(
 		private toolRegistry: ToolRegistry,
 		private permissionHandler: IToolPermissionHandler,
+		private config: HandleToolCallsConfig = {},
 	) {}
+
+	/**
+	 * Execute with timeout
+	 */
+	private async executeWithTimeout<T>(
+		promise: Promise<T>,
+		timeoutMs: number,
+	): Promise<T> {
+		return Promise.race([
+			promise,
+			new Promise<T>((_, reject) =>
+				setTimeout(
+					() => reject(new Error(`Timeout after ${timeoutMs}ms`)),
+					timeoutMs,
+				),
+			),
+		]);
+	}
+
+	/**
+	 * Execute with retry logic
+	 */
+	private async executeWithRetry<T>(
+		fn: () => Promise<T>,
+		maxRetries: number,
+		retryDelay: number,
+	): Promise<T> {
+		let lastError: Error | null = null;
+
+		for (let attempt = 0; attempt <= maxRetries; attempt++) {
+			try {
+				return await fn();
+			} catch (error) {
+				lastError = error instanceof Error ? error : new Error(String(error));
+
+				if (attempt < maxRetries) {
+					console.log(
+						`  ⚠️  Retry ${attempt + 1}/${maxRetries} after ${retryDelay}ms...`,
+					);
+					await new Promise(resolve => setTimeout(resolve, retryDelay));
+				}
+			}
+		}
+
+		throw lastError;
+	}
 
 	async execute(
 		request: HandleToolCallsRequest,
@@ -36,7 +89,9 @@ export class HandleToolCalls {
 
 		for (let i = 0; i < toolCalls.length; i++) {
 			const toolCall = toolCalls[i];
-			console.log(`\n  [${i + 1}/${toolCalls.length}] Processing tool: ${toolCall.name}`);
+			console.log(
+				`\n  [${i + 1}/${toolCalls.length}] Processing tool: ${toolCall.name}`,
+			);
 
 			let context = ToolExecutionContext.create(toolCall);
 
@@ -77,17 +132,41 @@ export class HandleToolCalls {
 				context = context.withPermissionGranted();
 			}
 
-			// Step 3: Execute tool
+			// Step 3: Execute tool with timeout and retry
 			console.log(`  ⚙️  Executing ${toolCall.name}...`);
 			context = context.withExecutionStarted();
 			contexts[contexts.length - 1] = context;
 
 			try {
 				const startTime = Date.now();
-				const result = await this.toolRegistry.execute(
-					toolCall.name,
-					toolCall.arguments,
-				);
+
+				// Execute with retry and timeout
+				const executeFn = async () => {
+					const execution = this.toolRegistry.execute(
+						toolCall.name,
+						toolCall.arguments,
+					);
+
+					// Apply timeout if configured
+					if (this.config.timeout) {
+						return await this.executeWithTimeout(
+							execution,
+							this.config.timeout,
+						);
+					}
+
+					return await execution;
+				};
+
+				// Apply retry logic if configured
+				const maxRetries = this.config.maxRetries || 0;
+				const retryDelay = this.config.retryDelay || 1000;
+
+				const result =
+					maxRetries > 0
+						? await this.executeWithRetry(executeFn, maxRetries, retryDelay)
+						: await executeFn();
+
 				const duration = Date.now() - startTime;
 
 				context = context.withResult(result);
@@ -95,7 +174,9 @@ export class HandleToolCalls {
 				if (result.success) {
 					console.log(`  ✅ ${toolCall.name} completed (${duration}ms)`);
 					const preview = result.output.substring(0, 100);
-					console.log(`     Output preview: ${preview}${result.output.length > 100 ? '...' : ''}`);
+					console.log(
+						`     Output preview: ${preview}${result.output.length > 100 ? '...' : ''}`,
+					);
 				} else {
 					console.log(`  ❌ ${toolCall.name} failed: ${result.error}`);
 				}
@@ -112,7 +193,9 @@ export class HandleToolCalls {
 		const allApproved = contexts.every(c => !c.isRejected());
 		const allCompleted = contexts.every(c => c.isCompleted());
 
-		console.log(`\n  Summary: ${contexts.filter(c => c.isCompleted()).length}/${contexts.length} succeeded`);
+		console.log(
+			`\n  Summary: ${contexts.filter(c => c.isCompleted()).length}/${contexts.length} succeeded`,
+		);
 
 		return {
 			contexts,

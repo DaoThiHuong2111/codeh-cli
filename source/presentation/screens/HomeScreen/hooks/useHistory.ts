@@ -54,9 +54,7 @@ export interface UseHistoryReturn {
 /**
  * Hook for managing chat history
  */
-export function useHistory(
-	options: UseHistoryOptions = {},
-): UseHistoryReturn {
+export function useHistory(options: UseHistoryOptions = {}): UseHistoryReturn {
 	const {
 		enablePersistence = false,
 		storageKey = 'chat-history',
@@ -64,9 +62,7 @@ export function useHistory(
 	} = options;
 
 	const [history, setHistory] = useState<HistoryItem[]>([]);
-	const [pendingItem, setPendingItemState] = useState<PendingItem | null>(
-		null,
-	);
+	const [pendingItem, setPendingItemState] = useState<PendingItem | null>(null);
 	const [nextId, setNextId] = useState(1);
 
 	// Load history from storage on mount

@@ -246,7 +246,9 @@ class MockShellTool extends Tool {
 	}
 
 	validateParameters(parameters: Record<string, any>): boolean {
-		return typeof parameters.command === 'string' && parameters.command.length > 0;
+		return (
+			typeof parameters.command === 'string' && parameters.command.length > 0
+		);
 	}
 
 	getName(): string {
@@ -323,7 +325,10 @@ test('Tool execution flow: non-streaming mode', async t => {
 	);
 
 	// Verify no tool calls in final response (orchestration completed)
-	t.falsy(turn.response?.toolCalls, 'Final response should not have tool calls');
+	t.falsy(
+		turn.response?.toolCalls,
+		'Final response should not have tool calls',
+	);
 
 	console.log('\n✅ Non-streaming test passed');
 	console.log('Final response:', turn.response?.content);
@@ -449,7 +454,10 @@ test('Tool execution: multiple calls in agentic loop', async t => {
 
 	// Should have executed 2 tools
 	t.is(permissionHandler.permissionRequests.length, 2);
-	t.is(permissionHandler.permissionRequests[0].toolCall.arguments.command, 'ls');
+	t.is(
+		permissionHandler.permissionRequests[0].toolCall.arguments.command,
+		'ls',
+	);
 	t.is(
 		permissionHandler.permissionRequests[1].toolCall.arguments.command,
 		'ls -la',
@@ -460,7 +468,10 @@ test('Tool execution: multiple calls in agentic loop', async t => {
 	t.falsy(turn.response?.toolCalls);
 
 	console.log('\n✅ Agentic loop test passed');
-	console.log('Tool calls executed:', permissionHandler.permissionRequests.length);
+	console.log(
+		'Tool calls executed:',
+		permissionHandler.permissionRequests.length,
+	);
 });
 
 test('Tool execution: max iterations limit', async t => {
@@ -512,7 +523,11 @@ test('Tool execution: max iterations limit', async t => {
 	);
 
 	console.log('\n✅ Max iterations test passed');
-	console.log('Stopped at:', permissionHandler.permissionRequests.length, 'iterations');
+	console.log(
+		'Stopped at:',
+		permissionHandler.permissionRequests.length,
+		'iterations',
+	);
 });
 
 test('Tool definitions are sent to API', async t => {
@@ -544,7 +559,10 @@ test('Tool definitions are sent to API', async t => {
 	t.truthy(shellTool!.parameters, 'Tool should have parameters');
 
 	console.log('\n✅ Tool definitions test passed');
-	console.log('Tools sent:', capturedRequest!.tools!.map(t => t.name).join(', '));
+	console.log(
+		'Tools sent:',
+		capturedRequest!.tools!.map(t => t.name).join(', '),
+	);
 });
 
 console.log('\n🧪 Running Tool Execution Integration Tests...\n');

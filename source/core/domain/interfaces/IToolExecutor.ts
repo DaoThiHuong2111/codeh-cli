@@ -13,7 +13,13 @@ export interface ToolParameter {
 export interface ToolDefinition {
 	name: string;
 	description: string;
-	parameters: ToolParameter[];
+	parameters?: ToolParameter[]; // Old format (deprecated)
+	inputSchema?: {
+		// New format (Anthropic API compatible)
+		type: string;
+		properties?: Record<string, any>;
+		required?: string[];
+	};
 }
 
 export interface ToolExecutionResult {

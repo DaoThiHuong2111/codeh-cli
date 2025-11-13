@@ -7,27 +7,21 @@ import {CodehClient} from '../../core/application/CodehClient.js';
 import type {Message} from '../../core/domain/models/Message.js';
 import {Message as MessageModel} from '../../core/domain/models/Message.js';
 import type {Todo} from '../../core/domain/models/Todo.js';
-import {Todo as TodoModel} from '../../core/domain/models/Todo.js';
 import type {Command} from '../../core/domain/valueObjects/Command.js';
 import type {ISessionManager} from '../../core/domain/interfaces/ISessionManager.js';
 import type {ICommandRegistry} from '../../core/domain/interfaces/ICommandRegistry.js';
 import {Session} from '../../core/domain/valueObjects/Session.js';
+import {WorkflowManager} from '../../core/application/services/WorkflowManager.js';
+import {InputHistoryService} from '../../core/application/services/InputHistoryService.js';
 
 interface ViewState {
 	// Input
 	input: string;
 	inputError: string;
 
-	// Input History (for ↑↓ navigation)
-	inputHistory: string[];
-	currentHistoryIndex: number;
-
 	// Messages
 	messages: Message[];
 	streamingMessageId: string | null;
-
-	// Todos
-	todos: Todo[];
 
 	// Loading
 	isLoading: boolean;
@@ -59,6 +53,8 @@ export class HomePresenter {
 		private commandRegistry: ICommandRegistry,
 		public sessionManager: ISessionManager,
 		private config: any,
+		private inputHistory: InputHistoryService,
+		private workflowManager?: WorkflowManager,
 	) {
 		this.sessionStartTime = Date.now();
 
@@ -66,11 +62,8 @@ export class HomePresenter {
 		this.state = {
 			input: '',
 			inputError: '',
-			inputHistory: [],
-			currentHistoryIndex: -1,
 			messages: [],
 			streamingMessageId: null,
-			todos: [],
 			isLoading: false,
 			filteredSuggestions: [],
 			selectedSuggestionIndex: 0,
@@ -123,7 +116,7 @@ export class HomePresenter {
 		}
 
 		// Add to input history
-		this.addToInputHistory(userInput);
+		this.inputHistory.add(userInput);
 
 		// Check if slash command
 		if (userInput.startsWith('/')) {
@@ -334,46 +327,16 @@ export class HomePresenter {
 
 	// === Input History ===
 
-	private addToInputHistory(input: string): void {
-		// Don't add empty or duplicate inputs
-		if (!input.trim()) return;
-		if (this.state.inputHistory[0] === input) return;
-
-		// Add to beginning of history
-		this.state.inputHistory.unshift(input);
-
-		// Limit to 50 items
-		if (this.state.inputHistory.length > 50) {
-			this.state.inputHistory = this.state.inputHistory.slice(0, 50);
-		}
-
-		// Reset index
-		this.state.currentHistoryIndex = -1;
-	}
-
 	navigateHistory = (direction: 'up' | 'down'): void => {
-		const history = this.state.inputHistory;
-		if (history.length === 0) return;
+		const result =
+			direction === 'up'
+				? this.inputHistory.navigateUp()
+				: this.inputHistory.navigateDown();
 
-		if (direction === 'up') {
-			// Navigate to older inputs
-			if (this.state.currentHistoryIndex < history.length - 1) {
-				this.state.currentHistoryIndex++;
-				this.state.input = history[this.state.currentHistoryIndex];
-			}
-		} else {
-			// Navigate to newer inputs
-			if (this.state.currentHistoryIndex > 0) {
-				this.state.currentHistoryIndex--;
-				this.state.input = history[this.state.currentHistoryIndex];
-			} else if (this.state.currentHistoryIndex === 0) {
-				// Go back to empty input
-				this.state.currentHistoryIndex = -1;
-				this.state.input = '';
-			}
+		if (result !== null) {
+			this.state.input = result;
+			this._notifyView();
 		}
-
-		this._notifyView();
 	};
 
 	// === Getters ===
@@ -423,37 +386,19 @@ export class HomePresenter {
 	get messageCount() {
 		return this.state.messages.length;
 	}
-	get todos() {
-		return this.state.todos;
-	}
 
-	// === Todos Management ===
-
-	addTodo = (
-		content: string,
-		status: 'pending' | 'in_progress' | 'completed' = 'pending',
-	): void => {
-		const todo = TodoModel.create(content, {status});
-		this.state.todos.push(todo);
-		this._notifyView();
-	};
-
-	updateTodoStatus = (
-		todoId: string,
-		status: 'pending' | 'in_progress' | 'completed',
-	): void => {
-		const index = this.state.todos.findIndex(t => t.id === todoId);
-		if (index >= 0) {
-			const updatedTodo = this.state.todos[index].withStatus(status);
-			this.state.todos[index] = updatedTodo;
-			this._notifyView();
+	/**
+	 * Get todos from WorkflowManager (single source of truth)
+	 * No duplication - todos are managed by WorkflowManager and displayed here
+	 */
+	get todos(): Todo[] {
+		if (!this.workflowManager) {
+			return [];
 		}
-	};
 
-	clearTodos = (): void => {
-		this.state.todos = [];
-		this._notifyView();
-	};
+		const currentPlan = this.workflowManager.getCurrentPlan();
+		return currentPlan?.todos || [];
+	}
 
 	// === Stats Management ===
 

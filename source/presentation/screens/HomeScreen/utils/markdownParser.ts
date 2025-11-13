@@ -71,7 +71,11 @@ export function parseMarkdown(text: string): AnyMarkdownBlock[] {
 		}
 
 		// Try to parse table
-		if (isTableRow(line) && i + 1 < lines.length && isTableSeparator(lines[i + 1])) {
+		if (
+			isTableRow(line) &&
+			i + 1 < lines.length &&
+			isTableSeparator(lines[i + 1])
+		) {
 			const tableBlock = parseTable(lines, i);
 			if (tableBlock) {
 				blocks.push(tableBlock.block);
@@ -197,7 +201,9 @@ function parseList(
 	const firstMatch = firstLine.match(/^([ \t]*)([*+-]|\d+\.) +(.+)/);
 	if (!firstMatch) return null;
 
-	const listType: ListType = /^\d+\./.test(firstMatch[2]) ? 'ordered' : 'unordered';
+	const listType: ListType = /^\d+\./.test(firstMatch[2])
+		? 'ordered'
+		: 'unordered';
 	const items: ListItem[] = [];
 
 	let i = startIndex;
@@ -209,7 +215,10 @@ function parseList(
 
 		// Check if it's the same list type
 		const isOrdered = /^\d+\./.test(match[2]);
-		if ((isOrdered && listType !== 'ordered') || (!isOrdered && listType !== 'unordered')) {
+		if (
+			(isOrdered && listType !== 'ordered') ||
+			(!isOrdered && listType !== 'unordered')
+		) {
 			break;
 		}
 

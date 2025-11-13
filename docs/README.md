@@ -9,18 +9,47 @@ Tài liệu dự án CODEH CLI - Terminal UI cho AI chat với 3-layer architect
 - [User Guide](./guides/user-guide.md) - Hướng dẫn sử dụng cho end-user
 - [Configuration Guide](./guides/configuration.md) - Hướng dẫn cấu hình
 - [Development Guide](./guides/development.md) - Hướng dẫn cho developer
+- [Keyboard Shortcuts](./guides/keyboard-shortcuts.md) - Complete list of all keyboard shortcuts
+- [Mode Switching](./guides/mode-switching.md) - Permission mode switching guide
+- [UI Components](./guides/ui-components.md) - UI components usage guide
 
 ### 🏗️ [Architecture](./architecture/)
 
 - [Overview](./architecture/overview.md) - Tổng quan kiến trúc 3-layer
 - [LLM API Integration](./architecture/llm-api-integration.md) - Tích hợp 4 nhà cung cấp LLM API
-- [Integrations Guide](./architecture/integrations.md) - VS Code, MCP, A2A integrations
+- [Integrations Guide](./architecture/INTEGRATIONS_GUIDE.md) - VS Code, MCP, A2A integrations
+- [Shortcut System](./architecture/shortcut-system.md) - Layer-based shortcut management system
+- [Tools Comparison](./architecture/tools-comparison.md) - Analysis of tool implementations
+
+### 💻 [Development](./development/)
+
+- [Implementation Roadmap](./development/roadmap.md) - Project implementation roadmap
+- [Implementation Summary](./development/implementation-summary.md) - Summary of completed phases
+- [Serena Integration](./development/serena-integration.md) - Serena MCP integration plan
+- [Testing Tools](./development/testing-tools.md) - Tool execution testing guide
+- [TypeScript Tools](./development/typescript-tools.md) - TypeScript tool implementation details
+- [Manual Testing](./development/manual-testing.md) - Manual testing procedures
+
+### 📖 [API Documentation](./api/)
+
+- [API Overview](./api/README.md) - Complete API reference for all tools
+- **Tools** - Code intelligence and manipulation tools
+  - Type Information, Call Hierarchy, Find Implementations
+  - Smart Context Extractor, Dependency Graph
+  - Symbol Search, Code Validation
+- **Core Services** - Application services and business logic
+- **Infrastructure** - TypeScript analyzer, shell execution, logging
 
 ### 🖥️ [Screens](./screens/)
 
 - [Welcome Screen](./screens/welcome/) - Màn hình chào mừng
 - [Home Screen](./screens/home/) - Màn hình chính (chat interface)
 - [Config Screen](./screens/config/) - Màn hình cấu hình
+
+### 📝 [Special Documents](.)
+
+- [System Prompt Guide](./SYSTEM_PROMPT_GUIDE.md) - Guide for creating AI system prompts
+- [Documentation Consolidation Plan](./DOCUMENTATION_CONSOLIDATION_PLAN.md) - Plan for organizing all docs
 
 ---
 
@@ -270,18 +299,28 @@ Trước khi xóa, đảm bảo:
 
 ## 📊 Documentation Status
 
-| Category      | Status | Last Updated |
-| ------------- | ------ | ------------ |
-| User Guide    | 🟡 WIP | -            |
-| Architecture  | 🟢 Done | 2025-01-09   |
-| Integrations  | 🟢 Done | 2025-01-09   |
-| Welcome Screen| 🟡 WIP | -            |
-| Home Screen   | 🟡 WIP | -            |
-| Config Screen | 🔴 Todo | -            |
+| Category          | Status  | Last Updated | Files |
+| ----------------- | ------- | ------------ | ----- |
+| Architecture      | 🟢 Done | 2025-11-12   | 5     |
+| Development       | 🟢 Done | 2025-11-12   | 6     |
+| Guides            | 🟢 Done | 2025-11-12   | 6     |
+| API Documentation | 🟡 WIP  | 2025-11-12   | 1     |
+| Screens           | 🟡 WIP  | -            | 3     |
+| Core Services     | 🔴 Todo | -            | -     |
+| Infrastructure    | 🔴 Todo | -            | -     |
 
 🟢 Done | 🟡 Work in Progress | 🔴 Todo
+
+### Recent Changes (2025-11-12)
+
+✅ **Documentation Consolidation Completed:**
+- Consolidated 4 shortcut documents → 1 comprehensive guide
+- Moved 13 root-level docs to organized directories
+- Deleted outdated Phase 2 summary
+- Created structured docs/ directory with clear hierarchy
+- Root now has only 4 standard files (readme, CHANGELOG, CONTRIBUTING, CLAUDE)
 
 ---
 
 **Maintained by:** CODEH Development Team
-**Last Updated:** 2025-01-09
+**Last Updated:** 2025-11-12
