@@ -11,13 +11,11 @@
 				"--project",
 				"$(pwd)"
 			],
-			"disabled": true,
 			"alwaysAllow": []
 		},
 		"Context7": {
 			"command": "npx",
 			"args": ["-y", "@upstash/context7-mcp"],
-			"disabled": true,
 			"alwaysAllow": []
 		}
 	}

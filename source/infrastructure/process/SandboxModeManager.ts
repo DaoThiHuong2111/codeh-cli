@@ -116,4 +116,5 @@ export class SandboxModeManager implements ISandboxModeManager {
 export const globalSandboxModeManager = new SandboxModeManager();
 
 // Re-export types from interface for convenience
-export {SandboxMode, SandboxModeChangeListener} from '../../core/domain/interfaces/ISandboxModeManager.js';
+export {SandboxMode} from '../../core/domain/interfaces/ISandboxModeManager.js';
+export type {SandboxModeChangeListener} from '../../core/domain/interfaces/ISandboxModeManager.js';
