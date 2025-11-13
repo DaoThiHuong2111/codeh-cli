@@ -9,7 +9,7 @@ import {
 	ToolDefinition,
 	ToolExecutionResult,
 } from '../domain/interfaces/IToolExecutor.js';
-import {TypeScriptSymbolAnalyzer} from '../../infrastructure/typescript/TypeScriptSymbolAnalyzer.js';
+import {ISymbolAnalyzer} from '../domain/interfaces/ISymbolAnalyzer.js';
 
 interface GetCallHierarchyArgs {
 	filePath: string;
@@ -21,7 +21,7 @@ interface GetCallHierarchyArgs {
 export class GetCallHierarchyTool extends Tool {
 	constructor(
 		private projectRoot: string,
-		private analyzer: TypeScriptSymbolAnalyzer,
+		private analyzer: ISymbolAnalyzer,
 	) {
 		super(
 			'get_call_hierarchy',

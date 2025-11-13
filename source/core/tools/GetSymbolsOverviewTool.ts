@@ -8,10 +8,11 @@ import {
 	ToolDefinition,
 	ToolExecutionResult,
 } from '../domain/interfaces/IToolExecutor';
+import {ISymbolAnalyzer} from '../domain/interfaces/ISymbolAnalyzer';
 import {TypeScriptSymbolAnalyzer} from '../../infrastructure/typescript/TypeScriptSymbolAnalyzer';
 
 export class GetSymbolsOverviewTool extends Tool {
-	private analyzer?: TypeScriptSymbolAnalyzer;
+	private analyzer?: ISymbolAnalyzer;
 
 	constructor(private projectRoot: string) {
 		super(
@@ -23,7 +24,7 @@ export class GetSymbolsOverviewTool extends Tool {
 	/**
 	 * Lazy initialize analyzer
 	 */
-	private getAnalyzer(): TypeScriptSymbolAnalyzer {
+	private getAnalyzer(): ISymbolAnalyzer {
 		if (!this.analyzer) {
 			this.analyzer = new TypeScriptSymbolAnalyzer(this.projectRoot);
 		}

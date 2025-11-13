@@ -8,7 +8,7 @@ import {
 	ToolDefinition,
 	ToolExecutionResult,
 } from '../domain/interfaces/IToolExecutor.js';
-import {TypeScriptSymbolAnalyzer} from '../../infrastructure/typescript/TypeScriptSymbolAnalyzer.js';
+import {ISymbolAnalyzer} from '../domain/interfaces/ISymbolAnalyzer.js';
 import {
 	GetTypeInfoArgsSchema,
 	type GetTypeInfoArgs,
@@ -18,7 +18,7 @@ import {
 export class GetTypeInformationTool extends Tool {
 	constructor(
 		private projectRoot: string,
-		private analyzer: TypeScriptSymbolAnalyzer,
+		private analyzer: ISymbolAnalyzer,
 	) {
 		super(
 			'get_type_information',

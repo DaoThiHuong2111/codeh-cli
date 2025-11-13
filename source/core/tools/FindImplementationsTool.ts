@@ -8,7 +8,7 @@ import {
 	ToolDefinition,
 	ToolExecutionResult,
 } from '../domain/interfaces/IToolExecutor.js';
-import {TypeScriptSymbolAnalyzer} from '../../infrastructure/typescript/TypeScriptSymbolAnalyzer.js';
+import {ISymbolAnalyzer} from '../domain/interfaces/ISymbolAnalyzer.js';
 
 interface FindImplementationsArgs {
 	filePath: string;
@@ -18,7 +18,7 @@ interface FindImplementationsArgs {
 export class FindImplementationsTool extends Tool {
 	constructor(
 		private projectRoot: string,
-		private analyzer: TypeScriptSymbolAnalyzer,
+		private analyzer: ISymbolAnalyzer,
 	) {
 		super(
 			'find_implementations',

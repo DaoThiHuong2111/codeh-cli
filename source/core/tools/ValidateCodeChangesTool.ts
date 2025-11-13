@@ -8,7 +8,7 @@ import {
 	ToolDefinition,
 	ToolExecutionResult,
 } from '../domain/interfaces/IToolExecutor.js';
-import {TypeScriptSymbolAnalyzer} from '../../infrastructure/typescript/TypeScriptSymbolAnalyzer.js';
+import {ISymbolAnalyzer} from '../domain/interfaces/ISymbolAnalyzer.js';
 import * as ts from 'typescript';
 
 interface ValidateCodeChangesArgs {
@@ -18,7 +18,7 @@ interface ValidateCodeChangesArgs {
 export class ValidateCodeChangesTool extends Tool {
 	constructor(
 		private projectRoot: string,
-		private analyzer: TypeScriptSymbolAnalyzer,
+		private analyzer: ISymbolAnalyzer,
 	) {
 		super(
 			'validate_code_changes',

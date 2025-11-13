@@ -59,6 +59,7 @@ import {ValidateCodeChangesTool} from '../tools/ValidateCodeChangesTool';
 import {SmartContextExtractorTool} from '../tools/SmartContextExtractorTool';
 import {DependencyGraphTool} from '../tools/DependencyGraphTool';
 import {TypeScriptSymbolAnalyzer} from '../../infrastructure/typescript/TypeScriptSymbolAnalyzer';
+import {ISymbolAnalyzer} from '../domain/interfaces/ISymbolAnalyzer';
 import {IApiClient} from '../domain/interfaces/IApiClient';
 import {IHistoryRepository} from '../domain/interfaces/IHistoryRepository';
 import {IToolPermissionHandler} from '../domain/interfaces/IToolPermissionHandler';
@@ -140,8 +141,8 @@ export async function setupContainerWithLazyLoading(): Promise<Container> {
 			const projectRoot = process.env.CODEH_PROJECT_ROOT || process.cwd();
 
 			// Lazy analyzer (instantiated only when needed)
-			let analyzerInstance: TypeScriptSymbolAnalyzer | null = null;
-			const getAnalyzer = () => {
+			let analyzerInstance: ISymbolAnalyzer | null = null;
+			const getAnalyzer = (): ISymbolAnalyzer => {
 				if (!analyzerInstance) {
 					analyzerInstance = new TypeScriptSymbolAnalyzer(projectRoot);
 				}

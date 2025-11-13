@@ -51,6 +51,7 @@ import {ValidateCodeChangesTool} from '../tools/ValidateCodeChangesTool';
 import {SmartContextExtractorTool} from '../tools/SmartContextExtractorTool';
 import {DependencyGraphTool} from '../tools/DependencyGraphTool';
 import {TypeScriptSymbolAnalyzer} from '../../infrastructure/typescript/TypeScriptSymbolAnalyzer';
+import {ISymbolAnalyzer} from '../domain/interfaces/ISymbolAnalyzer';
 import {IApiClient} from '../domain/interfaces/IApiClient';
 import {IHistoryRepository} from '../domain/interfaces/IHistoryRepository';
 import {IToolPermissionHandler} from '../domain/interfaces/IToolPermissionHandler';
@@ -166,7 +167,7 @@ export async function setupContainer(): Promise<Container> {
 			registry.register(new SearchForPatternTool(projectRoot));
 
 			// Advanced code intelligence tools (require TypeScript analyzer)
-			const analyzer = new TypeScriptSymbolAnalyzer(projectRoot);
+			const analyzer: ISymbolAnalyzer = new TypeScriptSymbolAnalyzer(projectRoot);
 			registry.register(new GetTypeInformationTool(projectRoot, analyzer));
 			registry.register(new GetCallHierarchyTool(projectRoot, analyzer));
 			registry.register(new FindImplementationsTool(projectRoot, analyzer));

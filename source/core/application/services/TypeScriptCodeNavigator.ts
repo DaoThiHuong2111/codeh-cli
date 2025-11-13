@@ -4,6 +4,7 @@
  */
 
 import {TypeScriptSymbolAnalyzer} from '../../../infrastructure/typescript/TypeScriptSymbolAnalyzer.js';
+import {ISymbolAnalyzer} from '../../domain/interfaces/ISymbolAnalyzer.js';
 import {Symbol, SymbolKind} from '../../domain/models/Symbol.js';
 import {Reference} from '../../domain/models/Reference.js';
 
@@ -24,7 +25,7 @@ export interface SearchOptions {
  * Uses TypeScript Compiler API directly for maximum performance
  */
 export class TypeScriptCodeNavigator {
-	private analyzer: TypeScriptSymbolAnalyzer;
+	private analyzer: ISymbolAnalyzer;
 
 	constructor(projectRoot: string, tsConfigPath?: string) {
 		this.analyzer = new TypeScriptSymbolAnalyzer(projectRoot, tsConfigPath);

@@ -8,13 +8,13 @@ import {
 	ToolDefinition,
 	ToolExecutionResult,
 } from '../domain/interfaces/IToolExecutor';
-import {SandboxModeManager} from '../../infrastructure/process/SandboxModeManager';
+import {ISandboxModeManager} from '../domain/interfaces/ISandboxModeManager';
 
 export class ShellTool extends Tool {
 	constructor(
 		private executor: any,
 		private sandboxedExecutor: any,
-		private sandboxModeManager?: SandboxModeManager,
+		private sandboxModeManager?: ISandboxModeManager,
 	) {
 		// Executors will be injected (ShellExecutor, SandboxedShellExecutor)
 		super('shell', 'Execute shell commands');

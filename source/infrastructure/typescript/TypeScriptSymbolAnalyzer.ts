@@ -13,6 +13,11 @@ import {
 	SymbolLocation,
 } from '../../core/domain/models/Symbol.js';
 import {Reference} from '../../core/domain/models/Reference.js';
+import {
+	ISymbolAnalyzer,
+	TypeInfo,
+	FindSymbolOptions,
+} from '../../core/domain/interfaces/ISymbolAnalyzer.js';
 import {ResultCache} from '../cache/ResultCache.js';
 
 /**
@@ -56,8 +61,10 @@ function mapTsKindToSymbolKind(kind: ts.SyntaxKind): SymbolKind {
 /**
  * TypeScript Symbol Analyzer
  * Uses TypeScript Compiler API for semantic code analysis
+ *
+ * @implements {ISymbolAnalyzer}
  */
-export class TypeScriptSymbolAnalyzer {
+export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 	private program: ts.Program;
 	private checker: ts.TypeChecker;
 	private projectRoot: string;

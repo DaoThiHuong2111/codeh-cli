@@ -9,6 +9,7 @@ import {
 	ToolDefinition,
 	ToolExecutionResult,
 } from '../domain/interfaces/IToolExecutor';
+import {ISymbolAnalyzer} from '../domain/interfaces/ISymbolAnalyzer';
 import {TypeScriptSymbolAnalyzer} from '../../infrastructure/typescript/TypeScriptSymbolAnalyzer';
 
 export interface RenameSymbolOptions {
@@ -18,7 +19,7 @@ export interface RenameSymbolOptions {
 }
 
 export class RenameSymbolTool extends Tool {
-	private analyzer?: TypeScriptSymbolAnalyzer;
+	private analyzer?: ISymbolAnalyzer;
 
 	constructor(private projectRoot: string) {
 		super(
@@ -62,7 +63,7 @@ export class RenameSymbolTool extends Tool {
 		);
 	}
 
-	private getAnalyzer(): TypeScriptSymbolAnalyzer {
+	private getAnalyzer(): ISymbolAnalyzer {
 		if (!this.analyzer) {
 			this.analyzer = new TypeScriptSymbolAnalyzer(this.projectRoot);
 		}

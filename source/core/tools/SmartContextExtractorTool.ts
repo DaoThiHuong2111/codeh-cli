@@ -9,7 +9,7 @@ import {
 	ToolDefinition,
 	ToolExecutionResult,
 } from '../domain/interfaces/IToolExecutor.js';
-import {TypeScriptSymbolAnalyzer} from '../../infrastructure/typescript/TypeScriptSymbolAnalyzer.js';
+import {ISymbolAnalyzer} from '../domain/interfaces/ISymbolAnalyzer.js';
 
 interface SmartContextExtractorArgs {
 	filePath: string;
@@ -23,7 +23,7 @@ interface SmartContextExtractorArgs {
 export class SmartContextExtractorTool extends Tool {
 	constructor(
 		private projectRoot: string,
-		private analyzer: TypeScriptSymbolAnalyzer,
+		private analyzer: ISymbolAnalyzer,
 	) {
 		super(
 			'smart_context_extractor',

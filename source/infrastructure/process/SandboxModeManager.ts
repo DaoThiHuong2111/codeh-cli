@@ -3,19 +3,18 @@
  * Manages sandbox mode state across the application
  */
 
-export enum SandboxMode {
-	ENABLED = 'enabled',
-	DISABLED = 'disabled',
-}
-
-export interface SandboxModeChangeListener {
-	(mode: SandboxMode): void;
-}
+import {
+	ISandboxModeManager,
+	SandboxMode,
+	SandboxModeChangeListener,
+} from '../../core/domain/interfaces/ISandboxModeManager.js';
 
 /**
  * Singleton manager for sandbox mode
+ *
+ * @implements {ISandboxModeManager}
  */
-export class SandboxModeManager {
+export class SandboxModeManager implements ISandboxModeManager {
 	private mode: SandboxMode = SandboxMode.ENABLED; // Default: enabled for safety
 	private listeners: SandboxModeChangeListener[] = [];
 
@@ -38,9 +37,10 @@ export class SandboxModeManager {
 	 */
 	enable(): void {
 		if (this.mode !== SandboxMode.ENABLED) {
+			const oldMode = this.mode;
 			this.mode = SandboxMode.ENABLED;
 			console.log('🔒 Sandbox mode ENABLED - Commands are restricted for safety');
-			this.notifyListeners();
+			this.notifyListeners(this.mode, oldMode);
 		}
 	}
 
@@ -49,11 +49,12 @@ export class SandboxModeManager {
 	 */
 	disable(): void {
 		if (this.mode !== SandboxMode.DISABLED) {
+			const oldMode = this.mode;
 			this.mode = SandboxMode.DISABLED;
 			console.log(
 				'⚠️  Sandbox mode DISABLED - All commands are allowed (use with caution!)',
 			);
-			this.notifyListeners();
+			this.notifyListeners(this.mode, oldMode);
 		}
 	}
 
@@ -87,10 +88,10 @@ export class SandboxModeManager {
 	/**
 	 * Notify all listeners of mode change
 	 */
-	private notifyListeners(): void {
+	private notifyListeners(newMode: SandboxMode, oldMode: SandboxMode): void {
 		for (const listener of this.listeners) {
 			try {
-				listener(this.mode);
+				listener.onModeChanged(newMode, oldMode);
 			} catch (error) {
 				console.error('Error notifying sandbox mode listener:', error);
 			}
@@ -113,3 +114,6 @@ export class SandboxModeManager {
  * Global sandbox mode manager instance
  */
 export const globalSandboxModeManager = new SandboxModeManager();
+
+// Re-export types from interface for convenience
+export {SandboxMode, SandboxModeChangeListener} from '../../core/domain/interfaces/ISandboxModeManager.js';
