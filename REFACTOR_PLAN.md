@@ -7,11 +7,16 @@ Refactor codebase để:
 2. **Gộp /new và /clear** thành một `/new` với chức năng:
    - Auto-save session hiện tại với tên theo timestamp
    - Start session mới rỗng
-3. **Bỏ /save command** (vì đã auto-save)
+3. **Bỏ /save và /load commands** (vì đã auto-save và có UI interactive)
 4. **Auto-save session** khi:
    - User dùng `/new`
    - User thoát application
 5. **Start session mới** khi user vào app
+6. **Interactive /sessions UI**:
+   - Hiển thị list sessions với "X hours/days ago"
+   - Dùng phím mũi tên ↑↓ để navigate
+   - Enter để load session đã chọn
+   - ESC để thoát
 
 ---
 
@@ -41,7 +46,14 @@ Session (mutable Aggregate Root)
 ├─ Auto-save: Khi /new hoặc exit
 ├─ Runtime state: Thay thế Conversation
 ├─ Rich metadata: cost, tokens, model
+├─ Interactive UI: /sessions với navigation
 └─ Single source of truth
+
+Bỏ:
+├─ Conversation model
+├─ ~/.codeh/history/ directory
+├─ /save, /load, /clear commands
+└─ Manual persistence
 ```
 
 ---
@@ -117,9 +129,11 @@ Session (mutable Aggregate Root)
 
 **File: `source/infrastructure/history/FileHistoryRepository.ts`**
 
-- [ ] **Task 2.3**: Đánh dấu deprecated hoặc xóa (optional)
-  - Nếu không dùng history nữa: xóa file
-  - Nếu vẫn giữ cho backward compatibility: mark @deprecated
+- [ ] **Task 2.3**: Xóa FileHistoryRepository và history directory
+  - Xóa file: `source/infrastructure/history/FileHistoryRepository.ts`
+  - Xóa tests liên quan
+  - Update imports trong codebase
+  - NOTE: Người dùng cần manually xóa `~/.codeh/history/` (hoặc tạo migration script)
 
 ---
 
@@ -132,12 +146,17 @@ Session (mutable Aggregate Root)
   - Remove executor implementation
   - Update tests
 
-- [ ] **Task 3.2**: Xóa `/clear` command
+- [ ] **Task 3.2**: Xóa `/load` command
   - Remove command registration
   - Remove executor implementation
   - Update aliases mapping
 
-- [ ] **Task 3.3**: Refactor `/new` command
+- [ ] **Task 3.3**: Xóa `/clear` command
+  - Remove command registration
+  - Remove executor implementation
+  - Update aliases mapping
+
+- [ ] **Task 3.4**: Refactor `/new` command
   ```typescript
   // Old: Just clear messages
   async execute() {
@@ -157,9 +176,48 @@ Session (mutable Aggregate Root)
   }
   ```
 
-- [ ] **Task 3.4**: Update command descriptions
+- [ ] **Task 3.5**: Refactor `/sessions` command thành interactive UI
+  ```typescript
+  async execute() {
+    // 1. Get all sessions
+    const sessions = await sessionManager.list()
+
+    // 2. Sort by updatedAt (newest first)
+    sessions.sort((a, b) => b.updatedAt - a.updatedAt)
+
+    // 3. Format with relative time
+    const formatted = sessions.map(s => ({
+      ...s,
+      relativeTime: formatRelativeTime(s.updatedAt) // "2 hours ago"
+    }))
+
+    // 4. Show interactive selector UI
+    presenter.showSessionSelector(formatted)
+  }
+  ```
+
+- [ ] **Task 3.6**: Thêm utility: formatRelativeTime()
+  ```typescript
+  // File: source/utils/timeFormat.ts
+  function formatRelativeTime(date: Date): string {
+    const now = new Date()
+    const diff = now.getTime() - date.getTime()
+
+    const minutes = Math.floor(diff / 60000)
+    const hours = Math.floor(diff / 3600000)
+    const days = Math.floor(diff / 86400000)
+
+    if (minutes < 60) return `${minutes} minutes ago`
+    if (hours < 24) return `${hours} hours ago`
+    if (days === 1) return 'yesterday'
+    return `${days} days ago`
+  }
+  ```
+
+- [ ] **Task 3.7**: Update command descriptions
   - `/new`: "Save current session and start new one"
-  - Remove `/save`, `/clear` từ documentation
+  - `/sessions`: "Browse and load saved sessions (↑↓ to navigate, Enter to load)"
+  - Remove `/save`, `/load`, `/clear` từ documentation
 
 **File: `source/core/application/services/CodehChat.ts`**
 
@@ -181,9 +239,29 @@ Session (mutable Aggregate Root)
 
 ### Phase 4: Update Presentation Layer
 
+**File: `source/cli/components/organisms/SessionSelector.tsx` (NEW)**
+
+- [ ] **Task 4.1**: Tạo SessionSelector component
+  ```typescript
+  // Similar to SlashSuggestions.tsx pattern
+  interface SessionSelectorProps {
+    sessions: FormattedSession[]
+    selectedIndex: number
+    onSelect: (session: Session) => void
+    onCancel: () => void
+  }
+
+  // UI:
+  // ┌─ Saved Sessions (↑↓ to navigate, Enter to load, ESC to cancel) ─┐
+  // │ > session_20251113_143022 (2 hours ago) - 15 messages            │
+  // │   session_20251113_091500 (7 hours ago) - 8 messages             │
+  // │   my-project (2 days ago) - 23 messages                          │
+  // └────────────────────────────────────────────────────────────────-─┘
+  ```
+
 **File: `source/cli/presenters/HomePresenter.ts`**
 
-- [ ] **Task 4.1**: Thay state.messages bằng Session
+- [ ] **Task 4.2**: Thay state.messages bằng Session
   ```typescript
   // Old
   interface ViewState {
@@ -198,7 +276,52 @@ Session (mutable Aggregate Root)
   }
   ```
 
-- [ ] **Task 4.2**: Implement auto-save methods
+- [ ] **Task 4.3**: Thêm session selector state
+  ```typescript
+  interface ViewState {
+    session: Session
+    // ... existing state
+
+    // New for session selector
+    showSessionSelector: boolean
+    availableSessions: FormattedSession[]
+    selectedSessionIndex: number
+  }
+  ```
+
+- [ ] **Task 4.4**: Implement showSessionSelector method
+  ```typescript
+  async showSessionSelector(sessions: FormattedSession[]): Promise<void> {
+    this.state.showSessionSelector = true
+    this.state.availableSessions = sessions
+    this.state.selectedSessionIndex = 0
+    this._notifyView()
+  }
+
+  navigateSessionSelector(direction: 'up' | 'down'): void {
+    const max = this.state.availableSessions.length - 1
+    if (direction === 'up') {
+      this.state.selectedSessionIndex = Math.max(0, this.state.selectedSessionIndex - 1)
+    } else {
+      this.state.selectedSessionIndex = Math.min(max, this.state.selectedSessionIndex + 1)
+    }
+    this._notifyView()
+  }
+
+  async loadSelectedSession(): Promise<void> {
+    const selected = this.state.availableSessions[this.state.selectedSessionIndex]
+    await this.loadSession(selected.name)
+    this.closeSessionSelector()
+  }
+
+  closeSessionSelector(): void {
+    this.state.showSessionSelector = false
+    this.state.availableSessions = []
+    this._notifyView()
+  }
+  ```
+
+- [ ] **Task 4.5**: Implement auto-save methods
   ```typescript
   async autoSaveCurrentSession(): Promise<string> {
     if (this.state.session.getMessageCount() === 0) {
@@ -216,7 +339,7 @@ Session (mutable Aggregate Root)
   }
   ```
 
-- [ ] **Task 4.3**: Update initialization
+- [ ] **Task 4.6**: Update initialization
   ```typescript
   async initialize() {
     // Create new empty session on app start
@@ -224,7 +347,7 @@ Session (mutable Aggregate Root)
   }
   ```
 
-- [ ] **Task 4.4**: Update cleanup for auto-save
+- [ ] **Task 4.7**: Update cleanup for auto-save
   ```typescript
   async cleanup() {
     // Auto-save before exit
@@ -237,14 +360,39 @@ Session (mutable Aggregate Root)
   }
   ```
 
-- [ ] **Task 4.5**: Update message handling
+- [ ] **Task 4.8**: Update message handling
   - `clearConversation()` → Xóa hoặc refactor
   - `startNewConversation()` → `startNewSession()`
   - All `this.state.messages` → `this.state.session.getMessages()`
 
+- [ ] **Task 4.9**: Update input handling cho session selector
+  ```typescript
+  handleKeyPress(key: string): void {
+    if (this.state.showSessionSelector) {
+      switch (key) {
+        case 'up':
+          this.navigateSessionSelector('up')
+          break
+        case 'down':
+          this.navigateSessionSelector('down')
+          break
+        case 'return':
+          await this.loadSelectedSession()
+          break
+        case 'escape':
+          this.closeSessionSelector()
+          break
+      }
+      return // Don't process other keys when selector is open
+    }
+
+    // Normal input handling...
+  }
+  ```
+
 **File: `source/cli/hooks/useHomeLogic.ts`**
 
-- [ ] **Task 4.6**: Update state interface
+- [ ] **Task 4.10**: Update state interface
   ```typescript
   const [viewState, setViewState] = useState<ViewState>({
     session: Session.createNew(config.model),
@@ -254,13 +402,25 @@ Session (mutable Aggregate Root)
 
 **File: `source/cli/screens/Home.tsx`**
 
-- [ ] **Task 4.7**: Update props and rendering
+- [ ] **Task 4.11**: Update props and rendering
   ```typescript
   // Old
   {messages.map(msg => ...)}
 
   // New
   {viewState.session.getMessages().map(msg => ...)}
+  ```
+
+- [ ] **Task 4.12**: Render SessionSelector component
+  ```typescript
+  {viewState.showSessionSelector && (
+    <SessionSelector
+      sessions={viewState.availableSessions}
+      selectedIndex={viewState.selectedSessionIndex}
+      onSelect={(session) => presenter.loadSelectedSession()}
+      onCancel={() => presenter.closeSessionSelector()}
+    />
+  )}
   ```
 
 ---
@@ -371,17 +531,29 @@ Session (mutable Aggregate Root)
 6. Exit app
 ```
 
-### User Flow: /load
+### User Flow: /sessions (Interactive)
 ```
-1. User gõ "/load session_20251113_143022"
+1. User gõ "/sessions"
    ↓
-2. Load session from file
-   session = sessionManager.load(name)
+2. Load all sessions từ ~/.codeh/sessions/
+   sessions = sessionManager.list()
    ↓
-3. Replace current session
-   presenter.state.session = session
+3. Format với relative time
+   sessions.map(s => ({ ...s, relativeTime: "2 hours ago" }))
    ↓
-4. UI update với loaded messages
+4. Show SessionSelector UI
+   presenter.showSessionSelector(sessions)
+   ↓
+5. User navigation:
+   ↑ ↓ → Navigate giữa sessions
+   Enter → Load session đã chọn
+   ESC → Cancel, quay lại chat
+   ↓
+6. On Enter:
+   - Load session: session = sessionManager.load(selectedName)
+   - Replace current: presenter.state.session = session
+   - Close selector
+   - UI update với loaded messages
 ```
 
 ---
@@ -391,12 +563,13 @@ Session (mutable Aggregate Root)
 ### Breaking Changes
 1. **API Changes**:
    - Session không còn immutable
-   - Bỏ commands: /save, /clear
+   - Bỏ commands: /save, /load, /clear
    - /new behavior thay đổi
+   - /sessions có UI interactive
 
 2. **Storage Changes**:
    - Auto-generated session names với timestamp
-   - ~/.codeh/history/ có thể deprecated
+   - ~/.codeh/history/ bị xóa (chỉ dùng ~/.codeh/sessions/)
 
 3. **Migration**:
    - Existing saved sessions vẫn load được (backward compatible)
@@ -420,7 +593,7 @@ Session (mutable Aggregate Root)
 ### Core Domain (3 files)
 - [x] `source/core/domain/valueObjects/Session.ts` → Move to models/
 - [x] `source/core/domain/models/Session.ts` (refactored)
-- [ ] `source/core/domain/models/Conversation.ts` (deprecated/removed)
+- [ ] `source/core/domain/models/Conversation.ts` (REMOVED)
 
 ### Application Layer (2 files)
 - [x] `source/core/application/services/CommandService.ts`
@@ -428,12 +601,16 @@ Session (mutable Aggregate Root)
 
 ### Infrastructure (2 files)
 - [x] `source/infrastructure/session/SessionManager.ts`
-- [ ] `source/infrastructure/history/FileHistoryRepository.ts` (optional cleanup)
+- [ ] `source/infrastructure/history/FileHistoryRepository.ts` (REMOVED)
 
-### Presentation Layer (3 files)
+### Presentation Layer (4 files)
 - [x] `source/cli/presenters/HomePresenter.ts`
 - [x] `source/cli/hooks/useHomeLogic.ts`
 - [x] `source/cli/screens/Home.tsx`
+- [ ] `source/cli/components/organisms/SessionSelector.tsx` (NEW)
+
+### Utils (1 file - NEW)
+- [ ] `source/utils/timeFormat.ts` (NEW - formatRelativeTime)
 
 ### Entry Point (1 file)
 - [x] `source/cli/cli.ts` (or main entry)
@@ -459,9 +636,12 @@ Session (mutable Aggregate Root)
 
 ### Phase 3-4: Application & UI
 - [ ] /new auto-save + start new
-- [ ] /save, /clear bị removed
+- [ ] /save, /load, /clear bị removed
+- [ ] /sessions interactive UI với ↑↓ navigation
+- [ ] SessionSelector component created
 - [ ] HomePresenter dùng Session thay messages
 - [ ] UI render từ session.getMessages()
+- [ ] Relative time formatting ("2 hours ago")
 
 ### Phase 5: Lifecycle
 - [ ] Auto-save khi exit (SIGINT handler)
