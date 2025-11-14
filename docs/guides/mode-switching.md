@@ -220,7 +220,7 @@ User presses Shift+Tab...
 ### MVP Mode (🚀)
 
 **Characteristics:**
-- ❌ No user interaction required
+-  No user interaction required
 - ✅ All tools auto-approved instantly
 - ✅ Console logs for visibility
 - 🎯 Best for: Development, Testing, Fast iteration
@@ -314,7 +314,7 @@ User clicks "Always" → Pre-approve + Execute
 
 [Dialog shown to user]
 
-❌ Permission denied: User rejected
+ Permission denied: User rejected
 ```
 
 ---

@@ -447,7 +447,7 @@ useShortcut({
   layer: 'screen',
 });
 
-// ❌ Bad - Manually checking in handler
+//  Bad - Manually checking in handler
 useShortcut({
   key: 'escape',
   handler: () => {
@@ -476,7 +476,7 @@ useShortcut({
 // ✅ Good
 useShortcut({key: '?', description: 'Show help', ...});
 
-// ❌ Bad
+//  Bad
 useShortcut({key: '?', ...}); // No description
 ```
 

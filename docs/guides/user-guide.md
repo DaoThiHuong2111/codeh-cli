@@ -310,7 +310,7 @@ Press **?** to see full help:
 > Explain async/await in JavaScript with examples
 ```
 
-❌ **DON'T**:
+ **DON'T**:
 
 ```
 > Can you help me?

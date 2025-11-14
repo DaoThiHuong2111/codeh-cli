@@ -64,7 +64,7 @@ Tài liệu dự án CODEH CLI - Terminal UI cho AI chat với 3-layer architect
 - Cần hướng dẫn sử dụng cho user
 - Kiến trúc có thay đổi quan trọng
 
-#### ❌ **KHÔNG TẠO TÀI LIỆU:**
+####  **KHÔNG TẠO TÀI LIỆU:**
 
 - Work in progress (WIP) features
 - Temporary implementation details
@@ -142,8 +142,8 @@ Content...
 - ✅ 1 topic = 1 file duy nhất
 - ✅ Cross-reference thay vì duplicate
 - ✅ Keep it DRY (Don't Repeat Yourself)
-- ❌ Không tạo multiple versions
-- ❌ Không giữ outdated docs
+-  Không tạo multiple versions
+-  Không giữ outdated docs
 
 #### **Review checklist trước khi commit docs:**
 

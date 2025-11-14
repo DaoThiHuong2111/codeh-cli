@@ -212,7 +212,7 @@ export class OutputFormatter {
 	}
 
 	private formatError(output: string): string {
-		return `❌ ${output}`;
+		return ` ${output}`;
 	}
 
 	private formatWarning(output: string): string {

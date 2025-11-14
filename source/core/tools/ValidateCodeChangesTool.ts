@@ -85,7 +85,7 @@ export class ValidateCodeChangesTool extends Tool {
 				success: true,
 				output: isValid
 					? `✅ Code validation passed! ${warnings.length} warning(s), 0 errors.`
-					: `❌ Code validation failed! ${errors.length} error(s), ${warnings.length} warning(s).`,
+					: ` Code validation failed! ${errors.length} error(s), ${warnings.length} warning(s).`,
 				metadata: {
 					valid: isValid,
 					errorCount: errors.length,

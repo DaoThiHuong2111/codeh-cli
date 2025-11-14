@@ -593,7 +593,7 @@ export const TodosDisplay: React.FC<TodosDisplayProps> = ({
 - Make domain models immutable
 - Test business logic thoroughly
 
-### ❌ DON'T
+###  DON'T
 
 - Mix UI logic with business logic
 - Access external services directly from Core

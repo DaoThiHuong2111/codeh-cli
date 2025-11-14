@@ -290,7 +290,7 @@ const {presenter, loading, error} = useHomeLogicNew(container);
 **Solution:** Return values directly, don't rely on state:
 
 ```typescript
-// ❌ Bad
+//  Bad
 const success = await initializeClient();
 if (!success || !client) { ... } // client state not updated yet
 
@@ -304,7 +304,7 @@ if (!client) { ... } // use returned value
 **Important:** In source TypeScript:
 
 - ✅ Import without `.js`: `from './Container'`
-- ❌ Don't add `.ts`: `from './Container.ts'`
+-  Don't add `.ts`: `from './Container.ts'`
 
 TypeScript compiler automatically adds `.js` when compiling.
 

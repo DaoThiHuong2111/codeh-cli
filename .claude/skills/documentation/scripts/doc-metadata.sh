@@ -30,7 +30,7 @@ LAST_MODIFIED=$(stat -c %y "$FILE" 2>/dev/null | cut -d' ' -f1)
 
 # Calculate size status
 if [ "$LINES" -gt 500 ]; then
-    SIZE_STATUS="❌ TOO LARGE (>500 lines)"
+    SIZE_STATUS=" TOO LARGE (>500 lines)"
 elif [ "$LINES" -gt 450 ]; then
     SIZE_STATUS="⚠️  APPROACHING LIMIT (>450 lines)"
 elif [ "$LINES" -gt 400 ]; then

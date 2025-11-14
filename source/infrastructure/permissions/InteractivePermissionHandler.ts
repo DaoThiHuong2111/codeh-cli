@@ -58,7 +58,7 @@ export class InteractivePermissionHandler implements IToolPermissionHandler {
 		console.log(
 			result.approved
 				? `✅ Permission granted`
-				: `❌ Permission denied: ${result.reason || 'User rejected'}`,
+				: ` Permission denied: ${result.reason || 'User rejected'}`,
 		);
 		console.log('');
 

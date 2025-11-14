@@ -6,6 +6,7 @@
 import test from 'ava';
 import * as path from 'path';
 import {CodehClient} from '../../dist/core/application/CodehClient.js';
+import {Configuration} from '../../dist/core/domain/models/Configuration.js';
 import {ToolRegistry} from '../../dist/core/tools/base/ToolRegistry.js';
 import {SymbolSearchTool} from '../../dist/core/tools/SymbolSearchTool.js';
 import {FindReferencesTool} from '../../dist/core/tools/FindReferencesTool.js';
@@ -240,9 +241,19 @@ function createCodehClientForTest(apiClient: IApiClient): {
 	toolRegistry.register(new FindReferencesTool(TEST_PROJECT_ROOT));
 	toolRegistry.register(new GetSymbolsOverviewTool(TEST_PROJECT_ROOT));
 
+	// Create mock configuration
+	const mockConfig = Configuration.create({
+		provider: 'anthropic',
+		model: 'claude-3-5-sonnet-20241022',
+		apiKey: 'test-key',
+		maxTokens: 4096,
+		temperature: 0.7,
+	});
+
 	const client = new CodehClient(
 		apiClient,
 		historyRepo,
+		mockConfig,
 		toolRegistry,
 		permissionHandler,
 	);

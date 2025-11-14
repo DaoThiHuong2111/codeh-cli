@@ -5,6 +5,7 @@
  */
 
 import {CodehClient} from './dist/core/application/CodehClient.js';
+import {Configuration} from './dist/core/domain/models/Configuration.js';
 import {ToolRegistry} from './dist/core/tools/base/ToolRegistry.js';
 import {WorkflowManager} from './dist/core/application/services/WorkflowManager.js';
 import {
@@ -205,9 +206,19 @@ function createTestEnvironment(scenario) {
 	toolRegistry.register(new UpdateTodoStatusTool(workflowManager));
 	toolRegistry.register(new GetCurrentPlanTool(workflowManager));
 
+	// Create mock configuration
+	const mockConfig = Configuration.create({
+		provider: 'anthropic',
+		model: 'claude-3-5-sonnet-20241022',
+		apiKey: 'test-key',
+		maxTokens: 4096,
+		temperature: 0.7,
+	});
+
 	const client = new CodehClient(
 		mockAI,
 		historyRepo,
+		mockConfig,
 		toolRegistry,
 		permissionHandler,
 	);
@@ -217,7 +228,7 @@ function createTestEnvironment(scenario) {
 
 function assert(condition, message) {
 	if (!condition) {
-		throw new Error(`❌ Assertion failed: ${message}`);
+		throw new Error(` Assertion failed: ${message}`);
 	}
 	console.log(`✓ ${message}`);
 }
@@ -232,7 +243,7 @@ async function test(name, fn) {
 		await fn();
 		console.log(`✅ PASSED: ${name}\n`);
 	} catch (error) {
-		console.error(`❌ FAILED: ${name}`);
+		console.error(` FAILED: ${name}`);
 		console.error(`   Error: ${error.message}\n`);
 		throw error;
 	}
@@ -382,7 +393,16 @@ await test('Integration: AI can check current plan status', async () => {
 
 	toolRegistry2.register(new GetCurrentPlanTool(workflowManager));
 
-	const client2 = new CodehClient(mockAI2, historyRepo, toolRegistry2, permissionHandler);
+	// Create mock configuration
+	const mockConfig2 = Configuration.create({
+		provider: 'anthropic',
+		model: 'claude-3-5-sonnet-20241022',
+		apiKey: 'test-key',
+		maxTokens: 4096,
+		temperature: 0.7,
+	});
+
+	const client2 = new CodehClient(mockAI2, historyRepo, mockConfig2, toolRegistry2, permissionHandler);
 
 	const turn = await client2.execute('What is the current plan?');
 

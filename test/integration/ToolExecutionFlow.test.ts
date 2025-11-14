@@ -7,6 +7,7 @@ import test from 'ava';
 import {CodehClient} from '../../dist/core/application/CodehClient.js';
 import {Turn} from '../../dist/core/domain/models/Turn.js';
 import {Message} from '../../dist/core/domain/models/Message.js';
+import {Configuration} from '../../dist/core/domain/models/Configuration.js';
 import type {
 	IApiClient,
 	ApiRequest,
@@ -273,9 +274,19 @@ function createTestClient() {
 	// Register mock shell tool
 	toolRegistry.register(new MockShellTool());
 
+	// Create mock configuration
+	const mockConfig = Configuration.create({
+		provider: 'anthropic',
+		model: 'claude-3-5-sonnet-20241022',
+		apiKey: 'test-key',
+		maxTokens: 4096,
+		temperature: 0.7,
+	});
+
 	const client = new CodehClient(
 		apiClient,
 		historyRepo,
+		mockConfig,
 		toolRegistry,
 		permissionHandler,
 	);
@@ -443,9 +454,19 @@ test('Tool execution: multiple calls in agentic loop', async t => {
 		};
 	};
 
+	// Create mock configuration
+	const mockConfig = Configuration.create({
+		provider: 'anthropic',
+		model: 'claude-3-5-sonnet-20241022',
+		apiKey: 'test-key',
+		maxTokens: 4096,
+		temperature: 0.7,
+	});
+
 	const client = new CodehClient(
 		apiClient,
 		historyRepo,
+		mockConfig,
 		toolRegistry,
 		permissionHandler,
 	);
@@ -502,9 +523,19 @@ test('Tool execution: max iterations limit', async t => {
 		};
 	};
 
+	// Create mock configuration
+	const mockConfig = Configuration.create({
+		provider: 'anthropic',
+		model: 'claude-3-5-sonnet-20241022',
+		apiKey: 'test-key',
+		maxTokens: 4096,
+		temperature: 0.7,
+	});
+
 	const client = new CodehClient(
 		apiClient,
 		historyRepo,
+		mockConfig,
 		toolRegistry,
 		permissionHandler,
 	);

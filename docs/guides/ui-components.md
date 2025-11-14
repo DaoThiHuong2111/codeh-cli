@@ -104,7 +104,7 @@ import ToolCallDisplay from './components/molecules/ToolCallDisplay';
 - `pending`: Yellow (⏳)
 - `executing`: Blue (⚙️)
 - `completed`: Green (✅)
-- `failed`: Red (❌)
+- `failed`: Red ()
 
 ---
 
@@ -414,8 +414,8 @@ permissionHandler.setUICallback(/* UI implementation */);
 - ✅ All tools auto-approved
 - ✅ Console logging only
 - ✅ No user interaction required
-- ❌ No security checks
-- ❌ No permission dialog
+-  No security checks
+-  No permission dialog
 
 **Full (With InteractivePermissionHandler):**
 - ✅ User approves each tool

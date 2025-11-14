@@ -250,9 +250,9 @@ npm start
 
 | Provider                  | API Key Required | Local   | Streaming |
 | ------------------------- | ---------------- | ------- | --------- |
-| Anthropic (Claude)        | ✅               | ❌      | ✅        |
-| OpenAI (GPT)              | ✅               | ❌      | ✅        |
-| Ollama                    | ❌               | ✅      | ✅        |
+| Anthropic (Claude)        | ✅               |       | ✅        |
+| OpenAI (GPT)              | ✅               |       | ✅        |
+| Ollama                    |                | ✅      | ✅        |
 | Generic OpenAI-compatible | ✅               | Depends | ✅        |
 
 ## Key Features

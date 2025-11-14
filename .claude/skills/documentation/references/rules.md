@@ -19,7 +19,7 @@ find docs/screens/{screen-name} -name "*.md"
 If similar documentation exists:
 - ✅ Update existing file
 - ✅ Add new section to existing doc
-- ❌ Create duplicate file
+-  Create duplicate file
 
 ### Rule 3: Consolidate Related Info
 Keep related information in ONE place:
@@ -58,7 +58,7 @@ Always include file path and line number when referencing code:
 The `HomeScreen` is defined in source/cli/screens/Home.tsx:16
 ```
 
-❌ **BAD:**
+ **BAD:**
 ```markdown
 The HomeScreen component
 ```
@@ -75,7 +75,7 @@ interface Props {
 ```
 ````
 
-❌ **BAD:**
+ **BAD:**
 ````markdown
 ```
 interface Props {
@@ -94,7 +94,7 @@ Use tables for comparisons, options, shortcuts:
 | Chat    | ✅     | Home   |
 ```
 
-❌ **BAD:**
+ **BAD:**
 ```markdown
 - Chat feature is available on Home screen
 ```
@@ -118,7 +118,7 @@ graph TD
   A[Start] --> B[Action]
 ```
 
-❌ **BAD:**
+ **BAD:**
 External image files or screenshots (unless absolutely necessary)
 
 ## Content Quality
@@ -132,7 +132,7 @@ Execute slash commands by typing `/` followed by command name.
 Example: `/save my-session` saves current conversation.
 ```
 
-❌ **BAD:**
+ **BAD:**
 ```markdown
 Use slash commands to do things.
 ```
@@ -153,7 +153,7 @@ Save current conversation:
 Result: Session saved to `~/.codeh/sessions/my-session.json`
 ```
 
-❌ **BAD:**
+ **BAD:**
 ```markdown
 ## Save Session
 
@@ -175,7 +175,7 @@ Output:
 \```
 ```
 
-❌ **BAD:**
+ **BAD:**
 ```markdown
 Run npm test to test.
 ```
@@ -198,8 +198,8 @@ Screen documentation files MUST use these names:
 ### Rule 14: Lowercase with Hyphens
 For custom files (rare cases):
 - ✅ `integration-guide.md`
-- ❌ `Integration_Guide.md`
-- ❌ `integrationGuide.md`
+-  `Integration_Guide.md`
+-  `integrationGuide.md`
 
 ## Version Control
 
@@ -232,7 +232,7 @@ Checklist before committing docs:
 
 ## Anti-Patterns
 
-### ❌ Anti-Pattern 1: Duplicate Files
+###  Anti-Pattern 1: Duplicate Files
 **BAD:**
 ```
 docs/
@@ -248,7 +248,7 @@ docs/
     └── README.md
 ```
 
-### ❌ Anti-Pattern 2: Vague Documentation
+###  Anti-Pattern 2: Vague Documentation
 **BAD:**
 ```markdown
 # Feature
@@ -266,7 +266,7 @@ Example: `/save my-session`
 Location: source/cli/hooks/useSlashCommands.ts:45
 ```
 
-### ❌ Anti-Pattern 3: No Code References
+###  Anti-Pattern 3: No Code References
 **BAD:**
 ```markdown
 The HomePresenter handles business logic.
@@ -279,7 +279,7 @@ The HomePresenter handles business logic for the Home screen.
 Implementation: source/cli/presenters/HomePresenter.ts:12
 ```
 
-### ❌ Anti-Pattern 4: Outdated Examples
+###  Anti-Pattern 4: Outdated Examples
 **BAD:**
 ```markdown
 \```typescript
@@ -296,7 +296,7 @@ const state = useHomeLogic();
 \```
 ```
 
-### ❌ Anti-Pattern 5: WIP Documentation
+###  Anti-Pattern 5: WIP Documentation
 **BAD:**
 ```markdown
 # New Feature (WIP)
@@ -307,7 +307,7 @@ This will be implemented soon...
 **GOOD:**
 Don't document until feature is complete.
 
-### ❌ Anti-Pattern 6: Planning Docs
+###  Anti-Pattern 6: Planning Docs
 **BAD:**
 ```markdown
 # TODO: Implement Feature X

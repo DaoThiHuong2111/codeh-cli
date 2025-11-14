@@ -8,6 +8,7 @@ import {IHistoryRepository} from '../domain/interfaces/IHistoryRepository.js';
 import {IToolPermissionHandler} from '../domain/interfaces/IToolPermissionHandler.js';
 import {Turn} from '../domain/models/Turn.js';
 import {Message} from '../domain/models/Message.js';
+import {Configuration} from '../domain/models/Configuration.js';
 import {InputClassifier} from './services/InputClassifier.js';
 import {OutputFormatter} from './services/OutputFormatter.js';
 import {ToolRegistry} from '../tools/base/ToolRegistry.js';
@@ -26,6 +27,7 @@ export class CodehClient {
 	constructor(
 		private apiClient: IApiClient,
 		private historyRepo: IHistoryRepository,
+		private config: Configuration,
 		toolRegistry?: ToolRegistry,
 		permissionHandler?: IToolPermissionHandler,
 	) {
@@ -61,7 +63,7 @@ ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 			const errorMessage = validation.errors.join('\n');
 			const requestMsg = Message.user(input);
 			const responseMsg = Message.assistant(
-				`❌ Input validation failed:\n${errorMessage}`,
+				` Input validation failed:\n${errorMessage}`,
 			);
 
 			return Turn.create(requestMsg)
@@ -92,6 +94,9 @@ ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 					})),
 					{role: 'user', content: input},
 				],
+				model: this.config.model,
+				maxTokens: this.config.maxTokens,
+				temperature: this.config.temperature,
 				tools,
 				systemPrompt: this.systemPrompt,
 			});
@@ -138,7 +143,7 @@ ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 
 			return turn;
 		} catch (error: any) {
-			const errorMsg = Message.assistant(`❌ Error: ${error.message}`);
+			const errorMsg = Message.assistant(`Error: ${error.message}`);
 
 			return Turn.create(requestMsg)
 				.withResponse(errorMsg)
@@ -164,7 +169,7 @@ ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 			const errorMessage = validation.errors.join('\n');
 			const requestMsg = Message.user(input);
 			const responseMsg = Message.assistant(
-				`❌ Input validation failed:\n${errorMessage}`,
+				` Input validation failed:\n${errorMessage}`,
 			);
 
 			return Turn.create(requestMsg)
@@ -198,6 +203,9 @@ ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 						})),
 						{role: 'user', content: input},
 					],
+					model: this.config.model,
+					maxTokens: this.config.maxTokens,
+					temperature: this.config.temperature,
 					tools,
 					systemPrompt: this.systemPrompt,
 				},
@@ -256,7 +264,7 @@ ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 
 			return turn;
 		} catch (error: any) {
-			const errorMsg = Message.assistant(`❌ Error: ${error.message}`);
+			const errorMsg = Message.assistant(`Error: ${error.message}`);
 
 			return Turn.create(requestMsg)
 				.withResponse(errorMsg)

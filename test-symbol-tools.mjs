@@ -23,7 +23,7 @@ let testsFailed = 0;
 
 function assert(condition, message) {
 	if (!condition) {
-		console.error(`❌ FAIL: ${message}`);
+		console.error(` FAIL: ${message}`);
 		testsFailed++;
 		return false;
 	}
@@ -37,7 +37,7 @@ async function test(name, fn) {
 	try {
 		await fn();
 	} catch (error) {
-		console.error(`❌ ERROR in "${name}":`, error.message);
+		console.error(` ERROR in "${name}":`, error.message);
 		testsFailed++;
 	}
 }
@@ -237,7 +237,7 @@ await test('FindReferencesTool: should execute successfully', async () => {
 console.log('\n' + '='.repeat(50));
 console.log(`\n📊 Test Results:`);
 console.log(`   ✅ Passed: ${testsPassed}`);
-console.log(`   ❌ Failed: ${testsFailed}`);
+console.log(`    Failed: ${testsFailed}`);
 console.log(`   📈 Total:  ${testsPassed + testsFailed}`);
 
 if (testsFailed === 0) {

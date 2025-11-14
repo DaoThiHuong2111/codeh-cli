@@ -123,7 +123,7 @@ git push origin feature/my-new-feature
 - **Avoid `any`** - Use proper types or `unknown`
 
 ```typescript
-// ❌ Bad
+//  Bad
 const data: any = fetchData();
 
 // ✅ Good
@@ -137,7 +137,7 @@ const data: UserData = await fetchData();
 - **Use barrel exports** - Simplify imports
 
 ```typescript
-// ❌ Bad
+//  Bad
 import {Tool} from '../../tools/base/Tool';
 import {ToolDefinition} from '../../domain/interfaces/IToolExecutor';
 

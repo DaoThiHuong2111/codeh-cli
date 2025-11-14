@@ -13,6 +13,7 @@ const __dirname = path.dirname(__filename);
 
 // Import from compiled dist
 const {CodehClient} = await import('./dist/core/application/CodehClient.js');
+const {Configuration} = await import('./dist/core/domain/models/Configuration.js');
 const {ToolRegistry} = await import('./dist/core/tools/base/ToolRegistry.js');
 const {SymbolSearchTool} = await import('./dist/core/tools/SymbolSearchTool.js');
 const {FindReferencesTool} = await import('./dist/core/tools/FindReferencesTool.js');
@@ -34,7 +35,7 @@ let testsFailed = 0;
 
 function assert(condition, message) {
 	if (!condition) {
-		console.error(`❌ FAIL: ${message}`);
+		console.error(` FAIL: ${message}`);
 		testsFailed++;
 		return false;
 	}
@@ -48,7 +49,7 @@ async function test(name, fn) {
 	try {
 		await fn();
 	} catch (error) {
-		console.error(`❌ ERROR in "${name}":`, error.message);
+		console.error(` ERROR in "${name}":`, error.message);
 		console.error(error.stack);
 		testsFailed++;
 	}
@@ -362,7 +363,16 @@ function createCodehClient(mockAI, projectRoot) {
 	toolRegistry.register(new FindFileTool(projectRoot));
 	toolRegistry.register(new SearchForPatternTool(projectRoot));
 
-	const client = new CodehClient(mockAI, historyRepo, toolRegistry, permissionHandler);
+	// Create mock configuration
+	const mockConfig = Configuration.create({
+		provider: 'anthropic',
+		model: 'claude-3-5-sonnet-20241022',
+		apiKey: 'test-key',
+		maxTokens: 4096,
+		temperature: 0.7,
+	});
+
+	const client = new CodehClient(mockAI, historyRepo, mockConfig, toolRegistry, permissionHandler);
 
 	return {client, toolRegistry};
 }
@@ -611,7 +621,7 @@ await test('Integration: Multi-step workflow with error handling', async () => {
 console.log('\n' + '='.repeat(50));
 console.log(`\n📊 Integration Test Results:`);
 console.log(`   ✅ Passed: ${testsPassed}`);
-console.log(`   ❌ Failed: ${testsFailed}`);
+console.log(`    Failed: ${testsFailed}`);
 console.log(`   📈 Total:  ${testsPassed + testsFailed}`);
 
 if (testsFailed === 0) {

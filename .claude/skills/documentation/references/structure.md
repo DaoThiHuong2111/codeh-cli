@@ -328,14 +328,14 @@ Every screen MUST have:
 ### Rule 3: Consistent Naming
 Use exact names:
 - ✅ `README.md`, `features.md`, `technical.md`, `flows.md`
-- ❌ `overview.md`, `guide.md`, `manual.md`
+-  `overview.md`, `guide.md`, `manual.md`
 
 ### Rule 4: No Nested Screens
 Screens are flat:
 ```
 ✅ docs/screens/home/
 ✅ docs/screens/config/
-❌ docs/screens/home/subscreen/
+ docs/screens/home/subscreen/
 ```
 
 ### Rule 5: No Loose Files
@@ -346,8 +346,8 @@ All docs must be in:
 
 Not allowed:
 ```
-❌ docs/random-file.md
-❌ docs/notes.md
+ docs/random-file.md
+ docs/notes.md
 ```
 
 ## Special Cases

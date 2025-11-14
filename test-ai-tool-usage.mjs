@@ -5,6 +5,7 @@
  */
 
 import {CodehClient} from './dist/core/application/CodehClient.js';
+import {Configuration} from './dist/core/domain/models/Configuration.js';
 import {InMemoryHistoryRepository} from './dist/infrastructure/history/InMemoryHistoryRepository.js';
 import {ToolRegistry} from './dist/core/tools/base/ToolRegistry.js';
 import {SymbolSearchTool} from './dist/core/tools/SymbolSearchTool.js';
@@ -99,9 +100,19 @@ async function testAIToolUsage() {
 	toolRegistry.register(new FindReferencesTool(projectRoot));
 	toolRegistry.register(new GetSymbolsOverviewTool(projectRoot));
 
+	// Create mock configuration
+	const mockConfig = Configuration.create({
+		provider: 'anthropic',
+		model: 'claude-3-5-sonnet-20241022',
+		apiKey: 'test-key',
+		maxTokens: 4096,
+		temperature: 0.7,
+	});
+
 	const client = new CodehClient(
 		apiClient,
 		historyRepo,
+		mockConfig,
 		toolRegistry,
 		permissionHandler,
 	);
@@ -145,7 +156,7 @@ async function testAIToolUsage() {
 		result1.toolCalls &&
 		result1.toolCalls.length > 0 &&
 		result1.toolCalls[0].name === 'symbol_search';
-	console.log(`\n  Result: ${test1Pass ? '✅ PASS' : '❌ FAIL'}`);
+	console.log(`\n  Result: ${test1Pass ? '✅ PASS' : ' FAIL'}`);
 
 	// ========================================
 	// Test 2: Find References Tool
@@ -183,7 +194,7 @@ async function testAIToolUsage() {
 		result2.toolCalls &&
 		result2.toolCalls.length > 0 &&
 		result2.toolCalls[0].name === 'find_references';
-	console.log(`\n  Result: ${test2Pass ? '✅ PASS' : '❌ FAIL'}`);
+	console.log(`\n  Result: ${test2Pass ? '✅ PASS' : ' FAIL'}`);
 
 	// ========================================
 	// Summary
@@ -195,9 +206,9 @@ async function testAIToolUsage() {
 	const totalTests = 2;
 
 	console.log(`  Total: ${passCount}/${totalTests} tests passed`);
-	console.log(`  ${test1Pass ? '✅' : '❌'} AI autonomously calls symbol_search`);
+	console.log(`  ${test1Pass ? '✅' : ''} AI autonomously calls symbol_search`);
 	console.log(
-		`  ${test2Pass ? '✅' : '❌'} AI autonomously calls find_references`,
+		`  ${test2Pass ? '✅' : ''} AI autonomously calls find_references`,
 	);
 
 	console.log('\n━'.repeat(60));
@@ -218,6 +229,6 @@ async function testAIToolUsage() {
 
 // Run tests
 testAIToolUsage().catch(error => {
-	console.error('\n❌ Test failed:', error);
+	console.error('\n Test failed:', error);
 	process.exit(1);
 });

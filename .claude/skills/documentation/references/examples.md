@@ -377,9 +377,9 @@ Configuration validation occurs in source/core/domain/models/Configuration.ts:54
 **Bad examples:**
 
 ```markdown
-❌ The HomePresenter is in HomePresenter.ts
-❌ See HomePresenter
-❌ Check the presenters folder
+ The HomePresenter is in HomePresenter.ts
+ See HomePresenter
+ Check the presenters folder
 ```
 
 **Why bad:**
@@ -450,7 +450,7 @@ interface Props {
 | Feature    | Home | Config | Welcome |
 |------------|------|--------|---------|
 | Input      | ✅   | ✅     | ✅      |
-| Streaming  | ✅   | ❌     | ❌      |
+| Streaming  | ✅   |      |       |
 ```
 
 **Why good:**
@@ -565,9 +565,9 @@ git commit -m "docs: consolidate duplicate home screen docs
 **Bad commits:**
 
 ```bash
-❌ git commit -m "update docs"
-❌ git commit -m "fix"
-❌ git commit -m "documentation changes"
+ git commit -m "update docs"
+ git commit -m "fix"
+ git commit -m "documentation changes"
 ```
 
 **Why bad:**

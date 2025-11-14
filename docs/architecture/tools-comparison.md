@@ -35,11 +35,11 @@
 | `create_text_file` | ✅ Có (FileOps write) | - | - |
 | `read_file` | ✅ Có (FileOps read) | - | - |
 | `list_dir` | ✅ Có (FileOps list) | - | - |
-| `find_file` | ❌ Chưa có | 🔴 HIGH | Cần thiết để tìm files by pattern |
-| `delete_lines` | ❌ Chưa có | 🟡 MEDIUM | Precision editing |
-| `insert_at_line` | ❌ Chưa có | 🟡 MEDIUM | Precision editing |
-| `replace_lines` | ❌ Chưa có | 🟡 MEDIUM | Precision editing |
-| `replace_regex` | ❌ Chưa có | 🔴 HIGH | Powerful editing tool |
+| `find_file` |  Chưa có | 🔴 HIGH | Cần thiết để tìm files by pattern |
+| `delete_lines` |  Chưa có | 🟡 MEDIUM | Precision editing |
+| `insert_at_line` |  Chưa có | 🟡 MEDIUM | Precision editing |
+| `replace_lines` |  Chưa có | 🟡 MEDIUM | Precision editing |
+| `replace_regex` |  Chưa có | 🔴 HIGH | Powerful editing tool |
 
 ### **Group 2: Symbol & Code Analysis** (9 tools)
 | Serena Tool | Codeh Status | Priority | Note |
@@ -47,54 +47,54 @@
 | `find_symbol` | ✅ Có (SymbolSearchTool) | - | Working perfectly |
 | `find_referencing_symbols` | ⚠️ Có bug | 🔴 HIGH | Cần fix LanguageService |
 | `get_symbols_overview` | ✅ Có | - | Working perfectly |
-| `rename_symbol` | ❌ **Chưa có** | 🔴 **CRITICAL** | **Rất quan trọng!** Refactoring |
-| `replace_symbol_body` | ❌ **Chưa có** | 🔴 **CRITICAL** | **Rất quan trọng!** Edit code |
-| `insert_before_symbol` | ❌ Chưa có | 🟠 HIGH | Add imports, annotations |
-| `insert_after_symbol` | ❌ Chưa có | 🟠 HIGH | Add methods, properties |
+| `rename_symbol` |  **Chưa có** | 🔴 **CRITICAL** | **Rất quan trọng!** Refactoring |
+| `replace_symbol_body` |  **Chưa có** | 🔴 **CRITICAL** | **Rất quan trọng!** Edit code |
+| `insert_before_symbol` |  Chưa có | 🟠 HIGH | Add imports, annotations |
+| `insert_after_symbol` |  Chưa có | 🟠 HIGH | Add methods, properties |
 
 **→ Thiếu 4/7 tools quan trọng nhất của Serena!**
 
 ### **Group 3: Memory Management** (4 tools)
 | Serena Tool | Codeh Status | Priority | Note |
 |-------------|--------------|----------|------|
-| `write_memory` | ❌ Chưa có | 🔴 **CRITICAL** | Lưu context giữa sessions |
-| `read_memory` | ❌ Chưa có | 🔴 **CRITICAL** | Đọc stored knowledge |
-| `list_memories` | ❌ Chưa có | 🟠 HIGH | List available memories |
-| `delete_memory` | ❌ Chưa có | 🟡 MEDIUM | Clean up memories |
+| `write_memory` |  Chưa có | 🔴 **CRITICAL** | Lưu context giữa sessions |
+| `read_memory` |  Chưa có | 🔴 **CRITICAL** | Đọc stored knowledge |
+| `list_memories` |  Chưa có | 🟠 HIGH | List available memories |
+| `delete_memory` |  Chưa có | 🟡 MEDIUM | Clean up memories |
 
 **→ 0/4 tools - Missing entire memory system!**
 
 ### **Group 4: Workflow & Reasoning** (7 tools)
 | Serena Tool | Codeh Status | Priority | Note |
 |-------------|--------------|----------|------|
-| `onboarding` | ❌ Chưa có | 🟠 HIGH | Analyze project structure |
-| `check_onboarding_performed` | ❌ Chưa có | 🟡 MEDIUM | - |
-| `think_about_collected_information` | ❌ Chưa có | 🟡 MEDIUM | Metacognition |
-| `think_about_task_adherence` | ❌ Chưa có | 🟡 MEDIUM | Metacognition |
-| `think_about_whether_you_are_done` | ❌ Chưa có | 🟡 MEDIUM | Metacognition |
-| `prepare_for_new_conversation` | ❌ Chưa có | 🟡 MEDIUM | - |
-| `summarize_changes` | ❌ Chưa có | 🟡 MEDIUM | - |
+| `onboarding` |  Chưa có | 🟠 HIGH | Analyze project structure |
+| `check_onboarding_performed` |  Chưa có | 🟡 MEDIUM | - |
+| `think_about_collected_information` |  Chưa có | 🟡 MEDIUM | Metacognition |
+| `think_about_task_adherence` |  Chưa có | 🟡 MEDIUM | Metacognition |
+| `think_about_whether_you_are_done` |  Chưa có | 🟡 MEDIUM | Metacognition |
+| `prepare_for_new_conversation` |  Chưa có | 🟡 MEDIUM | - |
+| `summarize_changes` |  Chưa có | 🟡 MEDIUM | - |
 
 **→ 0/7 tools - Serena's unique workflow features**
 
 ### **Group 5: Project Management** (4 tools)
 | Serena Tool | Codeh Status | Priority | Note |
 |-------------|--------------|----------|------|
-| `activate_project` | ❌ Chưa có | 🟡 MEDIUM | Multi-project support |
-| `get_current_config` | ❌ Chưa có | 🟡 MEDIUM | - |
-| `remove_project` | ❌ Chưa có | 🟢 LOW | - |
-| `switch_modes` | ❌ Chưa có | 🟡 MEDIUM | - |
+| `activate_project` |  Chưa có | 🟡 MEDIUM | Multi-project support |
+| `get_current_config` |  Chưa có | 🟡 MEDIUM | - |
+| `remove_project` |  Chưa có | 🟢 LOW | - |
+| `switch_modes` |  Chưa có | 🟡 MEDIUM | - |
 
 ### **Group 6: Execution** (2 tools)
 | Serena Tool | Codeh Status | Priority | Note |
 |-------------|--------------|----------|------|
 | `execute_shell_command` | ✅ Có (ShellTool) | - | - |
-| `restart_language_server` | ❌ Chưa có | 🟢 LOW | - |
+| `restart_language_server` |  Chưa có | 🟢 LOW | - |
 
 ### **Group 7: Advanced Search** (1 tool)
 | Serena Tool | Codeh Status | Priority | Note |
 |-------------|--------------|----------|------|
-| `search_for_pattern` | ❌ Chưa có | 🟠 HIGH | Grep-like search |
+| `search_for_pattern` |  Chưa có | 🟠 HIGH | Grep-like search |
 
 ---
 
@@ -103,7 +103,7 @@
 ### Current Status:
 ```
 ✅ Have:        5 tools (12.5%)
-❌ Missing:    35 tools (87.5%)
+ Missing:    35 tools (87.5%)
 ⚠️  Buggy:      1 tool  (FindReferencesTool)
 ```
 
@@ -288,9 +288,9 @@ Why: Fine-grained control. Nhưng có thể dùng replace_regex thay thế.
 - Can search symbols ✅
 - Can get overview ✅
 - Can execute shell ✅
-- CANNOT edit code precisely ❌
-- CANNOT refactor ❌
-- CANNOT remember context ❌
+- CANNOT edit code precisely 
+- CANNOT refactor 
+- CANNOT remember context 
 ```
 
 **After** (with CRITICAL tools):

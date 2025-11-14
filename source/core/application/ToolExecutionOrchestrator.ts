@@ -97,7 +97,7 @@ export class ToolExecutionOrchestrator {
 			if (!handleResult.allApproved) {
 				// Some tools rejected - send rejection feedback to LLM
 				console.log(
-					'❌ Some tools were rejected. Sending rejection feedback to LLM...\n',
+					' Some tools were rejected. Sending rejection feedback to LLM...\n',
 				);
 
 				// Format rejection messages (formatToolResults handles rejected contexts)

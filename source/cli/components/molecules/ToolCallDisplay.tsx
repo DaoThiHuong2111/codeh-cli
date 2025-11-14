@@ -31,7 +31,7 @@ export default function ToolCallDisplay({
 		pending: '⏳',
 		executing: '⚙️ ',
 		completed: '✅',
-		failed: '❌',
+		failed: '',
 	}[status];
 
 	const statusColor = {

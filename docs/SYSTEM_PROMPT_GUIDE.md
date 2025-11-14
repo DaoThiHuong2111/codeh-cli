@@ -30,7 +30,7 @@ Mỗi tool prompt nên có 4 phần chính:
 
 ### `symbol_search` Tool
 
-#### ❌ **BAD Prompt** (Vague):
+####  **BAD Prompt** (Vague):
 ```
 Tool: symbol_search
 Description: Search for symbols in code
@@ -226,7 +226,7 @@ Result: [expected result]
 ```markdown
 **Common Mistakes:**
 
-❌ WRONG: Using symbol_search for text search
+ WRONG: Using symbol_search for text search
 User: "Find all TODO comments"
 → symbol_search(namePath="TODO") // Will fail!
 

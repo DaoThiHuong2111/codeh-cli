@@ -151,10 +151,10 @@ Keep the file that:
 - ✅ Has better organization
 
 Delete files that:
-- ❌ Don't follow structure
-- ❌ Are outdated
-- ❌ Have partial information
-- ❌ Have poor organization
+-  Don't follow structure
+-  Are outdated
+-  Have partial information
+-  Have poor organization
 
 ## Example
 

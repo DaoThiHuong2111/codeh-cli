@@ -32,7 +32,7 @@ export class ToolResultFormatter {
 		const standardized = this.standardize(context);
 
 		let markdown = `## 🔧 Tool: ${standardized.tool}\n\n`;
-		markdown += `**Status**: ${standardized.status === 'success' ? '✅ Success' : '❌ Error'}\n`;
+		markdown += `**Status**: ${standardized.status === 'success' ? '✅ Success' : ' Error'}\n`;
 		markdown += `**Time**: ${standardized.timestamp}`;
 
 		if (standardized.duration) {
@@ -84,7 +84,7 @@ export class ToolResultFormatter {
 	formatAsText(context: ToolExecutionContext): string {
 		const standardized = this.standardize(context);
 
-		let text = `[${standardized.tool}] ${standardized.status === 'success' ? '✅' : '❌'}\n`;
+		let text = `[${standardized.tool}] ${standardized.status === 'success' ? '✅' : ''}\n`;
 		text += standardized.summary;
 
 		if (standardized.data) {

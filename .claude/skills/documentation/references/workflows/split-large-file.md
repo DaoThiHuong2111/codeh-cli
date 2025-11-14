@@ -187,10 +187,10 @@ architecture/layer3-infrastructure.md
 
 ## Common Mistakes
 
-❌ **Splitting mid-topic**: Don't split in the middle of a feature
-❌ **No cross-references**: Files should link to each other
-❌ **Inconsistent naming**: Use standard names (README, features, technical, flows)
-❌ **Still too large**: Each file should be well under 500 lines
+ **Splitting mid-topic**: Don't split in the middle of a feature
+ **No cross-references**: Files should link to each other
+ **Inconsistent naming**: Use standard names (README, features, technical, flows)
+ **Still too large**: Each file should be well under 500 lines
 
 ✅ **Split at logical boundaries**: Complete sections
 ✅ **Add navigation**: Cross-reference related files

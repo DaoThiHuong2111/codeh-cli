@@ -73,7 +73,7 @@ Reference: path/to/file.ts:line
 
 | Feature    | Screen 1 | Screen 2 | Notes      |
 |------------|----------|----------|------------|
-| Feature A  | ✅       | ❌       | Note       |
+| Feature A  | ✅       |        | Note       |
 | Feature B  | ✅       | ✅       | Note       |
 
 ## Future Enhancements

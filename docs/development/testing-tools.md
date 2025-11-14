@@ -173,7 +173,7 @@ Watch the console output for:
 - 🔧 Tool execution requests (permission checks)
 - ⚙️  Tool execution progress
 - ✅ Success indicators
-- ❌ Failure indicators
+-  Failure indicators
 - 🎯 Orchestration summaries
 
 ### Expected Behaviors

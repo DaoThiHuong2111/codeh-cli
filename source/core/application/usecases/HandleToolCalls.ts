@@ -118,7 +118,7 @@ export class HandleToolCalls {
 
 				if (!permissionResult.approved) {
 					// User rejected
-					console.log(`  ❌ Permission denied for ${toolCall.name}`);
+					console.log(`   Permission denied for ${toolCall.name}`);
 					context = context.withPermissionRejected();
 					contexts[contexts.length - 1] = context;
 					continue; // Skip to next tool
@@ -178,10 +178,10 @@ export class HandleToolCalls {
 						`     Output preview: ${preview}${result.output.length > 100 ? '...' : ''}`,
 					);
 				} else {
-					console.log(`  ❌ ${toolCall.name} failed: ${result.error}`);
+					console.log(`   ${toolCall.name} failed: ${result.error}`);
 				}
 			} catch (error: any) {
-				console.log(`  ❌ ${toolCall.name} threw error: ${error.message}`);
+				console.log(`   ${toolCall.name} threw error: ${error.message}`);
 				context = context.withError(error.message);
 			}
 

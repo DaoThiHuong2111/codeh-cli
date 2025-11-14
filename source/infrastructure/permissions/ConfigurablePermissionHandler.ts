@@ -175,7 +175,7 @@ export class ConfigurablePermissionHandler implements IToolPermissionHandler {
 		status: 'approved' | 'denied',
 		reason: string,
 	): void {
-		const icon = status === 'approved' ? '✅' : '❌';
+		const icon = status === 'approved' ? '✅' : '';
 		const args = JSON.stringify(context.toolCall.arguments, null, 2);
 
 		console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');

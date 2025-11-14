@@ -183,7 +183,7 @@ Session saved to ~/.codeh/sessions/my-session.json
 - Use complete, runnable examples
 - Show both input and output
 
-### ❌ DON'T:
+###  DON'T:
 
 - Use pseudo-code or fake examples
 - Skip testing examples

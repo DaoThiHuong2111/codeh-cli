@@ -271,9 +271,9 @@ Press ? for help | Ctrl+C to exit
 - ✅ Special: Tab, Shift, Ctrl, Esc, Enter
 
 ### No Special Requirements
-- ❌ Không cần function keys (F1-F12)
-- ❌ Không cần numpad
-- ❌ Không cần meta/command keys
+-  Không cần function keys (F1-F12)
+-  Không cần numpad
+-  Không cần meta/command keys
 
 **Compatible với:** Mac, Linux, Windows terminals
 

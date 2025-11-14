@@ -215,7 +215,7 @@ async function main() {
 
 		console.log('✅ All tests passed!\n');
 	} catch (error) {
-		console.error('\n❌ Test failed:', error);
+		console.error('\n Test failed:', error);
 		process.exit(1);
 	}
 }

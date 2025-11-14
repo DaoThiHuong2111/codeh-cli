@@ -704,7 +704,7 @@ async function createCodehAgent() {
 	});
 
 	server.on('requestHandled', ({method, duration, success}) => {
-		const emoji = success ? '✅' : '❌';
+		const emoji = success ? '✅' : '';
 		console.log(`${emoji} ${method} - ${duration}ms`);
 	});
 

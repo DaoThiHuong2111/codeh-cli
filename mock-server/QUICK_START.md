@@ -11,7 +11,7 @@ Mock server được thiết kế để **test local** mà **KHÔNG CẦN API ke
 - Không rate limits
 - Consistent responses (không random)
 
-❌ **Không cần:**
+ **Không cần:**
 - API keys
 - Authentication
 - Internet connection
@@ -209,10 +209,10 @@ const client = new AnthropicClient({
   baseURL: 'https://api.anthropic.com',   // Real API
 });
 
-// ❌ Tốn tiền
-// ❌ Cần internet
-// ❌ Rate limits
-// ❌ Cần account
+//  Tốn tiền
+//  Cần internet
+//  Rate limits
+//  Cần account
 ```
 
 ### Mock API (Local Testing)

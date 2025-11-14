@@ -919,7 +919,7 @@ private async retryWithBackoff<T>(
 const config = await loadConfiguration();
 const client = new ApiClientFactory().create(config);
 
-// ❌ Bad: Hardcode API keys
+//  Bad: Hardcode API keys
 const client = new OpenAIClient('sk-...');
 ```
 
@@ -932,7 +932,7 @@ throw new Error(
   `Check your API key and quota.`
 );
 
-// ❌ Bad: Generic errors
+//  Bad: Generic errors
 throw new Error('API call failed');
 ```
 
@@ -946,7 +946,7 @@ onChunk(chunk => {
   }
 });
 
-// ❌ Bad: Inefficient concatenation
+//  Bad: Inefficient concatenation
 onChunk(chunk => {
   fullText = fullText + chunk.content; // Creates new string each time
 });
@@ -963,7 +963,7 @@ try {
   controller.abort();
 }
 
-// ❌ Bad: No cleanup
+//  Bad: No cleanup
 await apiClient.streamChat(request, onChunk);
 ```
 
@@ -973,7 +973,7 @@ await apiClient.streamChat(request, onChunk);
 // ✅ Good: User configuration
 const model = config.model || getDefaultModel(config.provider);
 
-// ❌ Bad: Hardcoded model
+//  Bad: Hardcoded model
 const model = 'gpt-4'; // Might not work with other providers
 ```
 

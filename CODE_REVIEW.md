@@ -43,7 +43,7 @@ if (direction === 'outgoing' || direction === 'both') {
     // For now, return empty array (can be enhanced later)
 }
 ```
-❌ **Issue:** Outgoing calls not implemented - tool returns incomplete data
+ **Issue:** Outgoing calls not implemented - tool returns incomplete data
 
 **Recommendation:** Either implement outgoing calls or document limitation clearly in tool definition.
 
@@ -63,7 +63,7 @@ if (direction === 'outgoing' || direction === 'both') {
 // TypeScriptSymbolAnalyzer constructor
 const program = ts.createProgram([...], compilerOptions);
 ```
-❌ **Memory Concern:** Single global TS program loaded at startup
+ **Memory Concern:** Single global TS program loaded at startup
 - Can consume 100-200MB for medium projects
 - Not invalidated automatically on file changes
 
@@ -102,7 +102,7 @@ const program = ts.createProgram([...], compilerOptions);
 // LRUCache.ts - no max size enforcement
 private cache: Map<K, CacheNode<V>> = new Map();
 ```
-❌ **Memory Leak Risk:** No actual eviction when cache exceeds maxSize
+ **Memory Leak Risk:** No actual eviction when cache exceeds maxSize
 
 **Recommendation:** Add proper LRU eviction logic when capacity exceeded.
 
@@ -161,7 +161,7 @@ export type GetTypeInfoArgs = z.infer<typeof GetTypeInfoArgsSchema>;
 const baseCommand = this.extractBaseCommand(trimmedCommand);
 // extractBaseCommand just does command.split(/\s+/)[0]
 ```
-❌ **Bypass Risk:** Can be bypassed with:
+ **Bypass Risk:** Can be bypassed with:
 ```bash
 "npm;rm -rf /" → baseCommand = "npm" (whitelisted, but dangerous)
 ```
@@ -187,7 +187,7 @@ const baseCommand = this.extractBaseCommand(trimmedCommand);
 ```typescript
 export const globalSandboxModeManager = new SandboxModeManager();
 ```
-❌ **Global State:** Singleton exported as global
+ **Global State:** Singleton exported as global
 - Makes testing harder
 - Potential race conditions in multi-threaded context
 
@@ -255,7 +255,7 @@ getTool(name: string): Tool | undefined {
 // Last resort: instantiate to get definition
 const tool = this.getTool(name);
 ```
-❌ **Defeats Lazy Loading:** If definition not provided, forces instantiation
+ **Defeats Lazy Loading:** If definition not provided, forces instantiation
 
 **Impact:** Low - only affects tools without explicit definitions
 
@@ -280,7 +280,7 @@ registerLazy(name, factory, definition)  // Make definition required
 // Line 299
 const toolRegistry = container.resolve<LazyToolRegistry>('ToolRegistry') as any;
 ```
-❌ **Type Cast:** Uses `as any` to bypass type checking
+ **Type Cast:** Uses `as any` to bypass type checking
 
 **Root Cause:** ToolRegistry vs LazyToolRegistry incompatibility
 

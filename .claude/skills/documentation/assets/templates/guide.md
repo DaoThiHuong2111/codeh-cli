@@ -103,8 +103,8 @@ Detailed explanation with examples.
 
 - ✅ **Do this**: Explanation
 - ✅ **Do that**: Explanation
-- ❌ **Don't do this**: Explanation
-- ❌ **Don't do that**: Explanation
+-  **Don't do this**: Explanation
+-  **Don't do that**: Explanation
 
 ## Examples
 

@@ -314,6 +314,7 @@ export async function createCodehClient(
 	return new CodehClient(
 		apiClient,
 		historyRepo,
+		configuration,
 		toolRegistry,
 		permissionHandler,
 	);

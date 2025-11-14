@@ -5,6 +5,7 @@
  */
 
 import {CodehClient} from './dist/core/application/CodehClient.js';
+import {Configuration} from './dist/core/domain/models/Configuration.js';
 import {ToolRegistry} from './dist/core/tools/base/ToolRegistry.js';
 import {WorkflowManager} from './dist/core/application/services/WorkflowManager.js';
 import {
@@ -175,9 +176,19 @@ async function testAutoPlanning() {
 	toolRegistry.register(new UpdateTodoStatusTool(workflowManager));
 	toolRegistry.register(new GetCurrentPlanTool(workflowManager));
 
+	// Create mock configuration
+	const mockConfig = Configuration.create({
+		provider: 'anthropic',
+		model: 'claude-3-5-sonnet-20241022',
+		apiKey: 'test-key',
+		maxTokens: 4096,
+		temperature: 0.7,
+	});
+
 	const client = new CodehClient(
 		mockAI,
 		historyRepo,
+		mockConfig,
 		toolRegistry,
 		permissionHandler,
 	);
@@ -253,6 +264,6 @@ async function testAutoPlanning() {
 
 // Run test
 testAutoPlanning().catch(err => {
-	console.error('\n❌ Test Failed:', err.message);
+	console.error('\n Test Failed:', err.message);
 	process.exit(1);
 });
