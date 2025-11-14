@@ -98,6 +98,18 @@ export function useHomeLogic(container: Container): UseHomeLogicReturn {
 		initPresenter();
 	}, [container]);
 
+	// Cleanup on unmount (auto-save session before exit)
+	useEffect(() => {
+		return () => {
+			if (presenter) {
+				// Call cleanup asynchronously (auto-save session)
+				presenter.cleanup().catch(err => {
+					console.error('Error during cleanup:', err);
+				});
+			}
+		};
+	}, [presenter]);
+
 	return {
 		presenter,
 		loading,
