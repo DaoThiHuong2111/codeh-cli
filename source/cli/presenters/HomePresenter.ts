@@ -8,19 +8,21 @@ import type {Message} from '../../core/domain/models/Message.js';
 import {Message as MessageModel} from '../../core/domain/models/Message.js';
 import type {Todo} from '../../core/domain/models/Todo.js';
 import type {Command} from '../../core/domain/valueObjects/Command.js';
-import type {ISessionManager} from '../../core/domain/interfaces/ISessionManager.js';
+import type {ISessionManager, SessionInfo} from '../../core/domain/interfaces/ISessionManager.js';
 import type {ICommandRegistry} from '../../core/domain/interfaces/ICommandRegistry.js';
-import {Session} from '../../core/domain/valueObjects/Session.js';
+import {Session} from '../../core/domain/models/Session.js';
 import {WorkflowManager} from '../../core/application/services/WorkflowManager.js';
 import {InputHistoryService} from '../../core/application/services/InputHistoryService.js';
+import {formatRelativeTime} from '../../utils/timeFormat.js';
+import type {FormattedSession} from '../components/organisms/SessionSelector.js';
 
 interface ViewState {
 	// Input
 	input: string;
 	inputError: string;
 
-	// Messages
-	messages: Message[];
+	// Session (replaces messages array)
+	session: Session;
 	streamingMessageId: string | null;
 
 	// Loading
@@ -29,6 +31,11 @@ interface ViewState {
 	// Slash Commands
 	filteredSuggestions: Command[];
 	selectedSuggestionIndex: number;
+
+	// Session Selector (interactive /sessions UI)
+	showSessionSelector: boolean;
+	availableSessions: FormattedSession[];
+	selectedSessionIndex: number;
 
 	// Stats
 	totalTokens: number;
@@ -62,11 +69,14 @@ export class HomePresenter {
 		this.state = {
 			input: '',
 			inputError: '',
-			messages: [],
+			session: Session.createNew(config.model || 'claude-3-5-sonnet'),
 			streamingMessageId: null,
 			isLoading: false,
 			filteredSuggestions: [],
 			selectedSuggestionIndex: 0,
+			showSessionSelector: false,
+			availableSessions: [],
+			selectedSessionIndex: 0,
 			totalTokens: 0,
 			estimatedCost: 0,
 			sessionDuration: 0,
@@ -127,9 +137,9 @@ export class HomePresenter {
 		// Clear input
 		this.state.input = '';
 
-		// Add user message
+		// Add user message to session
 		const userMessage = MessageModel.user(userInput);
-		this.state.messages.push(userMessage);
+		this.state.session.addMessage(userMessage);
 
 		// Track streaming message - Create ID once for consistency
 		const assistantMessageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -147,8 +157,11 @@ export class HomePresenter {
 					// Accumulate content
 					assistantContent += chunk;
 
+					// Get messages array from session
+					const messages = this.state.session.getMessages() as Message[];
+
 					// Find existing message or create new one
-					const existingIndex = this.state.messages.findIndex(
+					const existingIndex = messages.findIndex(
 						m => m.id === assistantMessageId,
 					);
 
@@ -161,12 +174,12 @@ export class HomePresenter {
 					);
 
 					if (existingIndex >= 0) {
-						// Replace existing message with same ID
-						this.state.messages[existingIndex] = updatedMessage;
+						// Replace existing message with same ID (direct manipulation OK for streaming)
+						(messages as any)[existingIndex] = updatedMessage;
 					} else {
-						// First chunk - add new message
+						// First chunk - add new message via session
 						this.state.streamingMessageId = assistantMessageId;
-						this.state.messages.push(updatedMessage);
+						this.state.session.addMessage(updatedMessage);
 					}
 
 					this._notifyView();
@@ -198,29 +211,31 @@ export class HomePresenter {
 				}
 
 				// Replace streaming message with final message
-				const index = this.state.messages.findIndex(
+				const messages = this.state.session.getMessages() as Message[];
+				const index = messages.findIndex(
 					m => m.id === assistantMessageId,
 				);
 				if (index >= 0) {
-					this.state.messages[index] = finalMessage;
+					(messages as any)[index] = finalMessage;
 				} else {
-					this.state.messages.push(finalMessage);
+					this.state.session.addMessage(finalMessage);
 				}
 			} else {
 				throw new Error('Failed to get response from AI');
 			}
 		} catch (error: any) {
 			// Remove the streaming message if exists
-			const index = this.state.messages.findIndex(
+			const messages = this.state.session.getMessages() as Message[];
+			const index = messages.findIndex(
 				m => m.id === assistantMessageId,
 			);
 			if (index >= 0) {
-				this.state.messages.splice(index, 1);
+				(messages as any).splice(index, 1);
 			}
 
 			// Add error message
 			const errorMessage = MessageModel.error(error);
-			this.state.messages.push(errorMessage);
+			this.state.session.addMessage(errorMessage);
 		} finally {
 			this.state.isLoading = false;
 			this.state.streamingMessageId = null;
@@ -252,7 +267,7 @@ export class HomePresenter {
 			const errorMessage = MessageModel.error(
 				`Command error: ${error.message}`,
 			);
-			this.state.messages.push(errorMessage);
+			this.state.session.addMessage(errorMessage);
 		}
 
 		this._notifyView();
@@ -294,34 +309,118 @@ export class HomePresenter {
 		return this.state.filteredSuggestions.length > 0;
 	};
 
-	// === Conversation Management ===
-
-	async clearConversation(): Promise<void> {
-		this.state.messages = [];
-		this._notifyView();
-	}
-
-	async startNewConversation(): Promise<void> {
-		await this.clearConversation();
-	}
-
-	addSystemMessage(message: Message): void {
-		this.state.messages.push(message);
-		this._notifyView();
-	}
-
 	// === Session Management ===
 
-	async saveSession(name: string): Promise<void> {
-		const session = Session.create(name, this.state.messages, this.state.model);
+	/**
+	 * Auto-save current session with timestamp name (if not empty)
+	 * Returns the saved session name or 'empty' if skipped
+	 */
+	async autoSaveCurrentSession(): Promise<string> {
+		// Skip if session is empty
+		if (this.state.session.getMessageCount() === 0) {
+			return 'empty';
+		}
 
-		await this.sessionManager.save(session);
+		// Update metadata before saving
+		this.state.session.updateMetadata();
+
+		// Save with auto-generated timestamp name
+		const savedName = await this.sessionManager.saveWithTimestamp(
+			this.state.session,
+		);
+
+		return savedName;
 	}
 
+	/**
+	 * Start a new empty session
+	 */
+	async startNewSession(): Promise<void> {
+		this.state.session = Session.createNew(this.state.model);
+		this._notifyView();
+	}
+
+	/**
+	 * Add a system message to current session
+	 */
+	addSystemMessage(message: Message): void {
+		this.state.session.addMessage(message);
+		this._notifyView();
+	}
+
+	/**
+	 * Load a session by name
+	 */
 	async loadSession(name: string): Promise<void> {
 		const session = await this.sessionManager.load(name);
+		this.state.session = session;
+		this._notifyView();
+	}
 
-		this.state.messages = session.messages;
+	/**
+	 * Show interactive session selector
+	 */
+	async showSessionSelector(): Promise<void> {
+		// Get all sessions
+		const sessions = await this.sessionManager.list();
+
+		// Format with relative time
+		const formattedSessions: FormattedSession[] = sessions.map(s => ({
+			...s,
+			relativeTime: formatRelativeTime(s.updatedAt),
+		}));
+
+		// Update state
+		this.state.showSessionSelector = true;
+		this.state.availableSessions = formattedSessions;
+		this.state.selectedSessionIndex = 0;
+		this._notifyView();
+	}
+
+	/**
+	 * Navigate session selector (↑↓)
+	 */
+	navigateSessionSelector(direction: 'up' | 'down'): void {
+		const max = this.state.availableSessions.length - 1;
+		if (direction === 'up') {
+			this.state.selectedSessionIndex = Math.max(
+				0,
+				this.state.selectedSessionIndex - 1,
+			);
+		} else {
+			this.state.selectedSessionIndex = Math.min(
+				max,
+				this.state.selectedSessionIndex + 1,
+			);
+		}
+		this._notifyView();
+	}
+
+	/**
+	 * Load the selected session (Enter key)
+	 */
+	async loadSelectedSession(): Promise<void> {
+		const selected =
+			this.state.availableSessions[this.state.selectedSessionIndex];
+		if (selected) {
+			await this.loadSession(selected.name);
+			this.closeSessionSelector();
+
+			// Show system message
+			const msg = MessageModel.system(
+				`Session "${selected.name}" loaded (${selected.messageCount} messages)`,
+			);
+			this.addSystemMessage(msg);
+		}
+	}
+
+	/**
+	 * Close session selector (ESC key)
+	 */
+	closeSessionSelector(): void {
+		this.state.showSessionSelector = false;
+		this.state.availableSessions = [];
+		this.state.selectedSessionIndex = 0;
 		this._notifyView();
 	}
 
@@ -348,7 +447,7 @@ export class HomePresenter {
 		return this.state.inputError;
 	}
 	get messages() {
-		return this.state.messages;
+		return this.state.session.getMessages();
 	}
 	get isLoading() {
 		return this.state.isLoading;
@@ -384,7 +483,23 @@ export class HomePresenter {
 		return this.state.gitBranch;
 	}
 	get messageCount() {
-		return this.state.messages.length;
+		return this.state.session.getMessageCount();
+	}
+
+	get session() {
+		return this.state.session;
+	}
+
+	get showSessionSelector() {
+		return this.state.showSessionSelector;
+	}
+
+	get availableSessions() {
+		return this.state.availableSessions;
+	}
+
+	get selectedSessionIndex() {
+		return this.state.selectedSessionIndex;
 	}
 
 	/**
@@ -433,7 +548,11 @@ export class HomePresenter {
 		}
 	}
 
-	cleanup(): void {
+	async cleanup(): Promise<void> {
+		// Auto-save session before exit
+		await this.autoSaveCurrentSession();
+
+		// Clear timer
 		if (this.durationTimer) {
 			clearInterval(this.durationTimer);
 		}
