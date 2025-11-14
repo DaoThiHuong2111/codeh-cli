@@ -4,7 +4,7 @@
  */
 
 import {ISessionManager} from '../../domain/interfaces/ISessionManager';
-import {Session, SessionMetadata} from '../../domain/valueObjects/Session';
+import {Session, SessionMetadata} from '../../domain/models/Session';
 import {Message} from '../../domain/models/Message';
 
 export interface LoadSessionRequest {

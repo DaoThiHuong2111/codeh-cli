@@ -5,7 +5,7 @@ import type {
 	ISessionManager,
 	SessionInfo,
 } from '../../core/domain/interfaces/ISessionManager.js';
-import {Session} from '../../core/domain/valueObjects/Session.js';
+import {Session} from '../../core/domain/models/Session.js';
 
 export class FileSessionManager implements ISessionManager {
 	private sessionsDir: string;

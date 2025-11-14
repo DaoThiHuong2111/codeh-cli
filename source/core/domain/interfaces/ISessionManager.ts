@@ -1,4 +1,4 @@
-import {Session} from '../valueObjects/Session.js';
+import {Session} from '../models/Session.js';
 
 export interface SessionInfo {
 	name: string;

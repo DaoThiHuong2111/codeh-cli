@@ -10,7 +10,7 @@ import type {Todo} from '../../core/domain/models/Todo.js';
 import type {Command} from '../../core/domain/valueObjects/Command.js';
 import type {ISessionManager} from '../../core/domain/interfaces/ISessionManager.js';
 import type {ICommandRegistry} from '../../core/domain/interfaces/ICommandRegistry.js';
-import {Session} from '../../core/domain/valueObjects/Session.js';
+import {Session} from '../../core/domain/models/Session.js';
 import {WorkflowManager} from '../../core/application/services/WorkflowManager.js';
 import {InputHistoryService} from '../../core/application/services/InputHistoryService.js';
 
