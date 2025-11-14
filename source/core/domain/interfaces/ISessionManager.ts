@@ -20,6 +20,11 @@ export interface ISessionManager {
 	save(session: Session): Promise<void>;
 
 	/**
+	 * Save a session with auto-generated timestamp name
+	 */
+	saveWithTimestamp(session: Session): Promise<string>;
+
+	/**
 	 * Load a session by name
 	 */
 	load(name: string): Promise<Session>;

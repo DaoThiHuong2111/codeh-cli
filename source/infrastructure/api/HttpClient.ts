@@ -34,11 +34,24 @@ export class HttpClient {
 			...options.headers,
 		};
 
-		const requestOptions: any = {
-			method: options.method || 'GET',
-			headers,
-			timeout: options.timeout || this.defaultTimeout,
-		};
+        const bodyString = typeof options.body === 'string' ? options.body : JSON.stringify(options.body);
+
+        const requestOptions = {
+
+            method: 'POST',
+
+            headers,
+
+            body: bodyString,
+
+        };
+
+        console.log('🌐 [HTTP streamPost] ACTUAL body size:', bodyString.length, 'bytes =', (bodyString.length / 1024 / 1024).toFixed(2), 'MB');
+
+        console.log('🌐 [HTTP streamPost] URL:', url);
+
+        console.log('🌐 [HTTP streamPost] First 200 chars of body:', bodyString.substring(0, 200));
+		
 
 		if (options.body) {
 			requestOptions.body =
@@ -60,7 +73,7 @@ export class HttpClient {
 			};
 		} catch (error: any) {
 			if (error.name === 'AbortError' || error.code === 'ETIMEDOUT') {
-				throw new Error(`Request timeout after ${requestOptions.timeout}ms`);
+				throw new Error(`Request timeout`);
 			}
 			throw error;
 		}
@@ -78,6 +91,8 @@ export class HttpClient {
 		body: any,
 		options: Omit<HttpRequestOptions, 'method' | 'body'> = {},
 	): Promise<HttpResponse<T>> {
+		const bodyString = typeof body === 'string' ? body : JSON.stringify(body);
+		console.log('🌐 [HTTP post] ACTUAL body size:', bodyString.length, 'bytes =', (bodyString.length / 1024 / 1024).toFixed(2), 'MB');
 		return this.request<T>(url, {...options, method: 'POST', body});
 	}
 

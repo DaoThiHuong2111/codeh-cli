@@ -39,9 +39,9 @@ export class LoadSession {
 
 		return {
 			session,
-			messages: session.messages,
-			model: session.metadata.model,
-			metadata: session.metadata,
+			messages: Array.from(session.getMessages()),
+			model: session.getMetadata().model,
+			metadata: session.getMetadata(),
 			loadedAt: new Date(),
 		};
 	}

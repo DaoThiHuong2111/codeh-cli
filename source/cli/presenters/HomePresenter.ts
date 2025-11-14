@@ -360,7 +360,7 @@ export class HomePresenter {
 	/**
 	 * Show interactive session selector
 	 */
-	async showSessionSelector(): Promise<void> {
+	async openSessionSelector(): Promise<void> {
 		// Get all sessions
 		const sessions = await this.sessionManager.list();
 

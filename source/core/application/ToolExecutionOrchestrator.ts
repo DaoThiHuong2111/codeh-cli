@@ -271,6 +271,17 @@ export class ToolExecutionOrchestrator {
 				content: m.content,
 			})),
 		];
+		        const requestBody = { messages, tools };
+
+        const bodyString = JSON.stringify(requestBody);
+
+        console.log('🔥 [TOOL CONTINUATION] Request body size:', bodyString.length, 'bytes =', (bodyString.length / 1024 / 1024).toFixed(2), 'MB');
+
+        console.log('🔥 [TOOL CONTINUATION] Messages count:', messages.length);
+
+        console.log('🔥 [TOOL CONTINUATION] Tool result messages count:', toolResultMessages.length);
+
+        console.log('🔥 [TOOL CONTINUATION] Recent messages count:', recentMessages.length);
 
 		// Call LLM with tool results and tool definitions
 		const apiResponse = await this.apiClient.chat({messages, tools});

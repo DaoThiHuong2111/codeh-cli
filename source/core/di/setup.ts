@@ -8,7 +8,7 @@ import {Container} from './Container';
 // Layer 3 - Infrastructure
 import {ApiClientFactory} from '../../infrastructure/api/ApiClientFactory';
 import {ConfigLoader} from '../../infrastructure/config/ConfigLoader';
-import {FileHistoryRepository} from '../../infrastructure/history/FileHistoryRepository';
+import {InMemoryHistoryRepository} from '../../infrastructure/history/InMemoryHistoryRepository';
 import {FileOperations} from '../../infrastructure/filesystem/FileOperations';
 import {ShellExecutor} from '../../infrastructure/process/ShellExecutor';
 import {SandboxedShellExecutor} from '../../infrastructure/process/SandboxedShellExecutor';
@@ -71,7 +71,7 @@ export async function setupContainer(): Promise<Container> {
 	// History
 	container.register(
 		'HistoryRepository',
-		() => new FileHistoryRepository(),
+		() => new InMemoryHistoryRepository(),
 		true,
 	);
 

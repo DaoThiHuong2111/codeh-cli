@@ -3,15 +3,16 @@
  * Manages conversation flow and context
  */
 
-import {Conversation} from '../domain/models/Conversation';
+// Conversation has been replaced by Session
+import {Session} from '../domain/models/Session.js';
 import {Message} from '../domain/models/Message';
 import {IHistoryRepository} from '../domain/interfaces/IHistoryRepository';
 
 export class CodehChat {
-	private conversation: Conversation;
+	private session: Session;
 
 	constructor(private historyRepo: IHistoryRepository) {
-		this.conversation = Conversation.create();
+		this.session = Session.createNew('claude-3-5-sonnet');
 	}
 
 	/**
@@ -19,7 +20,7 @@ export class CodehChat {
 	 */
 	async sendMessage(content: string): Promise<Message> {
 		const userMessage = Message.user(content);
-		this.conversation.addMessage(userMessage);
+		this.session.addMessage(userMessage);
 
 		// Save to history
 		await this.historyRepo.addMessage(userMessage);
@@ -32,7 +33,7 @@ export class CodehChat {
 	 */
 	async addResponse(content: string): Promise<Message> {
 		const assistantMessage = Message.assistant(content);
-		this.conversation.addMessage(assistantMessage);
+		this.session.addMessage(assistantMessage);
 
 		// Save to history
 		await this.historyRepo.addMessage(assistantMessage);
@@ -44,21 +45,21 @@ export class CodehChat {
 	 * Get conversation history
 	 */
 	getHistory(): ReadonlyArray<Message> {
-		return this.conversation.getMessages();
+		return this.session.getMessages();
 	}
 
 	/**
 	 * Get last N messages
 	 */
 	getLastMessages(n: number): ReadonlyArray<Message> {
-		return this.conversation.getLastNMessages(n);
+		return this.session.getLastNMessages(n);
 	}
 
 	/**
 	 * Clear conversation
 	 */
 	async clear(): Promise<void> {
-		this.conversation.clear();
+		this.session.clear();
 		await this.historyRepo.clear();
 	}
 
@@ -66,7 +67,7 @@ export class CodehChat {
 	 * Start new conversation
 	 */
 	async startNew(): Promise<void> {
-		this.conversation = Conversation.create();
+		this.session = Session.createNew('claude-3-5-sonnet');
 		await this.historyRepo.startNewConversation();
 	}
 
@@ -77,18 +78,19 @@ export class CodehChat {
 		const history = await this.historyRepo.load(conversationId);
 
 		if (history) {
-			this.conversation = Conversation.fromHistory(
+			const messages = history.messages.map(
+				(m: any) =>
+					new Message(
+						m.id || `msg_${Date.now()}`,
+						m.role,
+						m.content,
+						new Date(m.timestamp || Date.now()),
+					),
+			);
+			this.session = Session.create(
 				history.id,
-				history.createdAt,
-				history.messages.map(
-					(m: any) =>
-						new Message(
-							m.id || `msg_${Date.now()}`,
-							m.role,
-							m.content,
-							new Date(m.timestamp || Date.now()),
-						),
-				),
+				messages,
+				'claude-3-5-sonnet',
 			);
 		}
 	}
@@ -98,10 +100,10 @@ export class CodehChat {
 	 */
 	getStats() {
 		return {
-			messageCount: this.conversation.getMessageCount(),
-			userMessages: this.conversation.getUserMessages().length,
-			assistantMessages: this.conversation.getAssistantMessages().length,
-			estimatedTokens: this.conversation.estimateTokenCount(),
+			messageCount: this.session.getMessageCount(),
+			userMessages: this.session.getUserMessages().length,
+			assistantMessages: this.session.getAssistantMessages().length,
+			estimatedTokens: this.session.estimateTokenCount(),
 		};
 	}
 
@@ -109,13 +111,20 @@ export class CodehChat {
 	 * Check if conversation needs compression
 	 */
 	needsCompression(maxTokens: number): boolean {
-		return this.conversation.needsCompression(maxTokens);
+		return this.session.needsCompression(maxTokens);
 	}
 
 	/**
-	 * Get conversation
+	 * Get session (formerly conversation)
 	 */
-	getConversation(): Conversation {
-		return this.conversation;
+	getSession(): Session {
+		return this.session;
+	}
+
+	/**
+	 * @deprecated Use getSession() instead
+	 */
+	getConversation(): Session {
+		return this.session;
 	}
 }

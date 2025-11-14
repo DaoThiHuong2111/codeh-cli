@@ -146,12 +146,12 @@ export default function Home({container, exitConfirmation = false}: HomeProps) {
 	// Enter: Load selected session or select suggestion
 	useShortcut({
 		key: 'enter',
-		handler: async () => {
+		handler: () => {
 			if (!presenter) return;
 
 			// Priority: Session selector > Suggestions
 			if (presenter.showSessionSelector) {
-				await presenter.loadSelectedSession();
+				presenter.loadSelectedSession();
 			} else if (presenter.hasSuggestions()) {
 				presenter.handleSuggestionSelect();
 			}
@@ -203,7 +203,7 @@ export default function Home({container, exitConfirmation = false}: HomeProps) {
 
 			{/* Conversation Area */}
 			<ConversationArea
-				messages={presenter.messages}
+				messages={Array.from(presenter.messages)}
 				isLoading={presenter.isLoading}
 				streamingMessageId={presenter.streamingMessageId}
 			/>

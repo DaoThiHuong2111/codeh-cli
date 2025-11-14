@@ -17,7 +17,6 @@ export {FileConfigRepository} from './config/FileConfigRepository';
 export {ConfigLoader} from './config/ConfigLoader';
 
 // History
-export {FileHistoryRepository} from './history/FileHistoryRepository';
 export {InMemoryHistoryRepository} from './history/InMemoryHistoryRepository';
 
 // File System

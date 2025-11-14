@@ -27,7 +27,7 @@ export class AnthropicClient implements IApiClient {
 	async chat(request: ApiRequest): Promise<ApiResponse> {
 		const requestBody = {
 			model: request.model,
-			max_tokens: request.maxTokens || 4096,
+			max_tokens: request.maxTokens || 128000,
 			messages: request.messages.map(m => ({
 				role: m.role,
 				content: m.content,
@@ -43,7 +43,15 @@ export class AnthropicClient implements IApiClient {
 				(requestBody as any)[key] === undefined &&
 				delete (requestBody as any)[key],
 		);
+        const bodyString = JSON.stringify(requestBody);
 
+        console.log('🔍 [DEBUG] Request body size:', bodyString.length, 'bytes =', (bodyString.length / 1024 / 1024).toFixed(2), 'MB');
+
+        console.log('🔍 [DEBUG] Messages count:', requestBody.messages?.length);
+
+        console.log('🔍 [DEBUG] Tools count:', requestBody.tools?.length);
+
+        console.log('🔍 [DEBUG] System prompt size:', requestBody.system?.length || 0, 'chars');
 		const response = await this.httpClient.post<any>(
 			`${this.baseUrl}/v1/messages`,
 			requestBody,
@@ -83,6 +91,15 @@ export class AnthropicClient implements IApiClient {
 				(requestBody as any)[key] === undefined &&
 				delete (requestBody as any)[key],
 		);
+		        const bodyString = JSON.stringify(requestBody);
+
+        console.log('🔍 [DEBUG STREAM] Request body size:', bodyString.length, 'bytes =', (bodyString.length / 1024 / 1024).toFixed(2), 'MB');
+
+        console.log('🔍 [DEBUG STREAM] Messages count:', requestBody.messages?.length);
+
+        console.log('🔍 [DEBUG STREAM] Tools count:', requestBody.tools?.length);
+
+        console.log('🔍 [DEBUG STREAM] System prompt size:', requestBody.system?.length || 0, 'chars');
 
 		let fullContent = '';
 		let usage: any = undefined;

@@ -5,7 +5,7 @@
 
 // Domain Models
 export {Message} from './domain/models/Message';
-export {Conversation} from './domain/models/Conversation';
+// Conversation model has been replaced by Session
 export {Turn} from './domain/models/Turn';
 export {Configuration} from './domain/models/Configuration';
 
