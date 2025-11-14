@@ -13,7 +13,6 @@ export class Configuration {
 		public readonly baseUrl?: string,
 		public readonly maxTokens: number = 4096,
 		public readonly temperature: number = 0.7,
-		public readonly useSDKAdapters: boolean = true, // Feature flag for SDK migration
 	) {}
 
 	static create(data: {
@@ -23,7 +22,6 @@ export class Configuration {
 		baseUrl?: string;
 		maxTokens?: number;
 		temperature?: number;
-		useSDKAdapters?: boolean;
 	}): Configuration {
 		const providerInfo = ProviderInfo.fromString(data.provider);
 
@@ -38,7 +36,6 @@ export class Configuration {
 			data.baseUrl,
 			data.maxTokens,
 			data.temperature,
-			data.useSDKAdapters ?? true, // Default to true (use SDK adapters)
 		);
 	}
 

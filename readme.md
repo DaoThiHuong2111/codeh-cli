@@ -156,8 +156,13 @@ This project follows Clean Architecture with 3 layers:
 - **Purpose**: External integrations and data access
 - **Components**:
   - `api/` - API clients for different providers
-    - `clients/` - AnthropicClient, OpenAIClient, OllamaClient, GenericClient
-    - `ApiClientFactory.ts` - Factory for creating clients
+    - `clients/` - **SDK Adapters** using official SDKs (@anthropic-ai/sdk, openai, ollama)
+      - `AnthropicSDKAdapter.ts` - Official Anthropic SDK wrapper
+      - `OpenAISDKAdapter.ts` - Official OpenAI SDK wrapper
+      - `OllamaSDKAdapter.ts` - Official Ollama SDK wrapper
+      - `GenericSDKAdapter.ts` - OpenAI SDK for generic OpenAI-compatible APIs
+    - `ApiClientFactory.ts` - Factory for creating SDK-based clients
+    - `HttpClient.ts` - Low-level HTTP client (for edge cases)
   - `config/` - Configuration repositories
     - `EnvConfigRepository.ts` - Environment variables
     - `FileConfigRepository.ts` - File-based config
@@ -200,7 +205,7 @@ source/
 │   ├── input/               # Keyboard shortcuts (ShortcutManager, ShortcutContext)
 │   └── di/                  # Dependency injection container
 └── infrastructure/          # LAYER 3: External Services
-    ├── api/                 # API clients (Anthropic, OpenAI, Ollama, Generic)
+    ├── api/                 # SDK Adapters (@anthropic-ai/sdk, openai, ollama)
     ├── config/              # Configuration (EnvConfig, FileConfig, ConfigLoader)
     ├── permissions/         # Permission mode management (PermissionModeManager)
     ├── session/             # Session management
@@ -248,12 +253,33 @@ npm start
 
 ## Supported Providers
 
-| Provider                  | API Key Required | Local   | Streaming |
-| ------------------------- | ---------------- | ------- | --------- |
-| Anthropic (Claude)        | ✅               |       | ✅        |
-| OpenAI (GPT)              | ✅               |       | ✅        |
-| Ollama                    |                | ✅      | ✅        |
-| Generic OpenAI-compatible | ✅               | Depends | ✅        |
+All providers use **official SDKs** for better reliability and automatic updates:
+
+| Provider                  | SDK Package           | API Key Required | Local   | Streaming |
+| ------------------------- | --------------------- | ---------------- | ------- | --------- |
+| Anthropic (Claude)        | `@anthropic-ai/sdk`   | ✅               |       | ✅        |
+| OpenAI (GPT)              | `openai`              | ✅               |       | ✅        |
+| Ollama                    | `ollama`              |                | ✅      | ✅        |
+| Generic OpenAI-compatible | `openai` (custom URL) | ✅               | Depends | ✅        |
+
+### SDK Migration
+
+**🎉 Version 2.0** migrated from custom HTTP clients to official provider SDKs:
+
+**Benefits:**
+- ✅ **Fixed HTTP 413 errors** with better request handling
+- ✅ **Automatic retry logic** built into official SDKs
+- ✅ **Better error messages** directly from provider SDKs
+- ✅ **Type safety improvements** with official TypeScript definitions
+- ✅ **Future-proof** - automatic updates from providers
+- ✅ **Reduced maintenance** - no custom HTTP client code
+
+**Supported Generic APIs:**
+- [LiteLLM](https://docs.litellm.ai/) - Unified API for 100+ LLMs
+- [Google Gemini OpenAI compatibility](https://ai.google.dev/gemini-api/docs/openai)
+- [LM Studio](https://lmstudio.ai/docs/developer/openai-compat) - Local models with OpenAI API
+- [ai.megallm.io](https://ai.megallm.io) - Vietnamese LLM provider
+- Any OpenAI-compatible API endpoint
 
 ## Key Features
 
