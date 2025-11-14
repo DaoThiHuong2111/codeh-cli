@@ -87,115 +87,48 @@ export class CommandService implements ICommandRegistry {
 			),
 		);
 
-		// /clear command
-		this.register(
-			new Command(
-				{
-					cmd: '/clear',
-					desc: 'Clear conversation history',
-					category: CommandCategory.CONVERSATION,
-					aliases: ['/cls', '/reset'],
-				},
-				{
-					execute: async (args, presenter) => {
-						await presenter.clearConversation();
-
-						const msg = Message.system('Conversation cleared');
-						presenter.addSystemMessage(msg);
-					},
-				},
-			),
-		);
-
-		// /new command
+		// /new command - Auto-save current session and start new
 		this.register(
 			new Command(
 				{
 					cmd: '/new',
-					desc: 'Start new conversation',
-					category: CommandCategory.CONVERSATION,
+					desc: 'Save current session and start new one',
+					category: CommandCategory.SESSION,
 					aliases: ['/n'],
 				},
 				{
 					execute: async (args, presenter) => {
-						await presenter.startNewConversation();
+						// 1. Auto-save current session (if not empty)
+						const savedName = await presenter.autoSaveCurrentSession();
 
-						const msg = Message.system('New conversation started');
+						// 2. Start new session
+						await presenter.startNewSession();
+
+						// 3. Show message
+						let message = 'New session started.';
+						if (savedName && savedName !== 'empty') {
+							message = `Previous session saved as "${savedName}". ${message}`;
+						}
+
+						const msg = Message.system(message);
 						presenter.addSystemMessage(msg);
 					},
 				},
 			),
 		);
 
-		// /save command
-		this.register(
-			new Command(
-				{
-					cmd: '/save',
-					desc: 'Save current session',
-					category: CommandCategory.SESSION,
-					argCount: 1,
-					argNames: ['name'],
-				},
-				{
-					execute: async (args, presenter) => {
-						const name = args[0];
-						await presenter.saveSession(name);
-
-						const msg = Message.system(`Session saved as "${name}"`);
-						presenter.addSystemMessage(msg);
-					},
-				},
-			),
-		);
-
-		// /load command
-		this.register(
-			new Command(
-				{
-					cmd: '/load',
-					desc: 'Load saved session',
-					category: CommandCategory.SESSION,
-					argCount: 1,
-					argNames: ['name'],
-				},
-				{
-					execute: async (args, presenter) => {
-						const name = args[0];
-						await presenter.loadSession(name);
-
-						const msg = Message.system(`Session "${name}" loaded`);
-						presenter.addSystemMessage(msg);
-					},
-				},
-			),
-		);
-
-		// /sessions command
+		// /sessions command - Interactive session browser
 		this.register(
 			new Command(
 				{
 					cmd: '/sessions',
-					desc: 'List all saved sessions',
+					desc: 'Browse and load saved sessions (↑↓ to navigate, Enter to load)',
 					category: CommandCategory.SESSION,
 					aliases: ['/ls'],
 				},
 				{
 					execute: async (args, presenter) => {
-						const sessions = await presenter.sessionManager.list();
-
-						let content = 'Saved Sessions:\n\n';
-						for (const session of sessions) {
-							content += `- ${session.name} (${session.messageCount} messages, `;
-							content += `${new Date(session.updatedAt).toLocaleDateString()})\n`;
-						}
-
-						if (sessions.length === 0) {
-							content = 'No saved sessions found';
-						}
-
-						const msg = Message.system(content);
-						presenter.addSystemMessage(msg);
+						await presenter.showSessionSelector();
 					},
 				},
 			),
