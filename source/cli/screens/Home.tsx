@@ -7,6 +7,7 @@ import InfoSection from '../components/molecules/InfoSection.js';
 import Logo from '../components/atoms/Logo.js';
 import {ConversationArea} from '../components/organisms/ConversationArea.js';
 import {SlashSuggestions} from '../components/organisms/SlashSuggestions.js';
+import {SessionSelector} from '../components/organisms/SessionSelector.js';
 import {Footer} from '../components/organisms/Footer.js';
 import {TodosDisplay} from '../components/organisms/TodosDisplay.js';
 import {useShortcut} from '../../core/input/index.js';
@@ -67,29 +68,35 @@ export default function Home({container, exitConfirmation = false}: HomeProps) {
 		source: 'Home',
 	});
 
-	// Esc: Close help or clear input
+	// Esc: Close session selector, help, or clear input
 	useShortcut({
 		key: 'escape',
 		handler: () => {
 			if (!presenter) return;
 
-			if (presenter.input) {
+			// Priority: Close session selector first
+			if (presenter.showSessionSelector) {
+				presenter.closeSessionSelector();
+			} else if (presenter.input) {
 				presenter.handleInputChange('');
 			}
 		},
 		layer: 'input',
 		enabled: () => presenter !== null,
-		description: 'Close help or clear input',
+		description: 'Close session selector, help, or clear input',
 		source: 'Home',
 	});
 
-	// Up Arrow: Navigate suggestions or history
+	// Up Arrow: Navigate session selector, suggestions, or history
 	useShortcut({
 		key: 'up',
 		handler: () => {
 			if (!presenter) return;
 
-			if (presenter.hasSuggestions()) {
+			// Priority: Session selector > Suggestions > History
+			if (presenter.showSessionSelector) {
+				presenter.navigateSessionSelector('up');
+			} else if (presenter.hasSuggestions()) {
 				presenter.handleSuggestionNavigate('up');
 			} else if (!presenter.isLoading) {
 				presenter.navigateHistory('up');
@@ -97,17 +104,20 @@ export default function Home({container, exitConfirmation = false}: HomeProps) {
 		},
 		layer: 'input',
 		enabled: () => presenter !== null,
-		description: 'Navigate suggestions/history up',
+		description: 'Navigate session selector/suggestions/history up',
 		source: 'Home',
 	});
 
-	// Down Arrow: Navigate suggestions or history
+	// Down Arrow: Navigate session selector, suggestions, or history
 	useShortcut({
 		key: 'down',
 		handler: () => {
 			if (!presenter) return;
 
-			if (presenter.hasSuggestions()) {
+			// Priority: Session selector > Suggestions > History
+			if (presenter.showSessionSelector) {
+				presenter.navigateSessionSelector('down');
+			} else if (presenter.hasSuggestions()) {
 				presenter.handleSuggestionNavigate('down');
 			} else if (!presenter.isLoading) {
 				presenter.navigateHistory('down');
@@ -115,7 +125,7 @@ export default function Home({container, exitConfirmation = false}: HomeProps) {
 		},
 		layer: 'input',
 		enabled: () => presenter !== null,
-		description: 'Navigate suggestions/history down',
+		description: 'Navigate session selector/suggestions/history down',
 		source: 'Home',
 	});
 
@@ -133,17 +143,24 @@ export default function Home({container, exitConfirmation = false}: HomeProps) {
 		source: 'Home',
 	});
 
-	// Enter: Select suggestion (when suggestions visible)
+	// Enter: Load selected session or select suggestion
 	useShortcut({
 		key: 'enter',
-		handler: () => {
-			if (presenter && presenter.hasSuggestions()) {
+		handler: async () => {
+			if (!presenter) return;
+
+			// Priority: Session selector > Suggestions
+			if (presenter.showSessionSelector) {
+				await presenter.loadSelectedSession();
+			} else if (presenter.hasSuggestions()) {
 				presenter.handleSuggestionSelect();
 			}
 		},
 		layer: 'input',
-		enabled: () => presenter !== null && presenter.hasSuggestions(),
-		description: 'Select suggestion',
+		enabled: () =>
+			presenter !== null &&
+			(presenter.showSessionSelector || presenter.hasSuggestions()),
+		description: 'Load session or select suggestion',
 		source: 'Home',
 	});
 
@@ -199,6 +216,14 @@ export default function Home({container, exitConfirmation = false}: HomeProps) {
 				<SlashSuggestions
 					commands={presenter.filteredSuggestions}
 					selectedIndex={presenter.selectedSuggestionIndex}
+				/>
+			)}
+
+			{/* Session Selector (Interactive /sessions) */}
+			{presenter.showSessionSelector && (
+				<SessionSelector
+					sessions={presenter.availableSessions}
+					selectedIndex={presenter.selectedSessionIndex}
 				/>
 			)}
 
