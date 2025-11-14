@@ -116,6 +116,49 @@ export class FileSessionManager implements ISessionManager {
 	}
 
 	/**
+	 * Save session with auto-generated timestamp name
+	 * @returns The generated session name
+	 */
+	async saveWithTimestamp(session: Session): Promise<string> {
+		// Generate timestamp name: session_YYYYMMDD_HHMMSS
+		const now = new Date();
+		const year = now.getFullYear();
+		const month = String(now.getMonth() + 1).padStart(2, '0');
+		const day = String(now.getDate()).padStart(2, '0');
+		const hours = String(now.getHours()).padStart(2, '0');
+		const minutes = String(now.getMinutes()).padStart(2, '0');
+		const seconds = String(now.getSeconds()).padStart(2, '0');
+
+		const timestampName = `session_${year}${month}${day}_${hours}${minutes}${seconds}`;
+
+		// Create new session with timestamp name
+		const namedSession = session.withName(timestampName);
+
+		// Save it
+		await this.save(namedSession);
+
+		return timestampName;
+	}
+
+	/**
+	 * Get the latest (most recently updated) session
+	 * @returns The latest session or null if no sessions exist
+	 */
+	async getLatest(): Promise<Session | null> {
+		const sessions = await this.list();
+
+		if (sessions.length === 0) {
+			return null;
+		}
+
+		// List already sorted by updatedAt descending (newest first)
+		const latestInfo = sessions[0];
+
+		// Load the session
+		return await this.load(latestInfo.name);
+	}
+
+	/**
 	 * Get filename for session (sanitized)
 	 */
 	private getFilename(name: string): string {
