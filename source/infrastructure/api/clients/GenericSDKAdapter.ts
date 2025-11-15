@@ -228,7 +228,7 @@ export class GenericSDKAdapter implements IApiClient {
 							toolCalls.set(index, {
 								id: toolCall.id || '',
 								name: toolCall.function?.name || '',
-								arguments: {},
+								arguments: '' as any, // Initialize as empty string for streaming accumulation
 							});
 						}
 
@@ -236,11 +236,8 @@ export class GenericSDKAdapter implements IApiClient {
 						if (toolCall.function?.arguments) {
 							const current = toolCalls.get(index);
 							if (current) {
-								const argsStr =
-									(typeof current.arguments === 'string'
-										? current.arguments
-										: JSON.stringify(current.arguments)) +
-									toolCall.function.arguments;
+								// Accumulate as string (current.arguments is initialized as '')
+								const argsStr = (current.arguments as unknown as string) + toolCall.function.arguments;
 								current.arguments = argsStr as any; // Store as string temporarily
 							}
 						}
