@@ -4,7 +4,7 @@
  */
 
 import React, {useState} from 'react';
-import {Box, Text} from 'ink';
+import {Box, Text, useInput} from 'ink';
 
 export interface ToolCall {
 	id: string;
@@ -22,6 +22,13 @@ export default function ToolCallDisplay({
 	status = 'pending',
 }: ToolCallDisplayProps) {
 	const [expanded, setExpanded] = useState(false);
+
+	// Handle keyboard input to toggle expansion
+	useInput((input, key) => {
+		if (input.toLowerCase() === 'e' && !key.ctrl && !key.meta) {
+			setExpanded(prev => !prev);
+		}
+	});
 
 	if (!toolCalls || toolCalls.length === 0) {
 		return null;

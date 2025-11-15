@@ -16,6 +16,7 @@ import {InputHistoryService} from '../../core/application/services/InputHistoryS
 import {formatRelativeTime} from '../../utils/timeFormat.js';
 import type {FormattedSession} from '../components/organisms/SessionSelector.js';
 import {getLogger, type ILogger} from '../../infrastructure/logging/Logger.js';
+import type {ToolExecutionProgressEvent} from '../../core/application/ToolExecutionOrchestrator.js';
 
 const logger = getLogger();
 
@@ -30,6 +31,17 @@ interface ViewState {
 
 	// Loading
 	isLoading: boolean;
+
+	// Tool Execution Progress
+	toolExecutionProgress: {
+		isExecuting: boolean;
+		currentIteration?: number;
+		maxIterations?: number;
+		currentTool?: string;
+		toolIndex?: number;
+		totalTools?: number;
+		message?: string;
+	};
 
 	// Slash Commands
 	filteredSuggestions: Command[];
@@ -78,6 +90,9 @@ export class HomePresenter {
 			session: initialSession,
 			streamingMessageId: null,
 			isLoading: false,
+			toolExecutionProgress: {
+				isExecuting: false,
+			},
 			filteredSuggestions: [],
 			selectedSuggestionIndex: 0,
 			showSessionSelector: false,
@@ -118,6 +133,72 @@ export class HomePresenter {
 		this.logger.debug('HomePresenter', '_notifyView', 'Notifying view update');
 		this.viewUpdateCallback?.();
 	}
+
+	// === Tool Execution Progress Handlers ===
+
+	private handleToolProgress = (event: ToolExecutionProgressEvent) => {
+		this.logger.debug('HomePresenter', 'handleToolProgress', 'Tool progress event', {
+			type: event.type,
+			iteration: event.iteration,
+			tool: event.toolName,
+		});
+
+		switch (event.type) {
+			case 'iteration_start':
+				this.state.toolExecutionProgress = {
+					isExecuting: true,
+					currentIteration: event.iteration,
+					maxIterations: event.maxIterations,
+					message: `Iteration ${event.iteration}/${event.maxIterations}`,
+				};
+				break;
+
+			case 'tools_detected':
+				this.state.toolExecutionProgress = {
+					...this.state.toolExecutionProgress,
+					isExecuting: true,
+					totalTools: event.totalTools,
+					message: `Detected ${event.totalTools} tool(s) to execute`,
+				};
+				break;
+
+			case 'tool_executing':
+				this.state.toolExecutionProgress = {
+					...this.state.toolExecutionProgress,
+					isExecuting: true,
+					currentTool: event.toolName,
+					toolIndex: event.toolIndex,
+					totalTools: event.totalTools,
+					message: `Executing ${event.toolName} (${event.toolIndex}/${event.totalTools})`,
+				};
+				break;
+
+			case 'tool_completed':
+				this.state.toolExecutionProgress = {
+					...this.state.toolExecutionProgress,
+					isExecuting: true,
+					message: `Completed ${event.toolName} (${event.toolIndex}/${event.totalTools})`,
+				};
+				break;
+
+			case 'tool_failed':
+				this.state.toolExecutionProgress = {
+					...this.state.toolExecutionProgress,
+					isExecuting: true,
+					message: `Failed ${event.toolName}: ${event.message}`,
+				};
+				break;
+
+			case 'orchestration_complete':
+				this.state.toolExecutionProgress = {
+					isExecuting: false,
+					message: event.message,
+				};
+				break;
+		}
+
+		this._notifyView();
+	};
 
 	// === Input Handlers ===
 
@@ -240,6 +321,10 @@ export class HomePresenter {
 					}
 
 					this._notifyView();
+				},
+				(event: ToolExecutionProgressEvent) => {
+					// Handle tool execution progress events
+					this.handleToolProgress(event);
 				},
 			);
 
@@ -718,6 +803,10 @@ export class HomePresenter {
 
 	get selectedSessionIndex() {
 		return this.state.selectedSessionIndex;
+	}
+
+	get toolExecutionProgress() {
+		return this.state.toolExecutionProgress;
 	}
 
 	/**

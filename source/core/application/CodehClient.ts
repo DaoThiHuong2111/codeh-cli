@@ -12,7 +12,7 @@ import {Configuration} from '../domain/models/Configuration.js';
 import {InputClassifier} from './services/InputClassifier.js';
 import {OutputFormatter} from './services/OutputFormatter.js';
 import {ToolRegistry} from '../tools/base/ToolRegistry.js';
-import {ToolExecutionOrchestrator} from './ToolExecutionOrchestrator.js';
+import {ToolExecutionOrchestrator, ToolExecutionProgressEvent} from './ToolExecutionOrchestrator.js';
 import {ToolDefinitionConverter} from './services/ToolDefinitionConverter.js';
 import {PLANNING_SYSTEM_PROMPT} from './prompts/PlanningSystemPrompt.js';
 import {CODE_NAVIGATION_SYSTEM_PROMPT} from './prompts/CodeNavigationSystemPrompt.js';
@@ -53,8 +53,9 @@ ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 
 	/**
 	 * Execute a user input and return a Turn
+	 * @param onToolProgress Optional callback for tool execution progress updates
 	 */
-	async execute(input: string): Promise<Turn> {
+	async execute(input: string, onToolProgress?: (event: ToolExecutionProgressEvent) => void): Promise<Turn> {
 		const startTime = Date.now();
 
 		// Validate input
@@ -136,6 +137,8 @@ ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 					const orchestrateResult = await this.toolOrchestrator.orchestrate(
 						turn,
 						input,
+						undefined, // No streaming callback for non-streaming execute
+						onToolProgress, // Tool execution progress
 					);
 					turn = orchestrateResult.finalTurn;
 				}
@@ -156,10 +159,12 @@ ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 	/**
 	 * Execute with streaming - calls onChunk for each content chunk
 	 * Returns final Turn when complete
+	 * @param onToolProgress Optional callback for tool execution progress updates
 	 */
 	async executeWithStreaming(
 		input: string,
 		onChunk: (content: string) => void,
+		onToolProgress?: (event: ToolExecutionProgressEvent) => void,
 	): Promise<Turn> {
 		const startTime = Date.now();
 
@@ -257,6 +262,7 @@ ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 						turn,
 						input,
 						onChunk, // Stream LLM responses during tool execution
+						onToolProgress, // Stream tool execution progress
 					);
 					turn = orchestrateResult.finalTurn;
 				}
