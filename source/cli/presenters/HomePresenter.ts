@@ -135,10 +135,17 @@ export class HomePresenter {
 	};
 
 	handleSubmit = async (userInput: string) => {
+		const start = Date.now();
+		this.logger.info('HomePresenter', 'handleSubmit', 'User message received', {
+			input_length: userInput.length,
+			is_command: userInput.startsWith('/'),
+		});
+
 		// Validation
 		if (!userInput.trim()) {
 			this.state.inputError = 'Please enter a message';
 			this._notifyView();
+			this.logger.warn('HomePresenter', 'handleSubmit', 'Empty input rejected');
 			return;
 		}
 
@@ -147,6 +154,9 @@ export class HomePresenter {
 
 		// Check if slash command
 		if (userInput.startsWith('/')) {
+			this.logger.debug('HomePresenter', 'handleSubmit', 'Processing as command', {
+				command: userInput.split(' ')[0],
+			});
 			await this.handleCommand(userInput);
 			return;
 		}
@@ -158,6 +168,8 @@ export class HomePresenter {
 		const userMessage = MessageModel.user(userInput);
 		this.state.session.addMessage(userMessage);
 
+		this.logger.debug('HomePresenter', 'handleSubmit', 'User message added to session');
+
 		// Track streaming message - Create ID once for consistency
 		const assistantMessageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 		let assistantContent = '';
@@ -166,11 +178,29 @@ export class HomePresenter {
 		this.state.isLoading = true;
 		this._notifyView();
 
+		this.logger.info('HomePresenter', 'handleSubmit', 'Starting AI request', {
+			session_id: this.state.session.id,
+			message_id: assistantMessageId,
+		});
+
+		let chunkCount = 0;
+		let firstChunkTime: number | null = null;
+
 		try {
 			// Execute AI request with streaming
 			const turn = await this.client.executeWithStreaming(
 				userInput,
 				(chunk: string) => {
+					// Log first chunk (time to first token)
+					if (chunkCount === 0) {
+						firstChunkTime = Date.now();
+						this.logger.info('HomePresenter', 'handleSubmit', 'First chunk received', {
+							ttft_ms: firstChunkTime - start,
+						});
+					}
+
+					chunkCount++;
+
 					// Accumulate content
 					assistantContent += chunk;
 
@@ -204,6 +234,16 @@ export class HomePresenter {
 			);
 
 			if (turn.isComplete() && turn.response) {
+				const duration = Date.now() - start;
+
+				this.logger.info('HomePresenter', 'handleSubmit', 'AI response completed', {
+					duration_ms: duration,
+					chunks_received: chunkCount,
+					response_length: turn.response.content.length,
+					tool_calls: turn.response.toolCalls?.length || 0,
+					token_usage: turn.metadata?.tokenUsage,
+				});
+
 				// Create final message with metadata (no mutation!)
 				const finalMessage = MessageModel.create(
 					'assistant',
@@ -238,9 +278,19 @@ export class HomePresenter {
 					this.state.session.addMessage(finalMessage);
 				}
 			} else {
+				this.logger.error('HomePresenter', 'handleSubmit', 'Incomplete AI response');
 				throw new Error('Failed to get response from AI');
 			}
 		} catch (error: any) {
+			const duration = Date.now() - start;
+
+			this.logger.error('HomePresenter', 'handleSubmit', 'AI request failed', {
+				duration_ms: duration,
+				chunks_received: chunkCount,
+				error: error instanceof Error ? error.message : String(error),
+				stack: error instanceof Error ? error.stack : undefined,
+			});
+
 			// Remove the streaming message if exists
 			const messages = this.state.session.getMessages() as Message[];
 			const index = messages.findIndex(
