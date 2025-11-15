@@ -12,6 +12,9 @@ import {
 	ToolCall,
 	Message,
 } from '../../../core/domain/interfaces/IApiClient.js';
+import {getLogger} from '../../logging/Logger.js';
+
+const logger = getLogger();
 
 export class OpenAISDKAdapter implements IApiClient {
 	private sdk: OpenAI;
