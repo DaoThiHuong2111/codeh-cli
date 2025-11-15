@@ -15,6 +15,9 @@ import {WorkflowManager} from '../../core/application/services/WorkflowManager.j
 import {InputHistoryService} from '../../core/application/services/InputHistoryService.js';
 import {formatRelativeTime} from '../../utils/timeFormat.js';
 import type {FormattedSession} from '../components/organisms/SessionSelector.js';
+import {getLogger, type ILogger} from '../../infrastructure/logging/Logger.js';
+
+const logger = getLogger();
 
 interface ViewState {
 	// Input
@@ -54,6 +57,7 @@ export class HomePresenter {
 	private viewUpdateCallback?: () => void;
 	private durationTimer?: NodeJS.Timeout;
 	private sessionStartTime: number;
+	private logger: ILogger;
 
 	constructor(
 		private client: CodehClient,
@@ -63,13 +67,15 @@ export class HomePresenter {
 		private inputHistory: InputHistoryService,
 		private workflowManager?: WorkflowManager,
 	) {
+		this.logger = logger;
 		this.sessionStartTime = Date.now();
 
 		// Initialize state
+		const initialSession = Session.createNew(config.model || 'claude-3-5-sonnet');
 		this.state = {
 			input: '',
 			inputError: '',
-			session: Session.createNew(config.model || 'claude-3-5-sonnet'),
+			session: initialSession,
 			streamingMessageId: null,
 			isLoading: false,
 			filteredSuggestions: [],
@@ -85,6 +91,17 @@ export class HomePresenter {
 			model: config.model || 'claude-3-5-sonnet',
 			directory: process.cwd(),
 		};
+
+		// Set logger session ID
+		if (this.logger.setSessionId) {
+			this.logger.setSessionId(initialSession.id);
+		}
+
+		logger.info('HomePresenter', 'constructor', 'Presenter initialized', {
+			session_id: initialSession.id,
+			model: this.state.model,
+			directory: this.state.directory,
+		});
 
 		// Start duration timer (update every second)
 		this.startDurationTimer();
@@ -336,7 +353,18 @@ export class HomePresenter {
 	 * Start a new empty session
 	 */
 	async startNewSession(): Promise<void> {
-		this.state.session = Session.createNew(this.state.model);
+		const newSession = Session.createNew(this.state.model);
+		this.state.session = newSession;
+
+		// Update logger session ID
+		if (this.logger && this.logger.setSessionId) {
+			this.logger.setSessionId(newSession.id);
+			this.logger.info('HomePresenter', 'startNewSession', 'New session created', {
+				session_id: newSession.id,
+				model: this.state.model,
+			});
+		}
+
 		this._notifyView();
 	}
 

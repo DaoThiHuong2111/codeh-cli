@@ -11,6 +11,9 @@ import {
 	StreamChunk,
 	ToolCall,
 } from '../../../core/domain/interfaces/IApiClient.js';
+import {getLogger} from '../../logging/Logger.js';
+
+const logger = getLogger();
 
 export class AnthropicSDKAdapter implements IApiClient {
 	private sdk: Anthropic;
@@ -26,10 +29,19 @@ export class AnthropicSDKAdapter implements IApiClient {
 	}
 
 	async chat(request: ApiRequest): Promise<ApiResponse> {
+		const start = Date.now();
+		const model = request.model || 'claude-3-5-sonnet-20241022';
+
+		logger.debug('AnthropicSDKAdapter', 'chat', 'API request starting', {
+			model,
+			messages_count: request.messages.length,
+			has_tools: !!request.tools,
+		});
+
 		try {
 			// Transform ApiRequest to Anthropic format
 			const anthropicRequest: Anthropic.MessageCreateParams = {
-				model: request.model || 'claude-3-5-sonnet-20241022',
+				model,
 				max_tokens: request.maxTokens || 128000,
 				messages: request.messages.map((m) => ({
 					role: m.role === 'user' || m.role === 'assistant' ? m.role : 'user',
@@ -58,9 +70,24 @@ export class AnthropicSDKAdapter implements IApiClient {
 			});
 
 			const response = await this.sdk.messages.create(anthropicRequest);
+			const duration = Date.now() - start;
+
+			logger.info('AnthropicSDKAdapter', 'chat', 'API request completed', {
+				duration_ms: duration,
+				model: response.model,
+				prompt_tokens: response.usage?.input_tokens || 0,
+				completion_tokens: response.usage?.output_tokens || 0,
+				finish_reason: response.stop_reason,
+			});
 
 			return this.normalizeResponse(response);
 		} catch (error) {
+			const duration = Date.now() - start;
+			logger.error('AnthropicSDKAdapter', 'chat', 'API request failed', {
+				duration_ms: duration,
+				model,
+				error: error instanceof Error ? error.message : String(error),
+			});
 			throw this.transformError(error);
 		}
 	}
@@ -69,6 +96,15 @@ export class AnthropicSDKAdapter implements IApiClient {
 		request: ApiRequest,
 		onChunk: (chunk: StreamChunk) => void,
 	): Promise<ApiResponse> {
+		const start = Date.now();
+		const model = request.model || 'claude-3-5-sonnet-20241022';
+
+		logger.debug('AnthropicSDKAdapter', 'streamChat', 'Streaming API request starting', {
+			model,
+			messages_count: request.messages.length,
+			has_tools: !!request.tools,
+		});
+
 		try {
 			// Transform ApiRequest to Anthropic streaming format
 			const anthropicRequest: Anthropic.MessageCreateParams = {
@@ -182,6 +218,17 @@ export class AnthropicSDKAdapter implements IApiClient {
 				}
 			}
 
+			const duration = Date.now() - start;
+
+			logger.info('AnthropicSDKAdapter', 'streamChat', 'Streaming API request completed', {
+				duration_ms: duration,
+				model: modelName,
+				prompt_tokens: usage?.input_tokens || 0,
+				completion_tokens: usage?.output_tokens || 0,
+				finish_reason: stopReason,
+				tool_calls_count: toolCalls.length,
+			});
+
 			return {
 				content: fullContent,
 				model: modelName,
@@ -194,18 +241,30 @@ export class AnthropicSDKAdapter implements IApiClient {
 				toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
 			};
 		} catch (error) {
+			const duration = Date.now() - start;
+			logger.error('AnthropicSDKAdapter', 'streamChat', 'Streaming API request failed', {
+				duration_ms: duration,
+				model,
+				error: error instanceof Error ? error.message : String(error),
+			});
 			throw this.transformError(error);
 		}
 	}
 
 	async healthCheck(): Promise<boolean> {
+		logger.debug('AnthropicSDKAdapter', 'healthCheck', 'Starting health check');
+
 		try {
 			await this.chat({
 				messages: [{role: 'user', content: 'ping'}],
 				maxTokens: 10,
 			});
+			logger.info('AnthropicSDKAdapter', 'healthCheck', 'Health check passed');
 			return true;
 		} catch (error) {
+			logger.warn('AnthropicSDKAdapter', 'healthCheck', 'Health check failed', {
+				error: error instanceof Error ? error.message : String(error),
+			});
 			return false;
 		}
 	}
@@ -215,12 +274,16 @@ export class AnthropicSDKAdapter implements IApiClient {
 	}
 
 	async getAvailableModels(): Promise<string[]> {
+		logger.debug('AnthropicSDKAdapter', 'getAvailableModels', 'Getting available models');
 		// Anthropic SDK doesn't provide a models endpoint
 		// Return empty array - models come from user configuration
 		return [];
 	}
 
 	private normalizeResponse(response: Anthropic.Message): ApiResponse {
+		logger.debug('AnthropicSDKAdapter', 'normalizeResponse', 'Normalizing response', {
+			content_blocks: response.content?.length || 0,
+		});
 		const contentBlocks = response.content || [];
 		let textContent = '';
 		const toolCalls: ToolCall[] = [];
