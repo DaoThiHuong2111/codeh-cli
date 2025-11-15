@@ -65,21 +65,15 @@ async function main() {
 	const requestId = generateRequestId();
 	logger.setRequestId(requestId);
 
-	logger.info('CLI', 'main', 'Application starting', {
-		version: cli.pkg?.version,
-		node_version: process.version,
-		platform: process.platform,
-	});
+	// Don't log here - wait until sessionId is set in HomePresenter
+	// to avoid creating multiple log files
 
 	try {
 		// Setup DI container
-		logger.debug('CLI', 'main', 'Setting up DI container');
 		const container = await setupContainer();
 		const duration = Date.now() - start;
 
-		logger.info('CLI', 'main', 'Application started successfully', {
-			duration_ms: duration,
-		});
+		// First log will be written by HomePresenter after setSessionId()
 
 		render(<App container={container} />, {
 			exitOnCtrlC: false,
