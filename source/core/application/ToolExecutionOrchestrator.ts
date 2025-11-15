@@ -55,10 +55,12 @@ export class ToolExecutionOrchestrator {
 	/**
 	 * Orchestrate complete tool execution pipeline with agentic loop
 	 * Returns final Turn after all tool executions and LLM continuations
+	 * @param onStreamChunk Optional callback for streaming LLM responses during tool continuation
 	 */
 	async orchestrate(
 		initialTurn: Turn,
 		conversationContext?: string,
+		onStreamChunk?: (chunk: string) => void,
 	): Promise<ToolExecutionResult> {
 		const maxIterations = this.config.maxIterations || 5;
 		let currentTurn = initialTurn;
@@ -107,6 +109,7 @@ export class ToolExecutionOrchestrator {
 				currentTurn = await this.continueWithToolResults(
 					currentTurn,
 					rejectionMessages,
+					onStreamChunk,
 				);
 
 				console.log(
@@ -127,6 +130,7 @@ export class ToolExecutionOrchestrator {
 			currentTurn = await this.continueWithToolResults(
 				currentTurn,
 				toolResultMessages,
+				onStreamChunk,
 			);
 
 			console.log('📨 Received LLM response');
@@ -247,10 +251,12 @@ export class ToolExecutionOrchestrator {
 	/**
 	 * Continue conversation with tool results
 	 * Send tool results back to LLM and get next response
+	 * @param onStreamChunk Optional callback for streaming LLM response
 	 */
 	private async continueWithToolResults(
 		previousTurn: Turn,
 		toolResultMessages: Message[],
+		onStreamChunk?: (chunk: string) => void,
 	): Promise<Turn> {
 		// Get recent conversation history
 		const recentMessages = await this.historyRepo.getRecentMessages(10);
@@ -284,7 +290,25 @@ export class ToolExecutionOrchestrator {
         console.log('🔥 [TOOL CONTINUATION] Recent messages count:', recentMessages.length);
 
 		// Call LLM with tool results and tool definitions
-		const apiResponse = await this.apiClient.chat({messages, tools});
+		// Use streaming if callback provided for better UX
+		let apiResponse;
+		let fullContent = '';
+
+		if (onStreamChunk) {
+			// Stream LLM response to user in real-time
+			apiResponse = await this.apiClient.streamChat(
+				{messages, tools},
+				chunk => {
+					if (chunk.content) {
+						fullContent += chunk.content;
+						onStreamChunk(chunk.content);
+					}
+				},
+			);
+		} else {
+			// Non-streaming for backward compatibility
+			apiResponse = await this.apiClient.chat({messages, tools});
+		}
 
 		// Create new turn
 		const toolResultMsg = Message.create(
