@@ -1,7 +1,7 @@
 /**
  * Enhanced Logging System
  * - Text-only format (no emojis/icons)
- * - Only logs when CODEH_LOGGING=TRUE
+ * - Only logs when CODEH_LOGGING=true
  * - Buffered file writes
  * - Log rotation
  * - Correlation ID support
@@ -11,6 +11,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+import {isLoggingEnabled} from '../config/EnvUtils';
 
 export enum LogLevel {
 	DEBUG = 0,
@@ -144,9 +145,9 @@ export class EnhancedLogger implements ILogger {
 	private sessionId?: string;
 
 	constructor(sessionId?: string) {
-		// Check if logging is enabled - accept multiple formats
-		const loggingEnv = process.env.CODEH_LOGGING?.toLowerCase();
-		this.enabled = loggingEnv === 'true' || loggingEnv === '1' || loggingEnv === 'yes';
+		// Check if logging is enabled using shared utility
+		// This ensures consistency with EnvConfigRepository
+		this.enabled = isLoggingEnabled();
 
 		// Always log everything when enabled (no level filtering)
 		this.level = LogLevel.DEBUG;
@@ -352,14 +353,6 @@ export class NullLogger implements ILogger {
  * Singleton logger instance
  */
 let globalLogger: ILogger | null = null;
-
-/**
- * Check if logging is enabled
- */
-function isLoggingEnabled(): boolean {
-	const loggingEnv = process.env.CODEH_LOGGING?.toLowerCase();
-	return loggingEnv === 'true' || loggingEnv === '1' || loggingEnv === 'yes';
-}
 
 /**
  * Get global logger instance

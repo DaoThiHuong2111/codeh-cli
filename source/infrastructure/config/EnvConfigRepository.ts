@@ -8,6 +8,7 @@ import {
 	IConfigRepository,
 	ConfigData,
 } from '../../core/domain/interfaces/IConfigRepository';
+import {isLoggingEnabled, getEnvInt, getEnvFloat} from './EnvUtils';
 
 export class EnvConfigRepository implements IConfigRepository {
 	private readonly envVars = [
@@ -17,6 +18,7 @@ export class EnvConfigRepository implements IConfigRepository {
 		'CODEH_PROVIDER',
 		'CODEH_MAX_TOKEN',
 		'CODEH_TEMPERATURE',
+		'CODEH_LOGGING',
 	];
 
 	async get(key: string): Promise<string | undefined> {
@@ -67,21 +69,11 @@ export class EnvConfigRepository implements IConfigRepository {
 
 	// Helper methods
 	private async getMaxTokens(): Promise<number> {
-		const value = await this.get('CODEH_MAX_TOKEN');
-		if (value) {
-			const parsed = parseInt(value, 10);
-			return isNaN(parsed) ? 4096 : parsed;
-		}
-		return 4096;
+		return getEnvInt('CODEH_MAX_TOKEN', 4096);
 	}
 
 	private async getTemperature(): Promise<number> {
-		const value = await this.get('CODEH_TEMPERATURE');
-		if (value) {
-			const parsed = parseFloat(value);
-			return isNaN(parsed) ? 0.7 : parsed;
-		}
-		return 0.7;
+		return getEnvFloat('CODEH_TEMPERATURE', 0.7);
 	}
 
 	// Validation
@@ -118,5 +110,13 @@ export class EnvConfigRepository implements IConfigRepository {
 			result[key] = process.env[key];
 		});
 		return result;
+	}
+
+	/**
+	 * Check if logging is enabled
+	 * Delegates to shared utility function
+	 */
+	async getLoggingEnabled(): Promise<boolean> {
+		return isLoggingEnabled();
 	}
 }
