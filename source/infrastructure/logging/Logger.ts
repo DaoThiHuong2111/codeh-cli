@@ -144,12 +144,12 @@ export class EnhancedLogger implements ILogger {
 	private sessionId?: string;
 
 	constructor(sessionId?: string) {
-		// Check if logging is enabled
-		this.enabled = process.env.CODEH_LOGGING === 'TRUE';
+		// Check if logging is enabled - accept multiple formats
+		const loggingEnv = process.env.CODEH_LOGGING?.toLowerCase();
+		this.enabled = loggingEnv === 'true' || loggingEnv === '1' || loggingEnv === 'yes';
 
-		// Set log level (default to DEBUG if enabled)
-		const envLevel = process.env.CODEH_LOG_LEVEL || 'DEBUG';
-		this.level = LogLevel[envLevel as keyof typeof LogLevel] ?? LogLevel.DEBUG;
+		// Always log everything when enabled (no level filtering)
+		this.level = LogLevel.DEBUG;
 
 		// Store session ID
 		this.sessionId = sessionId;
@@ -352,11 +352,19 @@ export class NullLogger implements ILogger {
 let globalLogger: ILogger | null = null;
 
 /**
+ * Check if logging is enabled
+ */
+function isLoggingEnabled(): boolean {
+	const loggingEnv = process.env.CODEH_LOGGING?.toLowerCase();
+	return loggingEnv === 'true' || loggingEnv === '1' || loggingEnv === 'yes';
+}
+
+/**
  * Get global logger instance
  */
 export function getLogger(): ILogger {
 	if (!globalLogger) {
-		if (process.env.CODEH_LOGGING === 'TRUE') {
+		if (isLoggingEnabled()) {
 			globalLogger = new EnhancedLogger();
 		} else {
 			globalLogger = new NullLogger();
@@ -369,7 +377,7 @@ export function getLogger(): ILogger {
  * Create a new logger instance (for testing)
  */
 export function createLogger(): ILogger {
-	if (process.env.CODEH_LOGGING === 'TRUE') {
+	if (isLoggingEnabled()) {
 		return new EnhancedLogger();
 	}
 	return new NullLogger();

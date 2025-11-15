@@ -5,7 +5,7 @@
 Hệ thống logging được xây dựng để hỗ trợ debug hiệu quả với các tính năng:
 
 - ✅ **Text-only format** - Không emojis/icons, dễ parse
-- ✅ **Environment-based** - Chỉ log khi `CODEH_LOGGING=TRUE`
+- ✅ **Environment-based** - Chỉ log khi `CODEH_LOGGING=true` (hoặc TRUE, 1, yes)
 - ✅ **Session-based** - Mỗi session có file log riêng
 - ✅ **Buffered writes** - Performance tốt, flush mỗi 100 entries hoặc 5s
 - ✅ **Log rotation** - Tự động xóa logs cũ (giữ 7 files gần nhất)
@@ -17,8 +17,14 @@ Hệ thống logging được xây dựng để hỗ trợ debug hiệu quả v�
 ### 1. Bật Logging
 
 ```bash
-export CODEH_LOGGING=TRUE
-export CODEH_LOG_LEVEL=DEBUG  # Optional: DEBUG, INFO, WARN, ERROR (default: DEBUG)
+# Cách 1: Export environment variable
+export CODEH_LOGGING=true    # Chấp nhận: true, TRUE, 1, yes (case-insensitive)
+
+# Cách 2: Thêm vào file .env
+echo "CODEH_LOGGING=true" >> .env
+
+# Cách 3: Inline với command
+CODEH_LOGGING=true codeh
 ```
 
 ### 2. Import và Sử dụng Logger
@@ -296,18 +302,33 @@ logger.error('Service', 'connect', 'Connection failed', {
 ## Troubleshooting
 
 ### Logs không được tạo?
-1. Kiểm tra env variable: `echo $CODEH_LOGGING`
-2. Phải là `TRUE` (uppercase)
-3. Kiểm tra permissions: `ls -la ~/.codeh/logs/`
+
+1. **Kiểm tra env variable**:
+   ```bash
+   echo $CODEH_LOGGING    # Phải có giá trị: true, TRUE, 1, hoặc yes
+   ```
+
+2. **Test logging với script**:
+   ```bash
+   CODEH_LOGGING=true npx tsx scripts/test-logging.ts
+   ```
+
+3. **Kiểm tra file .env**:
+   - Đảm bảo có file `.env` trong thư mục project (không phải `.env.example`)
+   - Nội dung phải có: `CODEH_LOGGING=true`
+
+4. **Kiểm tra permissions**:
+   ```bash
+   ls -la ~/.codeh/logs/
+   ```
 
 ### File logs quá lớn?
 1. Log rotation tự động xóa files cũ (>7 days)
-2. Giảm log level: `export CODEH_LOG_LEVEL=INFO`
-3. Manual cleanup: `rm ~/.codeh/logs/logs_session_*.json`
+2. Manual cleanup: `rm ~/.codeh/logs/logs_session_*.json`
 
 ### Logging ảnh hưởng performance?
-1. Tắt logging: `export CODEH_LOGGING=FALSE`
-2. Hoặc tăng log level: `export CODEH_LOG_LEVEL=WARN`
+1. Tắt logging: Xóa hoặc comment dòng `CODEH_LOGGING=true` trong .env
+2. Hoặc set: `export CODEH_LOGGING=false`
 
 ## Ví dụ thực tế
 
