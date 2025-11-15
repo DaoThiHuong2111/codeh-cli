@@ -80,95 +80,35 @@ export const ToolExecutionProgress: React.FC<ToolExecutionProgressProps> = ({
 	const displayOutput = getDisplayOutput();
 
 	return (
-		<Box
-			flexDirection="column"
-			borderStyle="round"
-			borderColor={isExecuting ? 'blue' : 'green'}
-			padding={1}
-			marginY={1}
-		>
-			{/* Header */}
-			<Box>
-				<Text color={isExecuting ? 'blue' : 'green'} bold>
-					{isExecuting ? '⚙️  Tool Executing' : '✅ Tool Completed'}
-					{currentIteration && maxIterations && ` - Iteration ${currentIteration}/${maxIterations}`}
-				</Text>
-			</Box>
-
-			{/* Current Tool */}
+		<Box flexDirection="column" marginY={0}>
+			{/* Tool execution line */}
 			{currentTool && (
-				<Box marginTop={1} flexDirection="column">
-					<Text>
-						<Text color="cyan" bold>
-							{currentTool}
-						</Text>
-						{toolIndex && totalTools && (
-							<Text dimColor> ({toolIndex}/{totalTools})</Text>
-						)}
+				<Box>
+					<Text dimColor wrap="wrap">
+						{isExecuting ? '> ' : '✓ '}
+						{currentTool}
+						{toolIndex && totalTools && ` (${toolIndex}/${totalTools})`}
+						{formattedCommand && ` ${formattedCommand}`}
 					</Text>
-
-					{/* Command/Arguments */}
-					{formattedCommand ? (
-						<Box marginLeft={2} marginTop={0}>
-							<Text color="yellow">$ {formattedCommand}</Text>
-						</Box>
-					) : toolArguments && Object.keys(toolArguments).length === 0 ? (
-						<Box marginLeft={2} marginTop={0}>
-							<Text color="red" dimColor>
-								⚠️  No arguments provided by LLM
-							</Text>
-						</Box>
-					) : null}
 				</Box>
 			)}
 
-			{/* Tool Output */}
+			{/* Tool Output - compact */}
 			{displayOutput && (
-				<Box marginTop={1} flexDirection="column">
-					<Text dimColor bold>Output:</Text>
-					<Box
-						marginLeft={2}
-						marginTop={0}
-						flexDirection="column"
-						borderStyle="single"
-						borderColor="gray"
-						paddingX={1}
-					>
-						<Text>{displayOutput.content}</Text>
-						{displayOutput.truncated && (
-							<Text dimColor>
-								... ({displayOutput.totalLines - 10} more lines)
-							</Text>
-						)}
-					</Box>
+				<Box marginLeft={2} flexDirection="column">
+					<Text dimColor wrap="wrap">{displayOutput.content}</Text>
+					{displayOutput.truncated && (
+						<Text dimColor wrap="wrap">
+							... +{displayOutput.totalLines - 10} lines
+						</Text>
+					)}
 				</Box>
 			)}
 
-			{/* Status Message */}
+			{/* Status Message - simple */}
 			{message && !toolOutput && (
-				<Box marginTop={1}>
-					<Text dimColor>{message}</Text>
-				</Box>
-			)}
-
-			{/* Warning về empty arguments */}
-			{toolArguments && Object.keys(toolArguments).length === 0 && isExecuting && (
-				<Box marginTop={1} borderStyle="single" borderColor="yellow" padding={1}>
-					<Text color="yellow">
-						⚠️  Warning: LLM called tool without arguments. This may indicate:
-					</Text>
-					<Box marginLeft={2} flexDirection="column">
-						<Text dimColor>• Invalid model configuration (check your model name)</Text>
-						<Text dimColor>• Model doesn't support tool calling properly</Text>
-						<Text dimColor>• API communication issue</Text>
-					</Box>
-				</Box>
-			)}
-
-			{/* Progress indicator */}
-			{isExecuting && (
-				<Box marginTop={1}>
-					<Text color="blue">● Executing...</Text>
+				<Box>
+					<Text dimColor wrap="wrap">{message}</Text>
 				</Box>
 			)}
 		</Box>
