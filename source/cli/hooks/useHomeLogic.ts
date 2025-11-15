@@ -35,15 +35,9 @@ export function useHomeLogic(container: Container): UseHomeLogicReturn {
 
 				// Initialize client if needed
 				const initializedClient = await initializeClient();
-				console.log(
-					'[DEBUG useHomeLogic] Initialized client:',
-					initializedClient,
-				);
-				console.log('[DEBUG useHomeLogic] clientError:', clientError);
 
 				if (!initializedClient) {
 					const errorMsg = clientError || 'Failed to initialize API client';
-					console.error('[ERROR] API client initialization failed:', errorMsg);
 					setError(errorMsg);
 					return;
 				}

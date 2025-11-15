@@ -19,6 +19,9 @@ const __dirname = dirname(__filename);
 const packageRoot = join(__dirname, '..');
 const homeConfigPath = join(process.env.HOME || process.env.USERPROFILE || '', '.codeh', '.env');
 
+// Suppress dotenv tips/warnings
+process.env.DOTENV_CONFIG_SILENT = 'true';
+
 // Try loading from package root first (development)
 const packageEnvPath = join(packageRoot, '.env');
 if (existsSync(packageEnvPath)) {

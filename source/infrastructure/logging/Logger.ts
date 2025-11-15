@@ -133,19 +133,22 @@ class BufferedFileOutput {
 export class EnhancedLogger implements ILogger {
 	private requestId?: string;
 	private fileOutput?: BufferedFileOutput;
-	private enabled: boolean;
 	private sessionId?: string;
 
 	constructor(sessionId?: string) {
-		// Check if logging is enabled using shared utility
-		// This ensures consistency with EnvConfigRepository
-		this.enabled = isLoggingEnabled();
-
 		// Store session ID
 		this.sessionId = sessionId;
 
 		// Don't create file output here - lazy init on first log
 		// This prevents creating multiple files when sessionId is set later
+	}
+
+	/**
+	 * Check if logging is enabled (lazy evaluation)
+	 * This ensures env vars are loaded before checking
+	 */
+	private isEnabled(): boolean {
+		return isLoggingEnabled();
 	}
 
 	private createFileOutput(): void {
@@ -239,8 +242,8 @@ export class EnhancedLogger implements ILogger {
 		message: string,
 		context?: Record<string, any>,
 	): void {
-		// Skip if disabled
-		if (!this.enabled) {
+		// Skip if disabled (check at runtime, not at construction time)
+		if (!this.isEnabled()) {
 			return;
 		}
 
@@ -347,26 +350,23 @@ let globalLogger: ILogger | null = null;
 
 /**
  * Get global logger instance
+ * Always returns EnhancedLogger - it will check isLoggingEnabled() at runtime
  */
 export function getLogger(): ILogger {
 	if (!globalLogger) {
-		if (isLoggingEnabled()) {
-			globalLogger = new EnhancedLogger();
-		} else {
-			globalLogger = new NullLogger();
-		}
+		// Always create EnhancedLogger - it checks isLoggingEnabled() lazily
+		globalLogger = new EnhancedLogger();
 	}
 	return globalLogger;
 }
 
 /**
  * Create a new logger instance (for testing)
+ * Always returns EnhancedLogger - it will check isLoggingEnabled() at runtime
  */
 export function createLogger(): ILogger {
-	if (isLoggingEnabled()) {
-		return new EnhancedLogger();
-	}
-	return new NullLogger();
+	// Always create EnhancedLogger - it checks isLoggingEnabled() lazily
+	return new EnhancedLogger();
 }
 
 /**

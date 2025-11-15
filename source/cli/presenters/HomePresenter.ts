@@ -18,6 +18,7 @@ import type {FormattedSession} from '../components/organisms/SessionSelector.js'
 import {getLogger, type ILogger} from '../../infrastructure/logging/Logger.js';
 import type {ToolExecutionProgressEvent} from '../../core/application/ToolExecutionOrchestrator.js';
 import type {ISandboxModeManager} from '../../core/domain/interfaces/ISandboxModeManager.js';
+import {execSync} from 'child_process';
 
 const logger = getLogger();
 
@@ -537,6 +538,24 @@ export class HomePresenter {
 		return has;
 	};
 
+	// === Help Management ===
+
+	/**
+	 * Toggle help overlay visibility
+	 */
+	toggleHelp(): void {
+		this.logger.debug('HomePresenter', 'toggleHelp', 'Toggling help overlay');
+		// For now, just add a system message with help info
+		// In the future, this could toggle a help overlay UI
+		const helpMessage = MessageModel.system(
+			'Available commands:\n' +
+			'/help, /h, /? - Show this help\n' +
+			'/new, /n - Save current session and start new one\n' +
+			'/sessions, /ls - Browse and load saved sessions'
+		);
+		this.addSystemMessage(helpMessage);
+	}
+
 	// === Session Management ===
 
 	/**
@@ -877,7 +896,6 @@ export class HomePresenter {
 		this.logger.debug('HomePresenter', 'getGitBranch', 'Getting git branch');
 
 		try {
-			const {execSync} = require('child_process');
 			const branch = execSync('git rev-parse --abbrev-ref HEAD', {
 				encoding: 'utf8',
 				stdio: ['pipe', 'pipe', 'ignore'],
@@ -889,7 +907,9 @@ export class HomePresenter {
 
 			return branch;
 		} catch (error) {
-			this.logger.debug('HomePresenter', 'getGitBranch', 'Not a git repository or git not available');
+			this.logger.debug('HomePresenter', 'getGitBranch', 'Not a git repository or git not available', {
+				error: error instanceof Error ? error.message : String(error),
+			});
 			return undefined;
 		}
 	}

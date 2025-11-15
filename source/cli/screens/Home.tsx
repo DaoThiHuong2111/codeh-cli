@@ -252,9 +252,7 @@ export default function Home({container, exitConfirmation = false}: HomeProps) {
 			{/* Footer with Stats */}
 			<Footer
 				model={presenter.model}
-				messageCount={presenter.messageCount}
-				totalTokens={presenter.totalTokens}
-				estimatedCost={presenter.estimatedCost}
+				directory ={presenter.directory}
 				sessionDuration={presenter.sessionDuration}
 				gitBranch={presenter.gitBranch}
 				permissionMode={permissionMode}

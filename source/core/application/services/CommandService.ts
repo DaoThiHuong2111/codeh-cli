@@ -190,7 +190,7 @@ export class CommandService implements ICommandRegistry {
 				},
 				{
 					execute: async (args, presenter) => {
-						await presenter.showSessionSelector();
+						await presenter.openSessionSelector();
 					},
 				},
 			),

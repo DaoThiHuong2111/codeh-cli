@@ -7,6 +7,8 @@
 		"declaration": true,
 		"outDir": "./dist",
 		"rootDir": "./source",
+		"sourceMap": true, 
+		"inlineSourceMap": false, 
 		"removeComments": true,
 		"strict": true,
 		"esModuleInterop": true,

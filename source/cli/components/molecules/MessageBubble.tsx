@@ -84,7 +84,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 			{message.metadata?.usage && (
 				<Box marginLeft={2}>
 					<Text color="gray" dimColor wrap="wrap">
-						🪙 {message.metadata.usage.totalTokens} tokens
+						{message.metadata.usage.totalTokens} tokens
 					</Text>
 				</Box>
 			)}

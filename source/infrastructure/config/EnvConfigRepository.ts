@@ -8,7 +8,7 @@ import {
 	IConfigRepository,
 	ConfigData,
 } from '../../core/domain/interfaces/IConfigRepository';
-import {isLoggingEnabled, getEnvInt, getEnvFloat} from './EnvUtils';
+import {isLoggingEnabled, getEnvInt, getEnvFloat, getEnv} from './EnvUtils';
 import {getLogger} from '../logging/Logger.js';
 
 const logger = getLogger();
@@ -60,6 +60,7 @@ export class EnvConfigRepository implements IConfigRepository {
 		const apiKey = await this.get('CODEH_API_KEY');
 		const maxTokens = await this.getMaxTokens();
 		const temperature = await this.getTemperature();
+		const loggingMode = await this.getLoggingMode()
 
 		// If no provider is set, consider env config as not existing
 		if (!provider) {
@@ -74,6 +75,7 @@ export class EnvConfigRepository implements IConfigRepository {
 			apiKey,
 			maxTokens,
 			temperature,
+			loggingMode
 		};
 
 		logger.info('EnvConfigRepository', 'getAll', 'Env configuration retrieved', {
@@ -83,6 +85,7 @@ export class EnvConfigRepository implements IConfigRepository {
 			has_api_key: !!config.apiKey,
 			max_tokens: config.maxTokens,
 			temperature: config.temperature,
+			loggingMode: config.loggingMode
 		});
 
 		return config;
@@ -148,6 +151,18 @@ export class EnvConfigRepository implements IConfigRepository {
 		});
 
 		return temperature;
+	}
+
+	private async getLoggingMode(): Promise<boolean> {
+		logger.debug('EnvConfigRepository', 'getLoggingMode', 'Getting getLoggingMode from env');
+
+		const loggingMode = isLoggingEnabled();
+
+		logger.debug('EnvConfigRepository', 'getLoggingMode', 'isLoggingEnabled', {
+			loggingMode,
+		});
+
+		return loggingMode;
 	}
 
 	// Validation

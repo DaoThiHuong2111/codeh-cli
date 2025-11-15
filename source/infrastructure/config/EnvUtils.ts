@@ -5,7 +5,6 @@
  * environment variables. Used by both EnvConfigRepository and Logger
  * to avoid code duplication.
  */
-
 /**
  * Check if logging is enabled via CODEH_LOGGING env var
  * Accepts: true, TRUE, 1, yes (case-insensitive)
