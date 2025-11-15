@@ -292,15 +292,17 @@ export class EnhancedLogger implements ILogger {
 
 	/**
 	 * Set session ID and recreate log file on next log
+	 * NOTE: Can only be called ONCE. Subsequent calls are ignored to prevent multiple log files.
 	 */
 	setSessionId(sessionId: string): void {
-		// Flush and destroy old file output if exists
-		if (this.fileOutput) {
-			this.fileOutput.destroy();
-			this.fileOutput = undefined;
+		// CRITICAL FIX: Only allow setting sessionId ONCE
+		// This prevents creating multiple log files when user creates new sessions
+		if (this.sessionId) {
+			// SessionId already set, ignore this call
+			return;
 		}
 
-		// Set new session ID
+		// Set session ID (first time only)
 		this.sessionId = sessionId;
 
 		// Don't create file immediately - lazy init on next log
