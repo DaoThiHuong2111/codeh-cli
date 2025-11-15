@@ -5,11 +5,13 @@
 
 // API Clients
 export {HttpClient} from './api/HttpClient';
-export {AnthropicClient} from './api/clients/AnthropicClient';
-export {OpenAIClient} from './api/clients/OpenAIClient';
-export {OllamaClient} from './api/clients/OllamaClient';
-export {GenericClient} from './api/clients/GenericClient';
 export {ApiClientFactory} from './api/ApiClientFactory';
+
+// SDK Adapters (Official SDKs)
+export {AnthropicSDKAdapter} from './api/clients/AnthropicSDKAdapter';
+export {OpenAISDKAdapter} from './api/clients/OpenAISDKAdapter';
+export {OllamaSDKAdapter} from './api/clients/OllamaSDKAdapter';
+export {GenericSDKAdapter} from './api/clients/GenericSDKAdapter';
 
 // Configuration
 export {EnvConfigRepository} from './config/EnvConfigRepository';
