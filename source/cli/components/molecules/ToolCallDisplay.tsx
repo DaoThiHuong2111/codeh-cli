@@ -25,7 +25,7 @@ export default function ToolCallDisplay({
 
 	// Handle keyboard input to toggle expansion
 	useInput((input, key) => {
-		if (input.toLowerCase() === 'e' && !key.ctrl && !key.meta) {
+		if (input.toLowerCase() === 'e' && key.ctrl) {
 			setExpanded(prev => !prev);
 		}
 	});
@@ -67,7 +67,7 @@ export default function ToolCallDisplay({
 			{/* Expand hint - minimal */}
 			{!expanded && (
 				<Box>
-					<Text dimColor wrap="wrap">Press E for details</Text>
+					<Text dimColor wrap="wrap">Ctrl+E for details</Text>
 				</Box>
 			)}
 		</Box>
