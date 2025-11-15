@@ -36,16 +36,10 @@ export const ToolExecutionProgress: React.FC<ToolExecutionProgressProps> = ({
 	// Format tool arguments cho dễ đọc
 	const getFormattedCommand = () => {
 		if (!toolArguments) {
-			console.log('[DEBUG] No toolArguments provided');
 			return null;
 		}
-
-		console.log('[DEBUG] toolArguments:', JSON.stringify(toolArguments));
-		console.log('[DEBUG] currentTool:', currentTool);
-
 		// Nếu là shell tool, hiển thị command
 		if (currentTool === 'shell' && toolArguments.command) {
-			console.log('[DEBUG] Returning shell command:', toolArguments.command);
 			return toolArguments.command;
 		}
 
@@ -56,7 +50,6 @@ export const ToolExecutionProgress: React.FC<ToolExecutionProgressProps> = ({
 			.map(([key, value]) => `${key}: ${JSON.stringify(value).slice(0, 50)}`)
 			.join(', ');
 
-		console.log('[DEBUG] Returning mainArgs:', mainArgs);
 		return mainArgs;
 	};
 
