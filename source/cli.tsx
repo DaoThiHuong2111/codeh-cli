@@ -5,9 +5,14 @@ import {render} from 'ink';
 import meow from 'meow';
 import App from './cli/app.js';
 import {setupContainer} from './core/di/setup.js';
+import {getLogger, cleanupOldLogs, generateRequestId} from './infrastructure/logging/Logger.js';
 
 // Load .env file
 dotenv.config({debug: false});
+
+// Initialize logger and cleanup old logs
+const logger = getLogger();
+cleanupOldLogs(7);
 
 const cli = meow(
 	`
@@ -33,17 +38,45 @@ const cli = meow(
 );
 
 async function main() {
+	const start = Date.now();
+	const requestId = generateRequestId();
+	logger.setRequestId(requestId);
+
+	logger.info('CLI', 'main', 'Application starting', {
+		version: cli.pkg?.version,
+		node_version: process.version,
+		platform: process.platform,
+	});
+
 	try {
 		// Setup DI container
+		logger.debug('CLI', 'main', 'Setting up DI container');
 		const container = await setupContainer();
+		const duration = Date.now() - start;
+
+		logger.info('CLI', 'main', 'Application started successfully', {
+			duration_ms: duration,
+		});
 
 		render(<App container={container} />, {
-			exitOnCtrlC: false, 
+			exitOnCtrlC: false,
 		});
 	} catch (error) {
-		console.error('Failed to start application:', error);
+		const duration = Date.now() - start;
+		logger.error('CLI', 'main', 'Failed to start application', {
+			error: error instanceof Error ? error.message : String(error),
+			stack: error instanceof Error ? error.stack : undefined,
+			duration_ms: duration,
+		});
+		logger.flush();
 		process.exit(1);
 	}
 }
+
+// Cleanup on exit
+process.on('beforeExit', () => {
+	logger.info('CLI', 'process', 'Application exiting');
+	logger.flush();
+});
 
 main();
