@@ -1,19 +1,32 @@
 import {Command, CommandCategory} from '../../domain/valueObjects/Command.js';
 import type {ICommandRegistry} from '../../domain/interfaces/ICommandRegistry.js';
 import {Message} from '../../domain/models/Message.js';
+import {getLogger} from '../../../infrastructure/logging/Logger.js';
+
+const logger = getLogger();
 
 export class CommandService implements ICommandRegistry {
 	private commands: Map<string, Command> = new Map();
 	private aliases: Map<string, string> = new Map();
 
 	constructor() {
+		logger.info('CommandService', 'constructor', 'Initializing Command service');
 		this.registerDefaultCommands();
+		logger.debug('CommandService', 'constructor', 'Command service initialized', {
+			commands_count: this.commands.size,
+			aliases_count: this.aliases.size,
+		});
 	}
 
 	/**
 	 * Register a command
 	 */
 	register(command: Command): void {
+		logger.debug('CommandService', 'register', 'Registering command', {
+			command: command.cmd,
+			aliases_count: command.aliases.length,
+		});
+
 		// Register main command
 		this.commands.set(command.cmd, command);
 
@@ -21,21 +34,40 @@ export class CommandService implements ICommandRegistry {
 		for (const alias of command.aliases) {
 			this.aliases.set(alias, command.cmd);
 		}
+
+		logger.debug('CommandService', 'register', 'Command registered', {
+			total_commands: this.commands.size,
+			total_aliases: this.aliases.size,
+		});
 	}
 
 	/**
 	 * Get command by name or alias
 	 */
 	get(cmd: string): Command | null {
+		logger.debug('CommandService', 'get', 'Getting command', {
+			command: cmd,
+		});
+
 		// Check aliases first
 		const mainCmd = this.aliases.get(cmd) || cmd;
-		return this.commands.get(mainCmd) || null;
+		const command = this.commands.get(mainCmd) || null;
+
+		logger.debug('CommandService', 'get', 'Command lookup result', {
+			found: !!command,
+			resolved_to: mainCmd,
+		});
+
+		return command;
 	}
 
 	/**
 	 * Get all commands
 	 */
 	getAll(): Command[] {
+		logger.debug('CommandService', 'getAll', 'Getting all commands', {
+			commands_count: this.commands.size,
+		});
 		return Array.from(this.commands.values());
 	}
 
@@ -43,33 +75,63 @@ export class CommandService implements ICommandRegistry {
 	 * Filter commands by input
 	 */
 	filter(input: string): Command[] {
+		logger.debug('CommandService', 'filter', 'Filtering commands', {
+			input_length: input.length,
+		});
+
 		const normalized = input.toLowerCase().replace(/^\//, '');
 
 		if (!normalized) {
+			logger.debug('CommandService', 'filter', 'Empty filter, returning all');
 			return this.getAll();
 		}
 
-		return this.getAll().filter(cmd => cmd.matches('/' + normalized));
+		const filtered = this.getAll().filter(cmd => cmd.matches('/' + normalized));
+
+		logger.debug('CommandService', 'filter', 'Commands filtered', {
+			input: normalized,
+			matches_count: filtered.length,
+		});
+
+		return filtered;
 	}
 
 	/**
 	 * Check if command exists
 	 */
 	has(cmd: string): boolean {
-		return this.get(cmd) !== null;
+		const exists = this.get(cmd) !== null;
+		logger.debug('CommandService', 'has', 'Checking command existence', {
+			command: cmd,
+			exists,
+		});
+		return exists;
 	}
 
 	/**
 	 * Get commands by category
 	 */
 	getByCategory(category: string): Command[] {
-		return this.getAll().filter(cmd => cmd.category === category);
+		logger.debug('CommandService', 'getByCategory', 'Getting commands by category', {
+			category,
+		});
+
+		const commands = this.getAll().filter(cmd => cmd.category === category);
+
+		logger.debug('CommandService', 'getByCategory', 'Commands retrieved', {
+			category,
+			count: commands.length,
+		});
+
+		return commands;
 	}
 
 	/**
 	 * Register default commands
 	 */
 	private registerDefaultCommands(): void {
+		logger.info('CommandService', 'registerDefaultCommands', 'Registering default commands');
+
 		// /help command
 		this.register(
 			new Command(
@@ -133,5 +195,9 @@ export class CommandService implements ICommandRegistry {
 				},
 			),
 		);
+
+		logger.info('CommandService', 'registerDefaultCommands', 'Default commands registered', {
+			total_commands: this.commands.size,
+		});
 	}
 }

@@ -119,8 +119,14 @@ logger.info('StateManager', 'updateState', 'State updated', {
 
 ### Enable Logging
 ```bash
-export CODEH_LOGGING=TRUE
-export CODEH_LOG_LEVEL=DEBUG  # Optional: DEBUG, INFO, WARN, ERROR
+# Set environment variable (accepts: true, TRUE, 1, yes - case insensitive)
+export CODEH_LOGGING=true
+
+# Or add to .env file
+echo "CODEH_LOGGING=true" >> .env
+
+# Or run inline
+CODEH_LOGGING=true codeh
 ```
 
 ### Log Files Location

@@ -3,6 +3,10 @@
  * Parses markdown text into structured blocks for rendering
  */
 
+import {getLogger} from '../../../infrastructure/logging/Logger.js';
+
+const logger = getLogger();
+
 export enum BlockType {
 	HEADING = 'heading',
 	PARAGRAPH = 'paragraph',
@@ -24,9 +28,18 @@ export class MarkdownService {
 	 * Parse markdown text into blocks
 	 */
 	parse(text: string): MarkdownBlock[] {
+		const start = Date.now();
+		logger.info('MarkdownService', 'parse', 'Parsing markdown text', {
+			text_length: text.length,
+		});
+
 		const lines = text.split('\n');
 		const blocks: MarkdownBlock[] = [];
 		let i = 0;
+
+		logger.debug('MarkdownService', 'parse', 'Starting line-by-line parsing', {
+			total_lines: lines.length,
+		});
 
 		while (i < lines.length) {
 			const line = lines[i];
@@ -73,6 +86,16 @@ export class MarkdownService {
 			i = nextIndex;
 		}
 
+		const duration = Date.now() - start;
+		logger.info('MarkdownService', 'parse', 'Markdown parsing completed', {
+			duration_ms: duration,
+			total_blocks: blocks.length,
+			block_types: blocks.reduce((acc: Record<string, number>, b) => {
+				acc[b.type] = (acc[b.type] || 0) + 1;
+				return acc;
+			}, {}),
+		});
+
 		return blocks;
 	}
 
@@ -80,6 +103,10 @@ export class MarkdownService {
 		lines: string[],
 		startIndex: number,
 	): {block: MarkdownBlock; nextIndex: number} {
+		logger.debug('MarkdownService', 'parseCodeBlock', 'Parsing code block', {
+			start_index: startIndex,
+		});
+
 		const startLine = lines[startIndex].trim();
 		const language = startLine.slice(3).trim() || 'text';
 
@@ -95,6 +122,11 @@ export class MarkdownService {
 			i++;
 		}
 
+		logger.debug('MarkdownService', 'parseCodeBlock', 'Code block parsed', {
+			language,
+			lines_count: codeLines.length,
+		});
+
 		return {
 			block: {
 				type: BlockType.CODE_BLOCK,
@@ -106,8 +138,11 @@ export class MarkdownService {
 	}
 
 	private parseHeading(line: string): MarkdownBlock {
+		logger.debug('MarkdownService', 'parseHeading', 'Parsing heading');
+
 		const match = line.trim().match(/^(#{1,6})\s+(.+)/);
 		if (!match) {
+			logger.debug('MarkdownService', 'parseHeading', 'Not a valid heading, treating as paragraph');
 			return {
 				type: BlockType.PARAGRAPH,
 				content: line,
@@ -117,6 +152,11 @@ export class MarkdownService {
 		const level = match[1].length;
 		const content = match[2];
 
+		logger.debug('MarkdownService', 'parseHeading', 'Heading parsed', {
+			level,
+			content_length: content.length,
+		});
+
 		return {
 			type: BlockType.HEADING,
 			content,
@@ -125,7 +165,14 @@ export class MarkdownService {
 	}
 
 	private parseBlockquote(line: string): MarkdownBlock {
+		logger.debug('MarkdownService', 'parseBlockquote', 'Parsing blockquote');
+
 		const content = line.trim().slice(1).trim();
+
+		logger.debug('MarkdownService', 'parseBlockquote', 'Blockquote parsed', {
+			content_length: content.length,
+		});
+
 		return {
 			type: BlockType.BLOCKQUOTE,
 			content,
@@ -136,6 +183,10 @@ export class MarkdownService {
 		lines: string[],
 		startIndex: number,
 	): {block: MarkdownBlock; nextIndex: number} {
+		logger.debug('MarkdownService', 'parseList', 'Parsing list', {
+			start_index: startIndex,
+		});
+
 		const items: string[] = [];
 		let i = startIndex;
 
@@ -152,6 +203,10 @@ export class MarkdownService {
 			i++;
 		}
 
+		logger.debug('MarkdownService', 'parseList', 'List parsed', {
+			items_count: items.length,
+		});
+
 		return {
 			block: {
 				type: BlockType.LIST,
@@ -166,6 +221,10 @@ export class MarkdownService {
 		lines: string[],
 		startIndex: number,
 	): {block: MarkdownBlock; nextIndex: number} {
+		logger.debug('MarkdownService', 'parseParagraph', 'Parsing paragraph', {
+			start_index: startIndex,
+		});
+
 		const paragraphLines: string[] = [];
 		let i = startIndex;
 
@@ -182,10 +241,17 @@ export class MarkdownService {
 			i++;
 		}
 
+		const content = paragraphLines.join(' ');
+
+		logger.debug('MarkdownService', 'parseParagraph', 'Paragraph parsed', {
+			lines_count: paragraphLines.length,
+			content_length: content.length,
+		});
+
 		return {
 			block: {
 				type: BlockType.PARAGRAPH,
-				content: paragraphLines.join(' '),
+				content,
 			},
 			nextIndex: i,
 		};
@@ -195,6 +261,10 @@ export class MarkdownService {
 	 * Parse inline markdown (bold, italic, code, links)
 	 */
 	parseInline(text: string): Array<{type: string; content: string}> {
+		logger.debug('MarkdownService', 'parseInline', 'Parsing inline markdown', {
+			text_length: text.length,
+		});
+
 		const tokens: Array<{type: string; content: string}> = [];
 		let current = '';
 		let i = 0;
@@ -253,6 +323,14 @@ export class MarkdownService {
 		if (current) {
 			tokens.push({type: 'text', content: current});
 		}
+
+		logger.debug('MarkdownService', 'parseInline', 'Inline markdown parsed', {
+			tokens_count: tokens.length,
+			token_types: tokens.reduce((acc: Record<string, number>, t) => {
+				acc[t.type] = (acc[t.type] || 0) + 1;
+				return acc;
+			}, {}),
+		});
 
 		return tokens;
 	}

@@ -1,7 +1,7 @@
 /**
  * Enhanced Logging System
  * - Text-only format (no emojis/icons)
- * - Only logs when CODEH_LOGGING=TRUE
+ * - Only logs when CODEH_LOGGING=true
  * - Buffered file writes
  * - Log rotation
  * - Correlation ID support
@@ -11,13 +11,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-
-export enum LogLevel {
-	DEBUG = 0,
-	INFO = 1,
-	WARN = 2,
-	ERROR = 3,
-}
+import {isLoggingEnabled} from '../config/EnvUtils';
 
 export interface LogEntry {
 	timestamp: string;
@@ -140,24 +134,18 @@ export class EnhancedLogger implements ILogger {
 	private requestId?: string;
 	private fileOutput?: BufferedFileOutput;
 	private enabled: boolean;
-	private level: LogLevel;
 	private sessionId?: string;
 
 	constructor(sessionId?: string) {
-		// Check if logging is enabled
-		this.enabled = process.env.CODEH_LOGGING === 'TRUE';
-
-		// Set log level (default to DEBUG if enabled)
-		const envLevel = process.env.CODEH_LOG_LEVEL || 'DEBUG';
-		this.level = LogLevel[envLevel as keyof typeof LogLevel] ?? LogLevel.DEBUG;
+		// Check if logging is enabled using shared utility
+		// This ensures consistency with EnvConfigRepository
+		this.enabled = isLoggingEnabled();
 
 		// Store session ID
 		this.sessionId = sessionId;
 
-		// Setup file output if enabled
-		if (this.enabled) {
-			this.createFileOutput();
-		}
+		// Don't create file output here - lazy init on first log
+		// This prevents creating multiple files when sessionId is set later
 	}
 
 	private createFileOutput(): void {
@@ -187,19 +175,19 @@ export class EnhancedLogger implements ILogger {
 	}
 
 	debug(component: string, func: string, message: string, context?: Record<string, any>): void {
-		this.log(LogLevel.DEBUG, component, func, message, context);
+		this.log('DEBUG', component, func, message, context);
 	}
 
 	info(component: string, func: string, message: string, context?: Record<string, any>): void {
-		this.log(LogLevel.INFO, component, func, message, context);
+		this.log('INFO', component, func, message, context);
 	}
 
 	warn(component: string, func: string, message: string, context?: Record<string, any>): void {
-		this.log(LogLevel.WARN, component, func, message, context);
+		this.log('WARN', component, func, message, context);
 	}
 
 	error(component: string, func: string, message: string, context?: Record<string, any>): void {
-		this.log(LogLevel.ERROR, component, func, message, context);
+		this.log('ERROR', component, func, message, context);
 	}
 
 	logFunctionEntry(component: string, func: string, params?: any): void {
@@ -245,20 +233,25 @@ export class EnhancedLogger implements ILogger {
 	}
 
 	private log(
-		level: LogLevel,
+		level: string,
 		component: string,
 		func: string,
 		message: string,
 		context?: Record<string, any>,
 	): void {
-		// Skip if disabled or level too low
-		if (!this.enabled || level < this.level) {
+		// Skip if disabled
+		if (!this.enabled) {
 			return;
+		}
+
+		// Lazy initialization - create file output on first log
+		if (!this.fileOutput) {
+			this.createFileOutput();
 		}
 
 		const entry: LogEntry = {
 			timestamp: new Date().toISOString(),
-			level: LogLevel[level],
+			level,
 			component,
 			function: func,
 			message,
@@ -298,21 +291,22 @@ export class EnhancedLogger implements ILogger {
 	}
 
 	/**
-	 * Set session ID and create new log file
+	 * Set session ID and recreate log file on next log
+	 * NOTE: Can only be called ONCE. Subsequent calls are ignored to prevent multiple log files.
 	 */
 	setSessionId(sessionId: string): void {
-		// Flush and destroy old file output
-		if (this.fileOutput) {
-			this.fileOutput.destroy();
+		// CRITICAL FIX: Only allow setting sessionId ONCE
+		// This prevents creating multiple log files when user creates new sessions
+		if (this.sessionId) {
+			// SessionId already set, ignore this call
+			return;
 		}
 
-		// Set new session ID
+		// Set session ID (first time only)
 		this.sessionId = sessionId;
 
-		// Create new file output
-		if (this.enabled) {
-			this.createFileOutput();
-		}
+		// Don't create file immediately - lazy init on next log
+		// This ensures we only create one file with the correct session ID
 	}
 
 	/**
@@ -356,7 +350,7 @@ let globalLogger: ILogger | null = null;
  */
 export function getLogger(): ILogger {
 	if (!globalLogger) {
-		if (process.env.CODEH_LOGGING === 'TRUE') {
+		if (isLoggingEnabled()) {
 			globalLogger = new EnhancedLogger();
 		} else {
 			globalLogger = new NullLogger();
@@ -369,7 +363,7 @@ export function getLogger(): ILogger {
  * Create a new logger instance (for testing)
  */
 export function createLogger(): ILogger {
-	if (process.env.CODEH_LOGGING === 'TRUE') {
+	if (isLoggingEnabled()) {
 		return new EnhancedLogger();
 	}
 	return new NullLogger();

@@ -7,6 +7,9 @@ import React, {useState, useEffect} from 'react';
 import {Box, Text, useInput} from 'ink';
 import Button from '../atoms/Button.js';
 import {useLayerSwitch} from '../../../core/input/index.js';
+import {getLogger} from '../../../infrastructure/logging/Logger.js';
+
+const logger = getLogger();
 
 export interface ToolPermissionRequest {
 	toolName: string;
@@ -35,6 +38,12 @@ export default function ToolPermissionDialog({
 	// Reset focus when request changes
 	useEffect(() => {
 		if (request) {
+			logger.info('ToolPermissionDialog', 'useEffect', 'Permission dialog opened', {
+				tool_name: request.toolName,
+				has_description: !!request.toolDescription,
+				args_count: Object.keys(request.arguments).length,
+			});
+
 			setFocusedButton('allow');
 		}
 	}, [request]);
@@ -49,12 +58,16 @@ export default function ToolPermissionDialog({
 
 			// Tab or arrow keys to navigate
 			if (key.tab || key.rightArrow) {
+				logger.debug('ToolPermissionDialog', 'useInput', 'Navigating right');
+
 				setFocusedButton(prev => {
 					if (prev === 'allow') return 'deny';
 					if (prev === 'deny') return 'always';
 					return 'allow';
 				});
 			} else if (key.leftArrow) {
+				logger.debug('ToolPermissionDialog', 'useInput', 'Navigating left');
+
 				setFocusedButton(prev => {
 					if (prev === 'always') return 'deny';
 					if (prev === 'deny') return 'allow';
@@ -64,6 +77,11 @@ export default function ToolPermissionDialog({
 
 			// Enter to confirm
 			if (key.return) {
+				logger.info('ToolPermissionDialog', 'useInput', 'User confirmed selection', {
+					tool_name: request.toolName,
+					action: focusedButton,
+				});
+
 				if (focusedButton === 'allow') {
 					onApprove();
 				} else if (focusedButton === 'deny') {
@@ -75,10 +93,19 @@ export default function ToolPermissionDialog({
 
 			// Shortcuts
 			if (input === 'y') {
+				logger.info('ToolPermissionDialog', 'useInput', 'User approved tool (shortcut Y)', {
+					tool_name: request.toolName,
+				});
 				onApprove();
 			} else if (input === 'n') {
+				logger.info('ToolPermissionDialog', 'useInput', 'User denied tool (shortcut N)', {
+					tool_name: request.toolName,
+				});
 				onDeny();
 			} else if (input === 'a') {
+				logger.info('ToolPermissionDialog', 'useInput', 'User always allowed tool (shortcut A)', {
+					tool_name: request.toolName,
+				});
 				onAlwaysAllow();
 			}
 		},

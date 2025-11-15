@@ -3,12 +3,35 @@ import dotenv from 'dotenv';
 import React from 'react';
 import {render} from 'ink';
 import meow from 'meow';
+import {fileURLToPath} from 'url';
+import {dirname, join} from 'path';
+import {existsSync} from 'fs';
 import App from './cli/app.js';
 import {setupContainer} from './core/di/setup.js';
 import {getLogger, cleanupOldLogs, generateRequestId} from './infrastructure/logging/Logger.js';
 
-// Load .env file
-dotenv.config({debug: false});
+// Load .env file from multiple locations (in priority order)
+// 1. Package root (for development)
+// 2. User home directory ~/.codeh/.env (for user-specific config)
+// 3. Current working directory (legacy support)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const packageRoot = join(__dirname, '..');
+const homeConfigPath = join(process.env.HOME || process.env.USERPROFILE || '', '.codeh', '.env');
+
+// Try loading from package root first (development)
+const packageEnvPath = join(packageRoot, '.env');
+if (existsSync(packageEnvPath)) {
+	dotenv.config({path: packageEnvPath, debug: false});
+}
+
+// Then try user home directory (user-specific settings)
+if (existsSync(homeConfigPath)) {
+	dotenv.config({path: homeConfigPath, override: false, debug: false});
+}
+
+// Finally, try current directory (legacy, lowest priority)
+dotenv.config({override: false, debug: false});
 
 // Initialize logger and cleanup old logs
 const logger = getLogger();
@@ -42,21 +65,15 @@ async function main() {
 	const requestId = generateRequestId();
 	logger.setRequestId(requestId);
 
-	logger.info('CLI', 'main', 'Application starting', {
-		version: cli.pkg?.version,
-		node_version: process.version,
-		platform: process.platform,
-	});
+	// Don't log here - wait until sessionId is set in HomePresenter
+	// to avoid creating multiple log files
 
 	try {
 		// Setup DI container
-		logger.debug('CLI', 'main', 'Setting up DI container');
 		const container = await setupContainer();
 		const duration = Date.now() - start;
 
-		logger.info('CLI', 'main', 'Application started successfully', {
-			duration_ms: duration,
-		});
+		// First log will be written by HomePresenter after setSessionId()
 
 		render(<App container={container} />, {
 			exitOnCtrlC: false,
