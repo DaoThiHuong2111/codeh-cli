@@ -143,7 +143,25 @@ export class CommandService implements ICommandRegistry {
 				},
 				{
 					execute: async (args, presenter) => {
-						presenter.toggleHelp();
+						const helpText = `📚 Available Commands:
+
+🗨️  Conversation:
+  /help, /h, /?     - Show this help message
+
+📝 Session Management:
+  /new, /n          - Save current session and start a new one
+  /sessions, /ls    - Browse and load saved sessions
+
+⚙️  System:
+  /sandbox, /sb     - Toggle sandbox mode (safe ↔ unrestricted)
+
+💡 Tips:
+  - Use ↑↓ arrows to navigate command suggestions
+  - Press Tab to autocomplete commands
+  - Use Ctrl+C to exit`;
+
+						const systemMsg = Message.system(helpText);
+						presenter.addSystemMessage(systemMsg);
 					},
 				},
 			),
@@ -191,6 +209,48 @@ export class CommandService implements ICommandRegistry {
 				{
 					execute: async (args, presenter) => {
 						await presenter.openSessionSelector();
+					},
+				},
+			),
+		);
+
+		// /sandbox command - Toggle sandbox mode
+		this.register(
+			new Command(
+				{
+					cmd: '/sandbox',
+					desc: 'Toggle sandbox mode for shell commands (safe ↔ unrestricted)',
+					category: CommandCategory.SYSTEM,
+					aliases: ['/sb'],
+				},
+				{
+					execute: async (args, presenter) => {
+						const sandboxManager = (presenter as any).sandboxModeManager;
+						
+						if (!sandboxManager) {
+							logger.error('CommandService', 'sandbox', 'Sandbox manager not available');
+							const errorMsg = Message.system('❌ Sandbox manager not available');
+							presenter.addSystemMessage(errorMsg);
+							return;
+						}
+
+						// Get old mode
+						const oldMode = sandboxManager.getMode();
+						const oldDescription = sandboxManager.getModeDescription();
+
+						// Toggle mode
+						const newMode = sandboxManager.toggle();
+
+						logger.info('CommandService', 'sandbox', 'Sandbox mode toggled', {
+							old_mode: oldMode,
+							new_mode: newMode,
+						});
+
+						// Create response message
+						const message = `Sandbox mode toggled: ${newMode}`;
+
+						const systemMsg = Message.system(message);
+						presenter.addSystemMessage(systemMsg);
 					},
 				},
 			),

@@ -33,6 +33,7 @@ export interface ToolExecutionConfig {
 	maxIterations?: number; // Max agentic loop iterations
 	timeout?: number; // Timeout per tool execution (ms)
 	parallel?: boolean; // Execute tools in parallel
+	maxTokens?: number; // Max tokens for context (for compression)
 }
 
 export interface ToolExecutionResult {
@@ -50,6 +51,7 @@ export class ToolExecutionOrchestrator {
 		private permissionHandler: IToolPermissionHandler,
 		private apiClient: IApiClient,
 		private historyRepo: IHistoryRepository,
+		private contextService: any, // ConversationContextService
 		private config: ToolExecutionConfig = {},
 	) {
 		this.handleToolCalls = new HandleToolCalls(
@@ -77,6 +79,7 @@ export class ToolExecutionOrchestrator {
 		onProgress?: (event: ToolExecutionProgressEvent) => void,
 	): Promise<ToolExecutionResult> {
 		const maxIterations = this.config.maxIterations || 5;
+		const maxTokens = this.config.maxTokens || 64000;
 		let currentTurn = initialTurn;
 		const allExecutionContexts: ToolExecutionContext[] = [];
 		let iterations = 0;
@@ -180,6 +183,7 @@ export class ToolExecutionOrchestrator {
 					currentTurn,
 					rejectionMessages,
 					onStreamChunk,
+					maxTokens,
 				);
 
 				console.log(
@@ -201,6 +205,7 @@ export class ToolExecutionOrchestrator {
 				currentTurn,
 				toolResultMessages,
 				onStreamChunk,
+				maxTokens,
 			);
 
 			console.log('📨 Received LLM response');
@@ -334,22 +339,25 @@ export class ToolExecutionOrchestrator {
 		previousTurn: Turn,
 		toolResultMessages: Message[],
 		onStreamChunk?: (chunk: string) => void,
+		maxTokens: number = 64000,
 	): Promise<Turn> {
-		// Get recent conversation history
-		const recentMessages = await this.historyRepo.getRecentMessages(10);
+		// Get conversation history with automatic compression
+		const contextMessages = await this.contextService.getMessagesForLLM({
+			maxTokens,
+		});
 
 		// Get tool definitions
 		const tools = ToolDefinitionConverter.toApiFormatBatch(
 			this.toolRegistry.getDefinitions(),
 		);
 
-		// Build messages array: history + tool results
+		// Build messages array: context + tool results
 		const messages = [
-			...recentMessages.map(m => ({
+			...contextMessages.map((m: Message) => ({
 				role: m.role,
 				content: m.content,
 			})),
-			...toolResultMessages.map(m => ({
+			...toolResultMessages.map((m: Message) => ({
 				role: m.role,
 				content: m.content,
 			})),
@@ -364,7 +372,7 @@ export class ToolExecutionOrchestrator {
 
         console.log('🔥 [TOOL CONTINUATION] Tool result messages count:', toolResultMessages.length);
 
-        console.log('🔥 [TOOL CONTINUATION] Recent messages count:', recentMessages.length);
+        console.log('🔥 [TOOL CONTINUATION] Context messages count:', contextMessages.length);
 
 		// Call LLM with tool results and tool definitions
 		// Use streaming if callback provided for better UX

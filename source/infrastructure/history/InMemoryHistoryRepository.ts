@@ -197,4 +197,65 @@ export class InMemoryHistoryRepository implements IHistoryRepository {
 			conversation_id: conversation.id,
 		});
 	}
+
+	async getCurrentSession(): Promise<any | null> {
+		logger.debug('InMemoryHistoryRepository', 'getCurrentSession', 'Getting current session');
+		
+		if (!this.currentConversationId) {
+			logger.debug('InMemoryHistoryRepository', 'getCurrentSession', 'No current conversation');
+			return null;
+		}
+
+		const conversation = this.conversations.get(this.currentConversationId);
+		if (!conversation) {
+			logger.warn('InMemoryHistoryRepository', 'getCurrentSession', 'Current conversation not found');
+			return null;
+		}
+
+		// Convert ConversationHistory to Session
+		// For now, we'll import Session dynamically to avoid circular dependency
+		const {Session} = await import('../../core/domain/models/Session.js');
+		
+		const session = Session.fromData({
+			id: conversation.id,
+			name: 'Current Session',
+			messages: conversation.messages,
+			metadata: conversation.metadata || {
+				messageCount: conversation.messages.length,
+				totalTokens: 0,
+				estimatedCost: 0,
+				model: 'claude-3-5-sonnet',
+			},
+			createdAt: conversation.createdAt,
+			updatedAt: conversation.updatedAt,
+		});
+
+		logger.debug('InMemoryHistoryRepository', 'getCurrentSession', 'Session retrieved', {
+			session_id: session.id,
+			message_count: session.getMessageCount(),
+		});
+
+		return session;
+	}
+
+	async saveSession(session: any): Promise<void> {
+		logger.debug('InMemoryHistoryRepository', 'saveSession', 'Saving session', {
+			session_id: session.id,
+		});
+
+		const sessionData = session.toJSON();
+		const conversation: ConversationHistory = {
+			id: sessionData.id,
+			messages: sessionData.messages,
+			createdAt: sessionData.createdAt,
+			updatedAt: sessionData.updatedAt,
+			metadata: sessionData.metadata,
+		};
+
+		await this.save(conversation);
+		
+		logger.debug('InMemoryHistoryRepository', 'saveSession', 'Session saved', {
+			session_id: session.id,
+		});
+	}
 }

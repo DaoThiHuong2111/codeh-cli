@@ -247,7 +247,18 @@ export class HomePresenter {
 		this.logger.info('HomePresenter', 'handleSubmit', 'User message received', {
 			input_length: userInput.length,
 			is_command: userInput.startsWith('/'),
+			current_input: this.state.input,
 		});
+
+		// If current input is different from submitted input, it means autocomplete happened
+		// Ignore this submit as it's stale
+		if (this.state.input !== userInput) {
+			this.logger.debug('HomePresenter', 'handleSubmit', 'Ignoring stale submit', {
+				submitted: userInput,
+				current: this.state.input,
+			});
+			return;
+		}
 
 		// Validation
 		if (!userInput.trim()) {
@@ -431,6 +442,7 @@ export class HomePresenter {
 		this.logger.info('HomePresenter', 'handleCommand', 'Processing command', {
 			command: cmd,
 			args_count: args.length,
+			original_input: input,
 		});
 
 		// Find command
@@ -537,24 +549,6 @@ export class HomePresenter {
 		});
 		return has;
 	};
-
-	// === Help Management ===
-
-	/**
-	 * Toggle help overlay visibility
-	 */
-	toggleHelp(): void {
-		this.logger.debug('HomePresenter', 'toggleHelp', 'Toggling help overlay');
-		// For now, just add a system message with help info
-		// In the future, this could toggle a help overlay UI
-		const helpMessage = MessageModel.system(
-			'Available commands:\n' +
-			'/help, /h, /? - Show this help\n' +
-			'/new, /n - Save current session and start new one\n' +
-			'/sessions, /ls - Browse and load saved sessions'
-		);
-		this.addSystemMessage(helpMessage);
-	}
 
 	// === Session Management ===
 

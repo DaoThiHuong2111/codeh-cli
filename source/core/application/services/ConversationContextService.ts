@@ -1,0 +1,209 @@
+/**
+ * Conversation Context Service
+ * Manages conversation context with automatic compression when needed
+ */
+
+import {Message} from '../../domain/models/Message.js';
+import {IHistoryRepository} from '../../domain/interfaces/IHistoryRepository.js';
+import {IApiClient} from '../../domain/interfaces/IApiClient.js';
+import {MessageCompressionService} from './MessageCompressionService.js';
+import {getLogger} from '../../../infrastructure/logging/Logger.js';
+
+const logger = getLogger();
+
+export interface ContextOptions {
+	maxTokens: number;
+	compressionThreshold?: number; // Default: 0.8 (80%)
+}
+
+export class ConversationContextService {
+	private compressionService: MessageCompressionService;
+
+	constructor(private historyRepo: IHistoryRepository, apiClient: IApiClient) {
+		this.compressionService = new MessageCompressionService(apiClient);
+	}
+
+	/**
+	 * Get messages for LLM with automatic compression if needed
+	 * This is the main method to use when preparing messages for API calls
+	 * 
+	 * Flow:
+	 * 1. Get all messages from history
+	 * 2. Check if compression is needed (>80% of maxTokens)
+	 * 3. If needed, compress old messages and return [compressed, ...new messages]
+	 * 4. If not needed, return all messages
+	 */
+	async getMessagesForLLM(options: ContextOptions): Promise<Message[]> {
+		const {maxTokens, compressionThreshold = 0.8} = options;
+
+		logger.debug(
+			'ConversationContextService',
+			'getMessagesForLLM',
+			'Getting messages for LLM',
+			{
+				max_tokens: maxTokens,
+				compression_threshold: compressionThreshold,
+			},
+		);
+
+		// Get current session from history
+		const session = await this.historyRepo.getCurrentSession();
+		if (!session) {
+			logger.warn(
+				'ConversationContextService',
+				'getMessagesForLLM',
+				'No active session found',
+			);
+			return [];
+		}
+
+		// Get messages (with compression if already exists)
+		const messages = session.getMessagesForLLM();
+		const estimatedTokens = this.estimateTokenCount(messages);
+
+		logger.debug(
+			'ConversationContextService',
+			'getMessagesForLLM',
+			'Current context stats',
+			{
+				message_count: messages.length,
+				estimated_tokens: estimatedTokens,
+				has_compression: session.hasCompression(),
+				threshold: maxTokens * compressionThreshold,
+			},
+		);
+
+		// Check if compression is needed
+		const needsCompression = estimatedTokens > maxTokens * compressionThreshold;
+
+		if (!needsCompression) {
+			logger.debug(
+				'ConversationContextService',
+				'getMessagesForLLM',
+				'No compression needed',
+			);
+			return Array.from(messages);
+		}
+
+		logger.info(
+			'ConversationContextService',
+			'getMessagesForLLM',
+			'Compression needed, starting compression',
+			{
+				estimated_tokens: estimatedTokens,
+				threshold: maxTokens * compressionThreshold,
+			},
+		);
+
+		// Perform compression
+		return await this.compressAndGetMessages(session, maxTokens);
+	}
+
+	/**
+	 * Compress old messages and return updated message list
+	 */
+	private async compressAndGetMessages(
+		session: any,
+		maxTokens: number,
+	): Promise<Message[]> {
+		const allMessages = session.getMessages();
+		const lastCompressedIndex = session.metadata.lastCompressedIndex ?? -1;
+
+		// Determine which messages to compress
+		// Strategy: Compress all but the last 3 messages to keep recent context
+		const keepRecentCount = 3;
+		const startIndex = lastCompressedIndex + 1; // Start after last compression
+		const endIndex = Math.max(
+			startIndex,
+			allMessages.length - keepRecentCount,
+		);
+
+		if (endIndex <= startIndex) {
+			logger.warn(
+				'ConversationContextService',
+				'compressAndGetMessages',
+				'Not enough messages to compress',
+				{
+					start_index: startIndex,
+					end_index: endIndex,
+					total_messages: allMessages.length,
+				},
+			);
+			// Return current messages without compression
+			return Array.from(session.getMessagesForLLM());
+		}
+
+		// Get messages to compress
+		const messagesToCompress = allMessages.slice(startIndex, endIndex);
+
+		logger.info(
+			'ConversationContextService',
+			'compressAndGetMessages',
+			'Compressing messages',
+			{
+				compress_from: startIndex,
+				compress_to: endIndex,
+				compress_count: messagesToCompress.length,
+				keep_recent: keepRecentCount,
+			},
+		);
+
+		try {
+			// Compress messages
+			const compressionResult = await this.compressionService.compressMessages(
+				messagesToCompress,
+				Math.floor(maxTokens * 0.3), // Use max 30% of tokens for summary
+			);
+
+			// Update session with compressed message
+			session.setCompressedMessage(
+				compressionResult.compressedMessage,
+				endIndex - 1, // Last compressed message index
+			);
+
+			// Save updated session
+			await this.historyRepo.saveSession(session);
+
+			logger.info(
+				'ConversationContextService',
+				'compressAndGetMessages',
+				'Compression completed and saved',
+				{
+					compressed_count: compressionResult.compressedCount,
+					original_tokens: compressionResult.originalTokens,
+					compressed_tokens: compressionResult.compressedTokens,
+					compression_ratio: (
+						(compressionResult.compressedTokens /
+							compressionResult.originalTokens) *
+						100
+					).toFixed(2) + '%',
+				},
+			);
+
+			// Return updated messages for LLM
+			return Array.from(session.getMessagesForLLM());
+		} catch (error: any) {
+			logger.error(
+				'ConversationContextService',
+				'compressAndGetMessages',
+				'Compression failed, returning uncompressed messages',
+				{
+					error: error.message,
+				},
+			);
+			// On error, return current messages without compression
+			return Array.from(session.getMessagesForLLM());
+		}
+	}
+
+	/**
+	 * Estimate token count for messages (4 chars = 1 token)
+	 */
+	private estimateTokenCount(messages: readonly Message[]): number {
+		const totalChars = messages.reduce(
+			(sum, msg) => sum + msg.content.length,
+			0,
+		);
+		return Math.ceil(totalChars / 4);
+	}
+}

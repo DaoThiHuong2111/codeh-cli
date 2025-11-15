@@ -15,6 +15,10 @@ export interface SessionMetadata {
 	estimatedCost: number;
 	model: string;
 	tags?: string[];
+	/** Index of last compressed message (messages before this are compressed) */
+	lastCompressedIndex?: number;
+	/** ID of the compressed summary message */
+	compressedMessageId?: string;
 }
 
 export interface SessionData {
@@ -33,6 +37,8 @@ export class Session {
 	private metadata: SessionMetadata;
 	readonly createdAt: Date;
 	updatedAt: Date; // Mutable - updated on changes
+	/** Compressed summary message (if compression has occurred) */
+	private compressedMessage?: Message;
 
 	private constructor(data: SessionData) {
 		this.id = data.id;
@@ -141,6 +147,49 @@ export class Session {
 	 */
 	getLastNMessages(n: number): ReadonlyArray<Message> {
 		return this.messages.slice(-n);
+	}
+
+	/**
+	 * Get messages for sending to LLM (includes compressed message if exists)
+	 * Returns: [compressedMessage?, ...uncompressedMessages]
+	 */
+	getMessagesForLLM(): ReadonlyArray<Message> {
+		const lastCompressedIndex = this.metadata.lastCompressedIndex ?? -1;
+		
+		if (lastCompressedIndex >= 0 && this.compressedMessage) {
+			// Return compressed message + messages after compression
+			const uncompressedMessages = this.messages.slice(lastCompressedIndex + 1);
+			return [this.compressedMessage, ...uncompressedMessages];
+		}
+		
+		// No compression yet, return all messages
+		return this.messages;
+	}
+
+	/**
+	 * Set compressed message and mark messages as compressed
+	 * @param compressedMessage The summary message
+	 * @param compressedUpToIndex Index of last message that was compressed (inclusive)
+	 */
+	setCompressedMessage(compressedMessage: Message, compressedUpToIndex: number): void {
+		this.compressedMessage = compressedMessage;
+		this.metadata.lastCompressedIndex = compressedUpToIndex;
+		this.metadata.compressedMessageId = compressedMessage.id;
+		this.updatedAt = new Date();
+	}
+
+	/**
+	 * Get compressed message if exists
+	 */
+	getCompressedMessage(): Message | undefined {
+		return this.compressedMessage;
+	}
+
+	/**
+	 * Check if session has compressed messages
+	 */
+	hasCompression(): boolean {
+		return this.compressedMessage !== undefined;
 	}
 
 	/**
