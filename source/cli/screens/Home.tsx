@@ -258,6 +258,7 @@ export default function Home({container, exitConfirmation = false}: HomeProps) {
 				sessionDuration={presenter.sessionDuration}
 				gitBranch={presenter.gitBranch}
 				permissionMode={permissionMode}
+				sandboxEnabled={presenter.sandboxEnabled}
 			/>
 
 			{/* Help Hint */}

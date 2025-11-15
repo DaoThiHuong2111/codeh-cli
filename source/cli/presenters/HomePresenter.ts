@@ -17,6 +17,7 @@ import {formatRelativeTime} from '../../utils/timeFormat.js';
 import type {FormattedSession} from '../components/organisms/SessionSelector.js';
 import {getLogger, type ILogger} from '../../infrastructure/logging/Logger.js';
 import type {ToolExecutionProgressEvent} from '../../core/application/ToolExecutionOrchestrator.js';
+import type {ISandboxModeManager} from '../../core/domain/interfaces/ISandboxModeManager.js';
 
 const logger = getLogger();
 
@@ -80,6 +81,7 @@ export class HomePresenter {
 		private config: any,
 		private inputHistory: InputHistoryService,
 		private workflowManager?: WorkflowManager,
+		private sandboxModeManager?: ISandboxModeManager,
 	) {
 		this.logger = logger;
 		this.sessionStartTime = Date.now();
@@ -798,6 +800,9 @@ export class HomePresenter {
 	}
 	get gitBranch() {
 		return this.state.gitBranch;
+	}
+	get sandboxEnabled() {
+		return this.sandboxModeManager?.isEnabled() ?? true; // Default: enabled for safety
 	}
 	get messageCount() {
 		return this.state.session.getMessageCount();

@@ -14,6 +14,7 @@ export interface FooterProps {
 	sessionDuration: number; // in seconds
 	gitBranch?: string;
 	permissionMode?: 'mvp' | 'interactive';
+	sandboxEnabled?: boolean;
 }
 
 export const Footer: React.FC<FooterProps> = ({
@@ -24,6 +25,7 @@ export const Footer: React.FC<FooterProps> = ({
 	sessionDuration,
 	gitBranch,
 	permissionMode = 'mvp',
+	sandboxEnabled = true,
 }) => {
 	// Format duration as MM:SS
 	const formatDuration = (seconds: number): string => {
@@ -105,6 +107,16 @@ export const Footer: React.FC<FooterProps> = ({
 					<Text color="gray" dimColor>
 						{' '}
 						(Shift+Tab)
+					</Text>
+				</Box>
+
+				{/* Sandbox Status */}
+				<Text color="gray" dimColor>
+					|
+				</Text>
+				<Box>
+					<Text color={sandboxEnabled ? 'green' : 'yellow'} wrap="wrap">
+						{sandboxEnabled ? '🔒 Sandbox' : '⚠️  No Sandbox'}
 					</Text>
 				</Box>
 			</Box>
