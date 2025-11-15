@@ -154,10 +154,8 @@ export class EnhancedLogger implements ILogger {
 		// Store session ID
 		this.sessionId = sessionId;
 
-		// Setup file output if enabled
-		if (this.enabled) {
-			this.createFileOutput();
-		}
+		// Don't create file output here - lazy init on first log
+		// This prevents creating multiple files when sessionId is set later
 	}
 
 	private createFileOutput(): void {
@@ -256,6 +254,11 @@ export class EnhancedLogger implements ILogger {
 			return;
 		}
 
+		// Lazy initialization - create file output on first log
+		if (!this.fileOutput) {
+			this.createFileOutput();
+		}
+
 		const entry: LogEntry = {
 			timestamp: new Date().toISOString(),
 			level: LogLevel[level],
@@ -298,21 +301,20 @@ export class EnhancedLogger implements ILogger {
 	}
 
 	/**
-	 * Set session ID and create new log file
+	 * Set session ID and recreate log file on next log
 	 */
 	setSessionId(sessionId: string): void {
-		// Flush and destroy old file output
+		// Flush and destroy old file output if exists
 		if (this.fileOutput) {
 			this.fileOutput.destroy();
+			this.fileOutput = undefined;
 		}
 
 		// Set new session ID
 		this.sessionId = sessionId;
 
-		// Create new file output
-		if (this.enabled) {
-			this.createFileOutput();
-		}
+		// Don't create file immediately - lazy init on next log
+		// This ensures we only create one file with the correct session ID
 	}
 
 	/**
