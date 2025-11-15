@@ -7,6 +7,7 @@
  */
 
 import type {Message} from './Message.js';
+import {Message as MessageModel} from './Message.js';
 
 export interface SessionMetadata {
 	messageCount: number;
@@ -88,10 +89,22 @@ export class Session {
 	 * Create from data (deserialization from file)
 	 */
 	static fromData(data: any): Session {
+		// Reconstruct messages with proper Date objects
+		const messages = (data.messages || []).map((msg: any) => 
+			new MessageModel(
+				msg.id,
+				msg.role,
+				msg.content,
+				new Date(msg.timestamp), // Convert string to Date
+				msg.toolCalls,
+				msg.metadata
+			)
+		);
+		
 		return new Session({
 			id: data.id,
 			name: data.name,
-			messages: data.messages,
+			messages,
 			metadata: data.metadata,
 			createdAt: new Date(data.createdAt),
 			updatedAt: new Date(data.updatedAt),

@@ -35,8 +35,11 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 }) => {
 	const config = ROLE_CONFIG[message.role];
 
-	// Format timestamp
-	const timeStr = message.timestamp.toLocaleTimeString('en-US', {
+	// Format timestamp - handle both Date objects and ISO strings
+	const timestamp = message.timestamp instanceof Date 
+		? message.timestamp 
+		: new Date(message.timestamp);
+	const timeStr = timestamp.toLocaleTimeString('en-US', {
 		hour: '2-digit',
 		minute: '2-digit',
 	});

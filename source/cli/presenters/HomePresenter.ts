@@ -601,6 +601,10 @@ export class HomePresenter {
 		const newSession = Session.createNew(this.state.model);
 		this.state.session = newSession;
 
+		// Sync with historyRepo - start fresh conversation
+		const historyRepo = this.client.getHistoryRepository();
+		await historyRepo.startNewConversation();
+
 		// Update logger session ID
 		if (this.logger && this.logger.setSessionId) {
 			this.logger.setSessionId(newSession.id);
@@ -638,8 +642,21 @@ export class HomePresenter {
 		const session = await this.sessionManager.load(name);
 		this.state.session = session;
 
+		// IMPORTANT: Sync loaded session messages to historyRepo
+		// This ensures LLM receives full conversation context
+		const historyRepo = this.client.getHistoryRepository();
+		
+		// Clear current history and start fresh conversation
+		await historyRepo.startNewConversation();
+		
+		// Add all messages from loaded session to history
+		const messages = session.getMessages();
+		for (const message of messages) {
+			await historyRepo.addMessage(message);
+		}
+
 		const duration = Date.now() - start;
-		this.logger.info('HomePresenter', 'loadSession', 'Session loaded', {
+		this.logger.info('HomePresenter', 'loadSession', 'Session loaded and synced to history', {
 			session_name: name,
 			message_count: session.getMessageCount(),
 			duration_ms: duration,
