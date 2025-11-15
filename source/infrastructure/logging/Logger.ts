@@ -13,13 +13,6 @@ import * as path from 'path';
 import * as os from 'os';
 import {isLoggingEnabled} from '../config/EnvUtils';
 
-export enum LogLevel {
-	DEBUG = 0,
-	INFO = 1,
-	WARN = 2,
-	ERROR = 3,
-}
-
 export interface LogEntry {
 	timestamp: string;
 	level: string;
@@ -141,16 +134,12 @@ export class EnhancedLogger implements ILogger {
 	private requestId?: string;
 	private fileOutput?: BufferedFileOutput;
 	private enabled: boolean;
-	private level: LogLevel;
 	private sessionId?: string;
 
 	constructor(sessionId?: string) {
 		// Check if logging is enabled using shared utility
 		// This ensures consistency with EnvConfigRepository
 		this.enabled = isLoggingEnabled();
-
-		// Always log everything when enabled (no level filtering)
-		this.level = LogLevel.DEBUG;
 
 		// Store session ID
 		this.sessionId = sessionId;
@@ -186,19 +175,19 @@ export class EnhancedLogger implements ILogger {
 	}
 
 	debug(component: string, func: string, message: string, context?: Record<string, any>): void {
-		this.log(LogLevel.DEBUG, component, func, message, context);
+		this.log('DEBUG', component, func, message, context);
 	}
 
 	info(component: string, func: string, message: string, context?: Record<string, any>): void {
-		this.log(LogLevel.INFO, component, func, message, context);
+		this.log('INFO', component, func, message, context);
 	}
 
 	warn(component: string, func: string, message: string, context?: Record<string, any>): void {
-		this.log(LogLevel.WARN, component, func, message, context);
+		this.log('WARN', component, func, message, context);
 	}
 
 	error(component: string, func: string, message: string, context?: Record<string, any>): void {
-		this.log(LogLevel.ERROR, component, func, message, context);
+		this.log('ERROR', component, func, message, context);
 	}
 
 	logFunctionEntry(component: string, func: string, params?: any): void {
@@ -244,14 +233,14 @@ export class EnhancedLogger implements ILogger {
 	}
 
 	private log(
-		level: LogLevel,
+		level: string,
 		component: string,
 		func: string,
 		message: string,
 		context?: Record<string, any>,
 	): void {
-		// Skip if disabled or level too low
-		if (!this.enabled || level < this.level) {
+		// Skip if disabled
+		if (!this.enabled) {
 			return;
 		}
 
@@ -262,7 +251,7 @@ export class EnhancedLogger implements ILogger {
 
 		const entry: LogEntry = {
 			timestamp: new Date().toISOString(),
-			level: LogLevel[level],
+			level,
 			component,
 			function: func,
 			message,

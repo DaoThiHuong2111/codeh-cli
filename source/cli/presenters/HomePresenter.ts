@@ -110,16 +110,23 @@ export class HomePresenter {
 	// === View Management ===
 
 	setViewUpdateCallback(callback: () => void) {
+		this.logger.debug('HomePresenter', 'setViewUpdateCallback', 'View callback registered');
 		this.viewUpdateCallback = callback;
 	}
 
 	private _notifyView() {
+		this.logger.debug('HomePresenter', '_notifyView', 'Notifying view update');
 		this.viewUpdateCallback?.();
 	}
 
 	// === Input Handlers ===
 
 	handleInputChange = (value: string) => {
+		this.logger.debug('HomePresenter', 'handleInputChange', 'Input changed', {
+			value_length: value.length,
+			is_command: value.startsWith('/'),
+		});
+
 		this.state.input = value;
 		this.state.inputError = '';
 
@@ -127,6 +134,9 @@ export class HomePresenter {
 		if (value.startsWith('/')) {
 			this.state.filteredSuggestions = this.commandRegistry.filter(value);
 			this.state.selectedSuggestionIndex = 0;
+			this.logger.debug('HomePresenter', 'handleInputChange', 'Suggestions filtered', {
+				suggestions_count: this.state.filteredSuggestions.length,
+			});
 		} else {
 			this.state.filteredSuggestions = [];
 		}
@@ -313,12 +323,21 @@ export class HomePresenter {
 	// === Command Handlers ===
 
 	private async handleCommand(input: string) {
+		const start = Date.now();
 		const [cmd, ...args] = input.split(' ');
+
+		this.logger.info('HomePresenter', 'handleCommand', 'Processing command', {
+			command: cmd,
+			args_count: args.length,
+		});
 
 		// Find command
 		const command = this.commandRegistry.get(cmd);
 
 		if (!command) {
+			this.logger.warn('HomePresenter', 'handleCommand', 'Unknown command', {
+				command: cmd,
+			});
 			this.state.inputError = `Unknown command: ${cmd}`;
 			this._notifyView();
 			return;
@@ -329,8 +348,23 @@ export class HomePresenter {
 		this.state.filteredSuggestions = [];
 
 		try {
+			this.logger.debug('HomePresenter', 'handleCommand', 'Executing command', {
+				command: cmd,
+			});
 			await command.execute(args, this);
+			const duration = Date.now() - start;
+			this.logger.info('HomePresenter', 'handleCommand', 'Command executed successfully', {
+				command: cmd,
+				duration_ms: duration,
+			});
 		} catch (error: any) {
+			const duration = Date.now() - start;
+			this.logger.error('HomePresenter', 'handleCommand', 'Command execution failed', {
+				command: cmd,
+				duration_ms: duration,
+				error: error instanceof Error ? error.message : String(error),
+				stack: error instanceof Error ? error.stack : undefined,
+			});
 			const errorMessage = MessageModel.error(
 				`Command error: ${error.message}`,
 			);
@@ -343,6 +377,12 @@ export class HomePresenter {
 	// === Suggestion Handlers ===
 
 	handleSuggestionNavigate = (direction: 'up' | 'down') => {
+		this.logger.debug('HomePresenter', 'handleSuggestionNavigate', 'Navigating suggestions', {
+			direction,
+			current_index: this.state.selectedSuggestionIndex,
+			suggestions_count: this.state.filteredSuggestions.length,
+		});
+
 		const count = this.state.filteredSuggestions.length;
 		if (count === 0) return;
 
@@ -354,14 +394,29 @@ export class HomePresenter {
 				(this.state.selectedSuggestionIndex + 1) % count;
 		}
 
+		this.logger.debug('HomePresenter', 'handleSuggestionNavigate', 'New index selected', {
+			new_index: this.state.selectedSuggestionIndex,
+		});
+
 		this._notifyView();
 	};
 
 	handleSuggestionSelect = (): string | null => {
+		this.logger.debug('HomePresenter', 'handleSuggestionSelect', 'Selecting suggestion', {
+			index: this.state.selectedSuggestionIndex,
+		});
+
 		const selected =
 			this.state.filteredSuggestions[this.state.selectedSuggestionIndex];
 
-		if (!selected) return null;
+		if (!selected) {
+			this.logger.warn('HomePresenter', 'handleSuggestionSelect', 'No suggestion selected');
+			return null;
+		}
+
+		this.logger.info('HomePresenter', 'handleSuggestionSelect', 'Suggestion selected', {
+			command: selected.cmd,
+		});
 
 		// Auto-fill input
 		this.state.input = selected.cmd + ' ';
@@ -373,7 +428,12 @@ export class HomePresenter {
 	};
 
 	hasSuggestions = (): boolean => {
-		return this.state.filteredSuggestions.length > 0;
+		const has = this.state.filteredSuggestions.length > 0;
+		this.logger.debug('HomePresenter', 'hasSuggestions', 'Checking suggestions', {
+			has_suggestions: has,
+			count: this.state.filteredSuggestions.length,
+		});
+		return has;
 	};
 
 	// === Session Management ===
@@ -383,8 +443,15 @@ export class HomePresenter {
 	 * Returns the saved session name or 'empty' if skipped
 	 */
 	async autoSaveCurrentSession(): Promise<string> {
+		const start = Date.now();
+		this.logger.info('HomePresenter', 'autoSaveCurrentSession', 'Auto-saving session', {
+			session_id: this.state.session.id,
+			message_count: this.state.session.getMessageCount(),
+		});
+
 		// Skip if session is empty
 		if (this.state.session.getMessageCount() === 0) {
+			this.logger.debug('HomePresenter', 'autoSaveCurrentSession', 'Skipping empty session');
 			return 'empty';
 		}
 
@@ -396,6 +463,12 @@ export class HomePresenter {
 			this.state.session,
 		);
 
+		const duration = Date.now() - start;
+		this.logger.info('HomePresenter', 'autoSaveCurrentSession', 'Session saved', {
+			saved_name: savedName,
+			duration_ms: duration,
+		});
+
 		return savedName;
 	}
 
@@ -403,6 +476,8 @@ export class HomePresenter {
 	 * Start a new empty session
 	 */
 	async startNewSession(): Promise<void> {
+		this.logger.info('HomePresenter', 'startNewSession', 'Starting new session');
+
 		const newSession = Session.createNew(this.state.model);
 		this.state.session = newSession;
 
@@ -422,6 +497,11 @@ export class HomePresenter {
 	 * Add a system message to current session
 	 */
 	addSystemMessage(message: Message): void {
+		this.logger.debug('HomePresenter', 'addSystemMessage', 'Adding system message', {
+			message_role: message.role,
+			content_length: message.content.length,
+		});
+
 		this.state.session.addMessage(message);
 		this._notifyView();
 	}
@@ -430,8 +510,21 @@ export class HomePresenter {
 	 * Load a session by name
 	 */
 	async loadSession(name: string): Promise<void> {
+		const start = Date.now();
+		this.logger.info('HomePresenter', 'loadSession', 'Loading session', {
+			session_name: name,
+		});
+
 		const session = await this.sessionManager.load(name);
 		this.state.session = session;
+
+		const duration = Date.now() - start;
+		this.logger.info('HomePresenter', 'loadSession', 'Session loaded', {
+			session_name: name,
+			message_count: session.getMessageCount(),
+			duration_ms: duration,
+		});
+
 		this._notifyView();
 	}
 
@@ -439,8 +532,15 @@ export class HomePresenter {
 	 * Show interactive session selector
 	 */
 	async openSessionSelector(): Promise<void> {
+		const start = Date.now();
+		this.logger.info('HomePresenter', 'openSessionSelector', 'Opening session selector');
+
 		// Get all sessions
 		const sessions = await this.sessionManager.list();
+
+		this.logger.debug('HomePresenter', 'openSessionSelector', 'Sessions loaded', {
+			count: sessions.length,
+		});
 
 		// Format with relative time
 		const formattedSessions: FormattedSession[] = sessions.map(s => ({
@@ -452,6 +552,13 @@ export class HomePresenter {
 		this.state.showSessionSelector = true;
 		this.state.availableSessions = formattedSessions;
 		this.state.selectedSessionIndex = 0;
+
+		const duration = Date.now() - start;
+		this.logger.info('HomePresenter', 'openSessionSelector', 'Session selector opened', {
+			sessions_count: formattedSessions.length,
+			duration_ms: duration,
+		});
+
 		this._notifyView();
 	}
 
@@ -459,6 +566,12 @@ export class HomePresenter {
 	 * Navigate session selector (↑↓)
 	 */
 	navigateSessionSelector(direction: 'up' | 'down'): void {
+		this.logger.debug('HomePresenter', 'navigateSessionSelector', 'Navigating', {
+			direction,
+			current_index: this.state.selectedSessionIndex,
+			max_index: this.state.availableSessions.length - 1,
+		});
+
 		const max = this.state.availableSessions.length - 1;
 		if (direction === 'up') {
 			this.state.selectedSessionIndex = Math.max(
@@ -471,6 +584,11 @@ export class HomePresenter {
 				this.state.selectedSessionIndex + 1,
 			);
 		}
+
+		this.logger.debug('HomePresenter', 'navigateSessionSelector', 'New index', {
+			new_index: this.state.selectedSessionIndex,
+		});
+
 		this._notifyView();
 	}
 
@@ -478,9 +596,18 @@ export class HomePresenter {
 	 * Load the selected session (Enter key)
 	 */
 	async loadSelectedSession(): Promise<void> {
+		this.logger.info('HomePresenter', 'loadSelectedSession', 'Loading selected session', {
+			selected_index: this.state.selectedSessionIndex,
+		});
+
 		const selected =
 			this.state.availableSessions[this.state.selectedSessionIndex];
 		if (selected) {
+			this.logger.debug('HomePresenter', 'loadSelectedSession', 'Selected session details', {
+				name: selected.name,
+				message_count: selected.messageCount,
+			});
+
 			await this.loadSession(selected.name);
 			this.closeSessionSelector();
 
@@ -489,6 +616,8 @@ export class HomePresenter {
 				`Session "${selected.name}" loaded (${selected.messageCount} messages)`,
 			);
 			this.addSystemMessage(msg);
+		} else {
+			this.logger.warn('HomePresenter', 'loadSelectedSession', 'No session selected');
 		}
 	}
 
@@ -496,6 +625,8 @@ export class HomePresenter {
 	 * Close session selector (ESC key)
 	 */
 	closeSessionSelector(): void {
+		this.logger.debug('HomePresenter', 'closeSessionSelector', 'Closing session selector');
+
 		this.state.showSessionSelector = false;
 		this.state.availableSessions = [];
 		this.state.selectedSessionIndex = 0;
@@ -505,14 +636,23 @@ export class HomePresenter {
 	// === Input History ===
 
 	navigateHistory = (direction: 'up' | 'down'): void => {
+		this.logger.debug('HomePresenter', 'navigateHistory', 'Navigating history', {
+			direction,
+		});
+
 		const result =
 			direction === 'up'
 				? this.inputHistory.navigateUp()
 				: this.inputHistory.navigateDown();
 
 		if (result !== null) {
+			this.logger.debug('HomePresenter', 'navigateHistory', 'History item found', {
+				input_length: result.length,
+			});
 			this.state.input = result;
 			this._notifyView();
+		} else {
+			this.logger.debug('HomePresenter', 'navigateHistory', 'No history item found');
 		}
 	};
 
@@ -596,6 +736,8 @@ export class HomePresenter {
 	// === Stats Management ===
 
 	private startDurationTimer(): void {
+		this.logger.debug('HomePresenter', 'startDurationTimer', 'Starting duration timer');
+
 		// Update duration every second
 		this.durationTimer = setInterval(() => {
 			this.state.sessionDuration = Math.floor(
@@ -606,33 +748,56 @@ export class HomePresenter {
 	}
 
 	private updateTokenStats(tokens: number): void {
+		this.logger.debug('HomePresenter', 'updateTokenStats', 'Updating token stats', {
+			tokens_added: tokens,
+			total_tokens_before: this.state.totalTokens,
+		});
+
 		this.state.totalTokens += tokens;
 
 		// Estimate cost based on model
 		// Simple pricing: $0.005 per 1K tokens (average)
 		this.state.estimatedCost = (this.state.totalTokens / 1000) * 0.005;
+
+		this.logger.info('HomePresenter', 'updateTokenStats', 'Token stats updated', {
+			total_tokens: this.state.totalTokens,
+			estimated_cost: this.state.estimatedCost,
+		});
 	}
 
 	private getGitBranch(): string | undefined {
+		this.logger.debug('HomePresenter', 'getGitBranch', 'Getting git branch');
+
 		try {
 			const {execSync} = require('child_process');
 			const branch = execSync('git rev-parse --abbrev-ref HEAD', {
 				encoding: 'utf8',
 				stdio: ['pipe', 'pipe', 'ignore'],
 			}).trim();
+
+			this.logger.debug('HomePresenter', 'getGitBranch', 'Git branch found', {
+				branch,
+			});
+
 			return branch;
-		} catch {
+		} catch (error) {
+			this.logger.debug('HomePresenter', 'getGitBranch', 'Not a git repository or git not available');
 			return undefined;
 		}
 	}
 
 	async cleanup(): Promise<void> {
+		this.logger.info('HomePresenter', 'cleanup', 'Cleaning up presenter');
+
 		// Auto-save session before exit
 		await this.autoSaveCurrentSession();
 
 		// Clear timer
 		if (this.durationTimer) {
+			this.logger.debug('HomePresenter', 'cleanup', 'Clearing duration timer');
 			clearInterval(this.durationTimer);
 		}
+
+		this.logger.info('HomePresenter', 'cleanup', 'Cleanup completed');
 	}
 }
