@@ -115,11 +115,17 @@ export const ToolExecutionProgress: React.FC<ToolExecutionProgressProps> = ({
 					</Text>
 
 					{/* Command/Arguments */}
-					{formattedCommand && (
+					{formattedCommand ? (
 						<Box marginLeft={2} marginTop={0}>
 							<Text color="yellow">$ {formattedCommand}</Text>
 						</Box>
-					)}
+					) : toolArguments && Object.keys(toolArguments).length === 0 ? (
+						<Box marginLeft={2} marginTop={0}>
+							<Text color="red" dimColor>
+								⚠️  No arguments provided by LLM
+							</Text>
+						</Box>
+					) : null}
 				</Box>
 			)}
 
@@ -149,6 +155,20 @@ export const ToolExecutionProgress: React.FC<ToolExecutionProgressProps> = ({
 			{message && !toolOutput && (
 				<Box marginTop={1}>
 					<Text dimColor>{message}</Text>
+				</Box>
+			)}
+
+			{/* Warning về empty arguments */}
+			{toolArguments && Object.keys(toolArguments).length === 0 && isExecuting && (
+				<Box marginTop={1} borderStyle="single" borderColor="yellow" padding={1}>
+					<Text color="yellow">
+						⚠️  Warning: LLM called tool without arguments. This may indicate:
+					</Text>
+					<Box marginLeft={2} flexDirection="column">
+						<Text dimColor>• Invalid model configuration (check your model name)</Text>
+						<Text dimColor>• Model doesn't support tool calling properly</Text>
+						<Text dimColor>• API communication issue</Text>
+					</Box>
 				</Box>
 			)}
 
