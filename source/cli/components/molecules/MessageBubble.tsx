@@ -45,10 +45,10 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 		<Box flexDirection="column" marginY={0}>
 			{/* Header: Role + Timestamp */}
 			<Box>
-				<Text color={config.color} bold>
+				<Text color={config.color} bold wrap="wrap">
 					{config.prefix}
 				</Text>
-				<Text color="gray" dimColor>
+				<Text color="gray" dimColor wrap="wrap">
 					{' '}
 					({timeStr})
 				</Text>
@@ -64,7 +64,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 					</Box>
 				) : (
 					<Box>
-						<Text>{message.content}</Text>
+						<Text wrap="wrap">{message.content}</Text>
 						{isStreaming && <StreamingIndicator />}
 					</Box>
 				)}
@@ -83,7 +83,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 			{/* Metadata (tokens) */}
 			{message.metadata?.usage && (
 				<Box marginLeft={2}>
-					<Text color="gray" dimColor>
+					<Text color="gray" dimColor wrap="wrap">
 						🪙 {message.metadata.usage.totalTokens} tokens
 					</Text>
 				</Box>

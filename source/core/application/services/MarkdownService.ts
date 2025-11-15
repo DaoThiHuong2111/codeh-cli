@@ -241,7 +241,7 @@ export class MarkdownService {
 			i++;
 		}
 
-		const content = paragraphLines.join(' ');
+		const content = paragraphLines.join('\n'); // Preserve line breaks instead of joining with space
 
 		logger.debug('MarkdownService', 'parseParagraph', 'Paragraph parsed', {
 			lines_count: paragraphLines.length,

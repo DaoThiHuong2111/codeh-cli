@@ -29,11 +29,11 @@ const CodeBlock: React.FC<{content: string; language?: string}> = ({
 			marginY={1}
 		>
 			{language && language !== 'text' && (
-				<Text color="cyan" dimColor>
+				<Text color="cyan" dimColor wrap="wrap">
 					{language}
 				</Text>
 			)}
-			<Text color="green">{content}</Text>
+			<Text color="green" wrap="wrap">{content}</Text>
 		</Box>
 	);
 };
@@ -56,7 +56,7 @@ const Heading: React.FC<{content: string; level: number}> = ({
 
 	return (
 		<Box marginY={level === 1 ? 1 : 0}>
-			<Text color={color} bold>
+			<Text color={color} bold wrap="wrap">
 				{content}
 			</Text>
 		</Box>
@@ -81,7 +81,7 @@ const ListBlock: React.FC<{items: string[]}> = ({items}) => {
 const Blockquote: React.FC<{content: string}> = ({content}) => {
 	return (
 		<Box marginY={1} marginLeft={2} borderStyle="single" borderColor="gray">
-			<Text color="gray" italic>
+			<Text color="gray" italic wrap="wrap">
 				{content}
 			</Text>
 		</Box>
@@ -98,26 +98,26 @@ const InlineText: React.FC<{content: string}> = ({content}) => {
 			{tokens.map((token, index) => {
 				if (token.type === 'bold') {
 					return (
-						<Text key={index} bold>
+						<Text key={index} bold wrap="wrap">
 							{token.content}
 						</Text>
 					);
 				}
 				if (token.type === 'italic') {
 					return (
-						<Text key={index} italic>
+						<Text key={index} italic wrap="wrap">
 							{token.content}
 						</Text>
 					);
 				}
 				if (token.type === 'code') {
 					return (
-						<Text key={index} color="green" backgroundColor="black">
+						<Text key={index} color="green" backgroundColor="black" wrap="wrap">
 							{token.content}
 						</Text>
 					);
 				}
-				return <Text key={index}>{token.content}</Text>;
+				return <Text key={index} wrap="wrap">{token.content}</Text>;
 			})}
 		</>
 	);
@@ -146,7 +146,7 @@ export const MarkdownText: React.FC<MarkdownTextProps> = ({content}) => {
 			!content.includes('*') &&
 			!content.includes('`'))
 	) {
-		return <Text>{content}</Text>;
+		return <Text wrap="wrap">{content}</Text>;
 	}
 
 	return (
