@@ -38,6 +38,8 @@ interface ViewState {
 		currentIteration?: number;
 		maxIterations?: number;
 		currentTool?: string;
+		toolArguments?: Record<string, any>;
+		toolOutput?: string;
 		toolIndex?: number;
 		totalTools?: number;
 		message?: string;
@@ -150,6 +152,10 @@ export class HomePresenter {
 					currentIteration: event.iteration,
 					maxIterations: event.maxIterations,
 					message: `Iteration ${event.iteration}/${event.maxIterations}`,
+					// Clear previous tool info when starting new iteration
+					currentTool: undefined,
+					toolArguments: undefined,
+					toolOutput: undefined,
 				};
 				break;
 
@@ -167,6 +173,8 @@ export class HomePresenter {
 					...this.state.toolExecutionProgress,
 					isExecuting: true,
 					currentTool: event.toolName,
+					toolArguments: event.toolArguments,
+					toolOutput: undefined, // Clear previous output
 					toolIndex: event.toolIndex,
 					totalTools: event.totalTools,
 					message: `Executing ${event.toolName} (${event.toolIndex}/${event.totalTools})`,
@@ -176,7 +184,10 @@ export class HomePresenter {
 			case 'tool_completed':
 				this.state.toolExecutionProgress = {
 					...this.state.toolExecutionProgress,
-					isExecuting: true,
+					isExecuting: false, // Set to false để hiển thị completed state
+					currentTool: event.toolName,
+					toolArguments: event.toolArguments,
+					toolOutput: event.toolOutput,
 					message: `Completed ${event.toolName} (${event.toolIndex}/${event.totalTools})`,
 				};
 				break;
@@ -184,7 +195,10 @@ export class HomePresenter {
 			case 'tool_failed':
 				this.state.toolExecutionProgress = {
 					...this.state.toolExecutionProgress,
-					isExecuting: true,
+					isExecuting: false, // Set to false để hiển thị failed state
+					currentTool: event.toolName,
+					toolArguments: event.toolArguments,
+					toolOutput: event.toolOutput, // Error message as output
 					message: `Failed ${event.toolName}: ${event.message}`,
 				};
 				break;

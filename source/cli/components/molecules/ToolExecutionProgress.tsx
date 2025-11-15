@@ -11,6 +11,8 @@ export interface ToolExecutionProgressProps {
 	currentIteration?: number;
 	maxIterations?: number;
 	currentTool?: string;
+	toolArguments?: Record<string, any>;
+	toolOutput?: string;
 	toolIndex?: number;
 	totalTools?: number;
 	message?: string;
@@ -21,33 +23,80 @@ export const ToolExecutionProgress: React.FC<ToolExecutionProgressProps> = ({
 	currentIteration,
 	maxIterations,
 	currentTool,
+	toolArguments,
+	toolOutput,
 	toolIndex,
 	totalTools,
 	message,
 }) => {
-	if (!isExecuting && !message) {
+	if (!isExecuting && !message && !toolOutput) {
 		return null;
 	}
+
+	// Format tool arguments cho dễ đọc
+	const getFormattedCommand = () => {
+		if (!toolArguments) return null;
+
+		// Nếu là shell tool, hiển thị command
+		if (currentTool === 'shell' && toolArguments.command) {
+			return toolArguments.command;
+		}
+
+		// Với các tools khác, hiển thị các arguments chính
+		const mainArgs = Object.entries(toolArguments)
+			.filter(([key]) => !key.startsWith('_'))
+			.slice(0, 3) // Chỉ hiển thị 3 arguments đầu tiên
+			.map(([key, value]) => `${key}: ${JSON.stringify(value).slice(0, 50)}`)
+			.join(', ');
+
+		return mainArgs;
+	};
+
+	const formattedCommand = getFormattedCommand();
+
+	// Truncate output nếu quá dài
+	const getDisplayOutput = () => {
+		if (!toolOutput) return null;
+
+		const maxLines = 10;
+		const lines = toolOutput.split('\n');
+
+		if (lines.length > maxLines) {
+			return {
+				content: lines.slice(0, maxLines).join('\n'),
+				truncated: true,
+				totalLines: lines.length,
+			};
+		}
+
+		return {
+			content: toolOutput,
+			truncated: false,
+			totalLines: lines.length,
+		};
+	};
+
+	const displayOutput = getDisplayOutput();
 
 	return (
 		<Box
 			flexDirection="column"
 			borderStyle="round"
-			borderColor="blue"
+			borderColor={isExecuting ? 'blue' : 'green'}
 			padding={1}
 			marginY={1}
 		>
 			{/* Header */}
 			<Box>
-				<Text color="blue" bold>
-					⚙️  Tool Execution
+				<Text color={isExecuting ? 'blue' : 'green'} bold>
+					{isExecuting ? '⚙️  Tool Executing' : '✅ Tool Completed'}
 					{currentIteration && maxIterations && ` - Iteration ${currentIteration}/${maxIterations}`}
 				</Text>
 			</Box>
 
 			{/* Current Tool */}
 			{currentTool && (
-				<Box marginTop={1}>
+				<Box marginTop={1} flexDirection="column">
 					<Text>
 						<Text color="cyan" bold>
 							{currentTool}
@@ -56,11 +105,40 @@ export const ToolExecutionProgress: React.FC<ToolExecutionProgressProps> = ({
 							<Text dimColor> ({toolIndex}/{totalTools})</Text>
 						)}
 					</Text>
+
+					{/* Command/Arguments */}
+					{formattedCommand && (
+						<Box marginLeft={2} marginTop={0}>
+							<Text color="yellow">$ {formattedCommand}</Text>
+						</Box>
+					)}
+				</Box>
+			)}
+
+			{/* Tool Output */}
+			{displayOutput && (
+				<Box marginTop={1} flexDirection="column">
+					<Text dimColor bold>Output:</Text>
+					<Box
+						marginLeft={2}
+						marginTop={0}
+						flexDirection="column"
+						borderStyle="single"
+						borderColor="gray"
+						paddingX={1}
+					>
+						<Text>{displayOutput.content}</Text>
+						{displayOutput.truncated && (
+							<Text dimColor>
+								... ({displayOutput.totalLines - 10} more lines)
+							</Text>
+						)}
+					</Box>
 				</Box>
 			)}
 
 			{/* Status Message */}
-			{message && (
+			{message && !toolOutput && (
 				<Box marginTop={1}>
 					<Text dimColor>{message}</Text>
 				</Box>

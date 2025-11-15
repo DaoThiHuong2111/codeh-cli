@@ -209,8 +209,8 @@ export default function Home({container, exitConfirmation = false}: HomeProps) {
 				streamingMessageId={presenter.streamingMessageId}
 			/>
 
-			{/* Tool Execution Progress (show during tool execution) */}
-			{presenter.toolExecutionProgress.isExecuting && (
+			{/* Tool Execution Progress (show during and after tool execution) */}
+			{(presenter.toolExecutionProgress.isExecuting || presenter.toolExecutionProgress.toolOutput) && (
 				<ToolExecutionProgress {...presenter.toolExecutionProgress} />
 			)}
 

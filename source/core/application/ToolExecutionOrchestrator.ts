@@ -18,12 +18,14 @@ import {ToolDefinitionConverter} from './services/ToolDefinitionConverter';
 import {ToolResultFormatter} from './services/ToolResultFormatter';
 
 export interface ToolExecutionProgressEvent {
-	type: 'iteration_start' | 'tools_detected' | 'tool_executing' | 'tool_completed' | 'tool_failed' | 'iteration_complete' | 'orchestration_complete';
+	type: 'iteration_start' | 'tools_detected' | 'tool_executing' | 'tool_completed' | 'tool_failed' | 'tool_output' | 'iteration_complete' | 'orchestration_complete';
 	iteration?: number;
 	maxIterations?: number;
 	toolName?: string;
 	toolIndex?: number;
 	totalTools?: number;
+	toolArguments?: Record<string, any>; // Arguments của tool đang execute
+	toolOutput?: string; // Output chunks từ tool execution
 	message?: string;
 }
 
@@ -121,6 +123,7 @@ export class ToolExecutionOrchestrator {
 				onProgress?.({
 					type: 'tool_executing',
 					toolName: toolCalls[i].name,
+					toolArguments: toolCalls[i].arguments,
 					toolIndex: i + 1,
 					totalTools: toolCalls.length,
 					iteration: iterations,
@@ -137,9 +140,13 @@ export class ToolExecutionOrchestrator {
 			for (let i = 0; i < handleResult.contexts.length; i++) {
 				const ctx = handleResult.contexts[i];
 				if (ctx.isCompleted()) {
+					// Emit completion với output
+					const output = ctx.result?.output || '';
 					onProgress?.({
 						type: 'tool_completed',
 						toolName: ctx.toolCall.name,
+						toolArguments: ctx.toolCall.arguments,
+						toolOutput: output,
 						toolIndex: i + 1,
 						totalTools: handleResult.contexts.length,
 						iteration: iterations,
@@ -148,6 +155,8 @@ export class ToolExecutionOrchestrator {
 					onProgress?.({
 						type: 'tool_failed',
 						toolName: ctx.toolCall.name,
+						toolArguments: ctx.toolCall.arguments,
+						toolOutput: ctx.error || '',
 						toolIndex: i + 1,
 						totalTools: handleResult.contexts.length,
 						iteration: iterations,
