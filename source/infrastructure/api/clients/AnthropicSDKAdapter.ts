@@ -22,10 +22,17 @@ export class AnthropicSDKAdapter implements IApiClient {
 		apiKey: string,
 		baseURL: string = 'https://api.anthropic.com',
 	) {
+		logger.info('AnthropicSDKAdapter', 'constructor', 'Initializing Anthropic adapter', {
+			baseURL,
+			has_api_key: !!apiKey,
+		});
+
 		this.sdk = new Anthropic({
 			apiKey,
 			baseURL,
 		});
+
+		logger.debug('AnthropicSDKAdapter', 'constructor', 'Anthropic SDK initialized');
 	}
 
 	async chat(request: ApiRequest): Promise<ApiResponse> {
@@ -97,12 +104,18 @@ export class AnthropicSDKAdapter implements IApiClient {
 		onChunk: (chunk: StreamChunk) => void,
 	): Promise<ApiResponse> {
 		const start = Date.now();
+		let firstChunkTime: number | null = null;
+		let chunkCount = 0;
 		const model = request.model || 'claude-3-5-sonnet-20241022';
 
-		logger.debug('AnthropicSDKAdapter', 'streamChat', 'Streaming API request starting', {
+		logger.info('AnthropicSDKAdapter', 'streamChat', 'Starting stream chat request', {
 			model,
-			messages_count: request.messages.length,
+			message_count: request.messages.length,
+			has_system_prompt: !!request.systemPrompt,
 			has_tools: !!request.tools,
+			tools_count: request.tools?.length || 0,
+			temperature: request.temperature,
+			max_tokens: request.maxTokens || 128000,
 		});
 
 		try {
@@ -147,15 +160,25 @@ export class AnthropicSDKAdapter implements IApiClient {
 				{id: string; name: string; inputJson: string}
 			>();
 
+			logger.debug('AnthropicSDKAdapter', 'streamChat', 'Creating stream');
 			const stream = await this.sdk.messages.create(anthropicRequest);
+			logger.debug('AnthropicSDKAdapter', 'streamChat', 'Stream created, waiting for events');
 
 			for await (const event of stream) {
 				if (event.type === 'message_start') {
 					usage = event.message?.usage;
 					modelName = event.message?.model || modelName;
+					logger.debug('AnthropicSDKAdapter', 'streamChat', 'Message started', {
+						model: modelName,
+						initial_usage: usage,
+					});
 				} else if (event.type === 'content_block_start') {
 					const block = event.content_block;
 					if (block?.type === 'tool_use') {
+						logger.debug('AnthropicSDKAdapter', 'streamChat', 'Tool use started', {
+							tool_id: block.id,
+							tool_name: block.name,
+						});
 						toolCallsInProgress.set(event.index, {
 							id: block.id,
 							name: block.name,
@@ -165,11 +188,26 @@ export class AnthropicSDKAdapter implements IApiClient {
 				} else if (event.type === 'content_block_delta') {
 					const delta = event.delta;
 					if (delta?.type === 'text_delta' && delta.text) {
+						if (chunkCount === 0) {
+							firstChunkTime = Date.now();
+							logger.info('AnthropicSDKAdapter', 'streamChat', 'First chunk received (TTFT)', {
+								ttft_ms: firstChunkTime - start,
+							});
+						}
+
+						chunkCount++;
 						fullContent += delta.text;
 						onChunk({
 							content: delta.text,
 							done: false,
 						});
+
+						if (chunkCount % 10 === 0) {
+							logger.debug('AnthropicSDKAdapter', 'streamChat', 'Chunk milestone', {
+								chunks_received: chunkCount,
+								content_length: fullContent.length,
+							});
+						}
 					} else if (delta?.type === 'input_json_delta' && delta.partial_json) {
 						const toolCall = toolCallsInProgress.get(event.index);
 						if (toolCall) {
@@ -220,13 +258,15 @@ export class AnthropicSDKAdapter implements IApiClient {
 
 			const duration = Date.now() - start;
 
-			logger.info('AnthropicSDKAdapter', 'streamChat', 'Streaming API request completed', {
+			logger.info('AnthropicSDKAdapter', 'streamChat', 'Stream completed successfully', {
 				duration_ms: duration,
-				model: modelName,
-				prompt_tokens: usage?.input_tokens || 0,
-				completion_tokens: usage?.output_tokens || 0,
-				finish_reason: stopReason,
+				ttft_ms: firstChunkTime ? firstChunkTime - start : null,
+				chunks_received: chunkCount,
+				content_length: fullContent.length,
 				tool_calls_count: toolCalls.length,
+				model: modelName,
+				stop_reason: stopReason,
+				usage: usage,
 			});
 
 			return {
@@ -242,10 +282,13 @@ export class AnthropicSDKAdapter implements IApiClient {
 			};
 		} catch (error) {
 			const duration = Date.now() - start;
-			logger.error('AnthropicSDKAdapter', 'streamChat', 'Streaming API request failed', {
+			logger.error('AnthropicSDKAdapter', 'streamChat', 'Stream failed', {
 				duration_ms: duration,
+				ttft_ms: firstChunkTime ? firstChunkTime - start : null,
+				chunks_received: chunkCount,
 				model,
 				error: error instanceof Error ? error.message : String(error),
+				stack: error instanceof Error ? error.stack : undefined,
 			});
 			throw this.transformError(error);
 		}
@@ -270,6 +313,9 @@ export class AnthropicSDKAdapter implements IApiClient {
 	}
 
 	getProviderName(): string {
+		logger.debug('AnthropicSDKAdapter', 'getProviderName', 'Returning provider name', {
+			provider: 'anthropic',
+		});
 		return 'anthropic';
 	}
 
@@ -277,6 +323,9 @@ export class AnthropicSDKAdapter implements IApiClient {
 		logger.debug('AnthropicSDKAdapter', 'getAvailableModels', 'Getting available models');
 		// Anthropic SDK doesn't provide a models endpoint
 		// Return empty array - models come from user configuration
+		logger.debug('AnthropicSDKAdapter', 'getAvailableModels', 'Returning empty array', {
+			reason: 'Anthropic SDK does not provide models endpoint',
+		});
 		return [];
 	}
 
@@ -318,27 +367,60 @@ export class AnthropicSDKAdapter implements IApiClient {
 	private mapStopReason(
 		stopReason: string | null | undefined,
 	): ApiResponse['finishReason'] {
+		logger.debug('AnthropicSDKAdapter', 'mapStopReason', 'Mapping stop reason', {
+			input: stopReason,
+		});
+
+		let mapped: ApiResponse['finishReason'];
 		switch (stopReason) {
 			case 'end_turn':
-				return 'stop';
+				mapped = 'stop';
+				break;
 			case 'max_tokens':
-				return 'length';
+				mapped = 'length';
+				break;
 			case 'tool_use':
-				return 'tool_calls';
+				mapped = 'tool_calls';
+				break;
 			default:
-				return 'stop';
+				mapped = 'stop';
 		}
+
+		logger.debug('AnthropicSDKAdapter', 'mapStopReason', 'Stop reason mapped', {
+			output: mapped,
+		});
+
+		return mapped;
 	}
 
 	private transformError(error: unknown): Error {
+		logger.debug('AnthropicSDKAdapter', 'transformError', 'Transforming error', {
+			error_type: error instanceof Error ? error.constructor.name : typeof error,
+		});
+
+		let transformed: Error;
+
 		if (error instanceof Anthropic.APIError) {
-			return new Error(
+			transformed = new Error(
 				`Anthropic API Error (${error.status}): ${error.message}`,
 			);
+			logger.error('AnthropicSDKAdapter', 'transformError', 'Anthropic API Error', {
+				status: error.status,
+				message: error.message,
+			});
+		} else if (error instanceof Error) {
+			transformed = error;
+			logger.error('AnthropicSDKAdapter', 'transformError', 'Generic Error', {
+				message: error.message,
+				stack: error.stack,
+			});
+		} else {
+			transformed = new Error(String(error));
+			logger.error('AnthropicSDKAdapter', 'transformError', 'Unknown Error', {
+				error: String(error),
+			});
 		}
-		if (error instanceof Error) {
-			return error;
-		}
-		return new Error(String(error));
+
+		return transformed;
 	}
 }
