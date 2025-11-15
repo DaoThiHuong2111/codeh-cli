@@ -252,11 +252,11 @@ ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 
 				// Execute tools if orchestrator is available
 				if (this.toolOrchestrator) {
-					// Note: Tool execution and continuation are not streamed in MVP
-					// This is a limitation - future improvement would stream tool results
+					// Stream tool continuation to user for better UX
 					const orchestrateResult = await this.toolOrchestrator.orchestrate(
 						turn,
 						input,
+						onChunk, // Stream LLM responses during tool execution
 					);
 					turn = orchestrateResult.finalTurn;
 				}
