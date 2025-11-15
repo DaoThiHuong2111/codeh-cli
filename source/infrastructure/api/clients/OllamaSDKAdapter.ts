@@ -44,6 +44,12 @@ export class OllamaSDKAdapter implements IApiClient {
 			max_tokens: request.maxTokens,
 		});
 
+		// Log full input messages for conversation tracking
+		logger.info('OllamaSDKAdapter', 'chat', 'Input messages', {
+			messages: request.messages,
+			system_prompt: request.systemPrompt,
+		});
+
 		try {
 			// Transform messages - add system prompt as first message if exists
 			const messages = this.transformMessages(request);
@@ -91,7 +97,17 @@ export class OllamaSDKAdapter implements IApiClient {
 				completion_tokens: (response as any).eval_count || 0,
 			});
 
-			return this.normalizeResponse(response as any, request);
+			// Normalize response to get content
+			const normalizedResponse = this.normalizeResponse(response as any, request);
+
+			// Log full response content for conversation tracking
+			logger.info('OllamaSDKAdapter', 'chat', 'Response content', {
+				content: normalizedResponse.content,
+				tool_calls: normalizedResponse.toolCalls,
+				finish_reason: normalizedResponse.finishReason,
+			});
+
+			return normalizedResponse;
 		} catch (error) {
 			const duration = Date.now() - start;
 			logger.error('OllamaSDKAdapter', 'chat', 'Chat request failed', {

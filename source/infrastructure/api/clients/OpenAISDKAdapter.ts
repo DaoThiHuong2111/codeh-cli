@@ -45,6 +45,12 @@ export class OpenAISDKAdapter implements IApiClient {
 			max_tokens: request.maxTokens,
 		});
 
+		// Log full input messages for conversation tracking
+		logger.info('OpenAISDKAdapter', 'chat', 'Input messages', {
+			messages: request.messages,
+			system_prompt: request.systemPrompt,
+		});
+
 		try {
 			// Transform messages - add system prompt as first message if exists
 			const messages = this.transformMessages(request);
@@ -89,7 +95,17 @@ export class OpenAISDKAdapter implements IApiClient {
 				usage: response.usage,
 			});
 
-			return this.normalizeResponse(response);
+			// Normalize response to get content
+			const normalizedResponse = this.normalizeResponse(response);
+
+			// Log full response content for conversation tracking
+			logger.info('OpenAISDKAdapter', 'chat', 'Response content', {
+				content: normalizedResponse.content,
+				tool_calls: normalizedResponse.toolCalls,
+				finish_reason: normalizedResponse.finishReason,
+			});
+
+			return normalizedResponse;
 		} catch (error) {
 			const duration = Date.now() - start;
 			logger.error('OpenAISDKAdapter', 'chat', 'Chat request failed', {
@@ -117,6 +133,12 @@ export class OpenAISDKAdapter implements IApiClient {
 			tools_count: request.tools?.length || 0,
 			temperature: request.temperature,
 			max_tokens: request.maxTokens,
+		});
+
+		// Log full input messages for conversation tracking
+		logger.info('OpenAISDKAdapter', 'streamChat', 'Input messages', {
+			messages: request.messages,
+			system_prompt: request.systemPrompt,
 		});
 
 		try {
@@ -312,7 +334,7 @@ export class OpenAISDKAdapter implements IApiClient {
 				usage: usage,
 			});
 
-			return {
+			const response = {
 				content: fullContent,
 				model: modelName,
 				usage: usage
@@ -329,6 +351,15 @@ export class OpenAISDKAdapter implements IApiClient {
 				finishReason: this.mapFinishReason(finishReason),
 				toolCalls: finalToolCalls.length > 0 ? finalToolCalls : undefined,
 			};
+
+			// Log full response content for conversation tracking
+			logger.info('OpenAISDKAdapter', 'streamChat', 'Response content', {
+				content: response.content,
+				tool_calls: response.toolCalls,
+				finish_reason: response.finishReason,
+			});
+
+			return response;
 		} catch (error) {
 			const duration = Date.now() - start;
 			logger.error('OpenAISDKAdapter', 'streamChat', 'Stream failed', {

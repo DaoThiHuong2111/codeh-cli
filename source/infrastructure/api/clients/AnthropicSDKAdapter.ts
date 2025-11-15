@@ -45,6 +45,12 @@ export class AnthropicSDKAdapter implements IApiClient {
 			has_tools: !!request.tools,
 		});
 
+		// Log full input messages for conversation tracking
+		logger.info('AnthropicSDKAdapter', 'chat', 'Input messages', {
+			messages: request.messages,
+			system_prompt: request.systemPrompt,
+		});
+
 		try {
 			// Transform ApiRequest to Anthropic format
 			const anthropicRequest: Anthropic.MessageCreateParams = {
@@ -87,7 +93,17 @@ export class AnthropicSDKAdapter implements IApiClient {
 				finish_reason: response.stop_reason,
 			});
 
-			return this.normalizeResponse(response);
+			// Normalize response to get content
+			const normalizedResponse = this.normalizeResponse(response);
+
+			// Log full response content for conversation tracking
+			logger.info('AnthropicSDKAdapter', 'chat', 'Response content', {
+				content: normalizedResponse.content,
+				tool_calls: normalizedResponse.toolCalls,
+				finish_reason: normalizedResponse.finishReason,
+			});
+
+			return normalizedResponse;
 		} catch (error) {
 			const duration = Date.now() - start;
 			logger.error('AnthropicSDKAdapter', 'chat', 'API request failed', {
@@ -116,6 +132,12 @@ export class AnthropicSDKAdapter implements IApiClient {
 			tools_count: request.tools?.length || 0,
 			temperature: request.temperature,
 			max_tokens: request.maxTokens || 128000,
+		});
+
+		// Log full input messages for conversation tracking
+		logger.info('AnthropicSDKAdapter', 'streamChat', 'Input messages', {
+			messages: request.messages,
+			system_prompt: request.systemPrompt,
 		});
 
 		try {
@@ -269,7 +291,7 @@ export class AnthropicSDKAdapter implements IApiClient {
 				usage: usage,
 			});
 
-			return {
+			const response = {
 				content: fullContent,
 				model: modelName,
 				usage: {
@@ -280,6 +302,15 @@ export class AnthropicSDKAdapter implements IApiClient {
 				finishReason: this.mapStopReason(stopReason),
 				toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
 			};
+
+			// Log full response content for conversation tracking
+			logger.info('AnthropicSDKAdapter', 'streamChat', 'Response content', {
+				content: response.content,
+				tool_calls: response.toolCalls,
+				finish_reason: response.finishReason,
+			});
+
+			return response;
 		} catch (error) {
 			const duration = Date.now() - start;
 			logger.error('AnthropicSDKAdapter', 'streamChat', 'Stream failed', {
