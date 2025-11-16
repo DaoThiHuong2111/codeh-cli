@@ -12,7 +12,7 @@ interface InputBoxProps {
 	width?: number;
 	multiline?: boolean;
 	enabled?: boolean;
-	maxLength?: number; // Max character limit (default: 4000)
+	maxLength?: number; // Max character limit (default: Infinity)
 	showCounter?: boolean; // Show character counter (default: true)
 }
 
@@ -26,8 +26,8 @@ export default function InputBox({
 	width = 80,
 	multiline = false,
 	enabled = true,
-	maxLength = 4000,
-	showCounter = true,
+	maxLength = Infinity,
+	showCounter = false,
 }: InputBoxProps) {
 	const [input, setInput] = useState(value);
 	const [isFocused, setIsFocused] = useState(true);

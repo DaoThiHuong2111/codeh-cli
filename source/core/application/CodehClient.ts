@@ -12,10 +12,11 @@ import {Configuration} from '../domain/models/Configuration.js';
 import {InputClassifier} from './services/InputClassifier.js';
 import {OutputFormatter} from './services/OutputFormatter.js';
 import {ToolRegistry} from '../tools/base/ToolRegistry.js';
-import {ToolExecutionOrchestrator} from './ToolExecutionOrchestrator.js';
+import {ToolExecutionOrchestrator, ToolExecutionProgressEvent} from './ToolExecutionOrchestrator.js';
 import {ToolDefinitionConverter} from './services/ToolDefinitionConverter.js';
 import {PLANNING_SYSTEM_PROMPT} from './prompts/PlanningSystemPrompt.js';
 import {CODE_NAVIGATION_SYSTEM_PROMPT} from './prompts/CodeNavigationSystemPrompt.js';
+import {ConversationContextService} from './services/ConversationContextService.js';
 
 export class CodehClient {
 	private inputClassifier: InputClassifier;
@@ -23,6 +24,7 @@ export class CodehClient {
 	private toolOrchestrator?: ToolExecutionOrchestrator;
 	private toolRegistry?: ToolRegistry;
 	private systemPrompt: string;
+	private contextService: ConversationContextService;
 
 	constructor(
 		private apiClient: IApiClient,
@@ -34,6 +36,7 @@ export class CodehClient {
 		this.toolRegistry = toolRegistry;
 		this.inputClassifier = new InputClassifier();
 		this.outputFormatter = new OutputFormatter();
+		this.contextService = new ConversationContextService(historyRepo, apiClient);
 
 		// Combine system prompts
 		this.systemPrompt = `${PLANNING_SYSTEM_PROMPT}
@@ -47,14 +50,19 @@ ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 				permissionHandler,
 				apiClient,
 				historyRepo,
+				this.contextService,
+				{
+					maxTokens: this.config.maxTokens,
+				},
 			);
 		}
 	}
 
 	/**
 	 * Execute a user input and return a Turn
+	 * @param onToolProgress Optional callback for tool execution progress updates
 	 */
-	async execute(input: string): Promise<Turn> {
+	async execute(input: string, onToolProgress?: (event: ToolExecutionProgressEvent) => void): Promise<Turn> {
 		const startTime = Date.now();
 
 		// Validate input
@@ -74,8 +82,10 @@ ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 		// Create request message
 		const requestMsg = Message.user(input);
 
-		// Get history for context
-		const recentMessages = await this.historyRepo.getRecentMessages(10);
+		// Get history for context with automatic compression
+		const contextMessages = await this.contextService.getMessagesForLLM({
+			maxTokens: this.config.maxTokens,
+		});
 
 		// Get tool definitions if available
 		const tools = this.toolRegistry
@@ -88,7 +98,7 @@ ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 		try {
 			const apiResponse = await this.apiClient.chat({
 				messages: [
-					...recentMessages.map(m => ({
+					...contextMessages.map(m => ({
 						role: m.role,
 						content: m.content,
 					})),
@@ -136,6 +146,8 @@ ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 					const orchestrateResult = await this.toolOrchestrator.orchestrate(
 						turn,
 						input,
+						undefined, // No streaming callback for non-streaming execute
+						onToolProgress, // Tool execution progress
 					);
 					turn = orchestrateResult.finalTurn;
 				}
@@ -156,10 +168,12 @@ ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 	/**
 	 * Execute with streaming - calls onChunk for each content chunk
 	 * Returns final Turn when complete
+	 * @param onToolProgress Optional callback for tool execution progress updates
 	 */
 	async executeWithStreaming(
 		input: string,
 		onChunk: (content: string) => void,
+		onToolProgress?: (event: ToolExecutionProgressEvent) => void,
 	): Promise<Turn> {
 		const startTime = Date.now();
 
@@ -180,8 +194,10 @@ ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 		// Create request message
 		const requestMsg = Message.user(input);
 
-		// Get history for context
-		const recentMessages = await this.historyRepo.getRecentMessages(10);
+		// Get history for context with automatic compression
+		const contextMessages = await this.contextService.getMessagesForLLM({
+			maxTokens: this.config.maxTokens,
+		});
 
 		// Get tool definitions if available
 		const tools = this.toolRegistry
@@ -197,7 +213,7 @@ ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 			const apiResponse = await this.apiClient.streamChat(
 				{
 					messages: [
-						...recentMessages.map(m => ({
+						...contextMessages.map(m => ({
 							role: m.role,
 							content: m.content,
 						})),
@@ -257,6 +273,7 @@ ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 						turn,
 						input,
 						onChunk, // Stream LLM responses during tool execution
+						onToolProgress, // Stream tool execution progress
 					);
 					turn = orchestrateResult.finalTurn;
 				}

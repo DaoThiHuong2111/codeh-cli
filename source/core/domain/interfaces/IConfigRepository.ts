@@ -9,6 +9,7 @@ export interface ConfigData {
 	apiKey?: string;
 	maxTokens?: number;
 	temperature?: number;
+	loggingMode?:boolean;
 }
 
 export interface IConfigRepository {

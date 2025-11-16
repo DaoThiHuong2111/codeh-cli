@@ -16,6 +16,9 @@ import {InputHistoryService} from '../../core/application/services/InputHistoryS
 import {formatRelativeTime} from '../../utils/timeFormat.js';
 import type {FormattedSession} from '../components/organisms/SessionSelector.js';
 import {getLogger, type ILogger} from '../../infrastructure/logging/Logger.js';
+import type {ToolExecutionProgressEvent} from '../../core/application/ToolExecutionOrchestrator.js';
+import type {ISandboxModeManager} from '../../core/domain/interfaces/ISandboxModeManager.js';
+import {execSync} from 'child_process';
 
 const logger = getLogger();
 
@@ -30,6 +33,19 @@ interface ViewState {
 
 	// Loading
 	isLoading: boolean;
+
+	// Tool Execution Progress
+	toolExecutionProgress: {
+		isExecuting: boolean;
+		currentIteration?: number;
+		maxIterations?: number;
+		currentTool?: string;
+		toolArguments?: Record<string, any>;
+		toolOutput?: string;
+		toolIndex?: number;
+		totalTools?: number;
+		message?: string;
+	};
 
 	// Slash Commands
 	filteredSuggestions: Command[];
@@ -66,6 +82,7 @@ export class HomePresenter {
 		private config: any,
 		private inputHistory: InputHistoryService,
 		private workflowManager?: WorkflowManager,
+		private sandboxModeManager?: ISandboxModeManager,
 	) {
 		this.logger = logger;
 		this.sessionStartTime = Date.now();
@@ -78,6 +95,9 @@ export class HomePresenter {
 			session: initialSession,
 			streamingMessageId: null,
 			isLoading: false,
+			toolExecutionProgress: {
+				isExecuting: false,
+			},
 			filteredSuggestions: [],
 			selectedSuggestionIndex: 0,
 			showSessionSelector: false,
@@ -119,6 +139,84 @@ export class HomePresenter {
 		this.viewUpdateCallback?.();
 	}
 
+	// === Tool Execution Progress Handlers ===
+
+	private handleToolProgress = (event: ToolExecutionProgressEvent) => {
+		this.logger.debug('HomePresenter', 'handleToolProgress', 'Tool progress event', {
+			type: event.type,
+			iteration: event.iteration,
+			tool: event.toolName,
+		});
+
+		switch (event.type) {
+			case 'iteration_start':
+				this.state.toolExecutionProgress = {
+					isExecuting: true,
+					currentIteration: event.iteration,
+					maxIterations: event.maxIterations,
+					message: `Iteration ${event.iteration}/${event.maxIterations}`,
+					// Clear previous tool info when starting new iteration
+					currentTool: undefined,
+					toolArguments: undefined,
+					toolOutput: undefined,
+				};
+				break;
+
+			case 'tools_detected':
+				this.state.toolExecutionProgress = {
+					...this.state.toolExecutionProgress,
+					isExecuting: true,
+					totalTools: event.totalTools,
+					message: `Detected ${event.totalTools} tool(s) to execute`,
+				};
+				break;
+
+			case 'tool_executing':
+				this.state.toolExecutionProgress = {
+					...this.state.toolExecutionProgress,
+					isExecuting: true,
+					currentTool: event.toolName,
+					toolArguments: event.toolArguments,
+					toolOutput: undefined, // Clear previous output
+					toolIndex: event.toolIndex,
+					totalTools: event.totalTools,
+					message: `Executing ${event.toolName} (${event.toolIndex}/${event.totalTools})`,
+				};
+				break;
+
+			case 'tool_completed':
+				this.state.toolExecutionProgress = {
+					...this.state.toolExecutionProgress,
+					isExecuting: false, // Set to false để hiển thị completed state
+					currentTool: event.toolName,
+					toolArguments: event.toolArguments,
+					toolOutput: event.toolOutput,
+					message: `Completed ${event.toolName} (${event.toolIndex}/${event.totalTools})`,
+				};
+				break;
+
+			case 'tool_failed':
+				this.state.toolExecutionProgress = {
+					...this.state.toolExecutionProgress,
+					isExecuting: false, // Set to false để hiển thị failed state
+					currentTool: event.toolName,
+					toolArguments: event.toolArguments,
+					toolOutput: event.toolOutput, // Error message as output
+					message: `Failed ${event.toolName}: ${event.message}`,
+				};
+				break;
+
+			case 'orchestration_complete':
+				this.state.toolExecutionProgress = {
+					isExecuting: false,
+					message: event.message,
+				};
+				break;
+		}
+
+		this._notifyView();
+	};
+
 	// === Input Handlers ===
 
 	handleInputChange = (value: string) => {
@@ -149,7 +247,18 @@ export class HomePresenter {
 		this.logger.info('HomePresenter', 'handleSubmit', 'User message received', {
 			input_length: userInput.length,
 			is_command: userInput.startsWith('/'),
+			current_input: this.state.input,
 		});
+
+		// If current input is different from submitted input, it means autocomplete happened
+		// Ignore this submit as it's stale
+		if (this.state.input !== userInput) {
+			this.logger.debug('HomePresenter', 'handleSubmit', 'Ignoring stale submit', {
+				submitted: userInput,
+				current: this.state.input,
+			});
+			return;
+		}
 
 		// Validation
 		if (!userInput.trim()) {
@@ -241,6 +350,10 @@ export class HomePresenter {
 
 					this._notifyView();
 				},
+				(event: ToolExecutionProgressEvent) => {
+					// Handle tool execution progress events
+					this.handleToolProgress(event);
+				},
 			);
 
 			if (turn.isComplete() && turn.response) {
@@ -329,6 +442,7 @@ export class HomePresenter {
 		this.logger.info('HomePresenter', 'handleCommand', 'Processing command', {
 			command: cmd,
 			args_count: args.length,
+			original_input: input,
 		});
 
 		// Find command
@@ -481,6 +595,10 @@ export class HomePresenter {
 		const newSession = Session.createNew(this.state.model);
 		this.state.session = newSession;
 
+		// Sync with historyRepo - start fresh conversation
+		const historyRepo = this.client.getHistoryRepository();
+		await historyRepo.startNewConversation();
+
 		// Update logger session ID
 		if (this.logger && this.logger.setSessionId) {
 			this.logger.setSessionId(newSession.id);
@@ -518,8 +636,21 @@ export class HomePresenter {
 		const session = await this.sessionManager.load(name);
 		this.state.session = session;
 
+		// IMPORTANT: Sync loaded session messages to historyRepo
+		// This ensures LLM receives full conversation context
+		const historyRepo = this.client.getHistoryRepository();
+		
+		// Clear current history and start fresh conversation
+		await historyRepo.startNewConversation();
+		
+		// Add all messages from loaded session to history
+		const messages = session.getMessages();
+		for (const message of messages) {
+			await historyRepo.addMessage(message);
+		}
+
 		const duration = Date.now() - start;
-		this.logger.info('HomePresenter', 'loadSession', 'Session loaded', {
+		this.logger.info('HomePresenter', 'loadSession', 'Session loaded and synced to history', {
 			session_name: name,
 			message_count: session.getMessageCount(),
 			duration_ms: duration,
@@ -700,6 +831,9 @@ export class HomePresenter {
 	get gitBranch() {
 		return this.state.gitBranch;
 	}
+	get sandboxEnabled() {
+		return this.sandboxModeManager?.isEnabled() ?? true; // Default: enabled for safety
+	}
 	get messageCount() {
 		return this.state.session.getMessageCount();
 	}
@@ -718,6 +852,10 @@ export class HomePresenter {
 
 	get selectedSessionIndex() {
 		return this.state.selectedSessionIndex;
+	}
+
+	get toolExecutionProgress() {
+		return this.state.toolExecutionProgress;
 	}
 
 	/**
@@ -769,7 +907,6 @@ export class HomePresenter {
 		this.logger.debug('HomePresenter', 'getGitBranch', 'Getting git branch');
 
 		try {
-			const {execSync} = require('child_process');
 			const branch = execSync('git rev-parse --abbrev-ref HEAD', {
 				encoding: 'utf8',
 				stdio: ['pipe', 'pipe', 'ignore'],
@@ -781,7 +918,9 @@ export class HomePresenter {
 
 			return branch;
 		} catch (error) {
-			this.logger.debug('HomePresenter', 'getGitBranch', 'Not a git repository or git not available');
+			this.logger.debug('HomePresenter', 'getGitBranch', 'Not a git repository or git not available', {
+				error: error instanceof Error ? error.message : String(error),
+			});
 			return undefined;
 		}
 	}

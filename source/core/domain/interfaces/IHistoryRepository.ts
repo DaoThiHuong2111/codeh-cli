@@ -57,4 +57,14 @@ export interface IHistoryRepository {
 	 * Start a new conversation
 	 */
 	startNewConversation(): Promise<void>;
+
+	/**
+	 * Get current session
+	 */
+	getCurrentSession(): Promise<any | null>;
+
+	/**
+	 * Save session (for updating compression state)
+	 */
+	saveSession(session: any): Promise<void>;
 }

@@ -17,10 +17,23 @@ import {Turn} from '../domain/models/Turn';
 import {ToolDefinitionConverter} from './services/ToolDefinitionConverter';
 import {ToolResultFormatter} from './services/ToolResultFormatter';
 
+export interface ToolExecutionProgressEvent {
+	type: 'iteration_start' | 'tools_detected' | 'tool_executing' | 'tool_completed' | 'tool_failed' | 'tool_output' | 'iteration_complete' | 'orchestration_complete';
+	iteration?: number;
+	maxIterations?: number;
+	toolName?: string;
+	toolIndex?: number;
+	totalTools?: number;
+	toolArguments?: Record<string, any>; // Arguments của tool đang execute
+	toolOutput?: string; // Output chunks từ tool execution
+	message?: string;
+}
+
 export interface ToolExecutionConfig {
 	maxIterations?: number; // Max agentic loop iterations
 	timeout?: number; // Timeout per tool execution (ms)
 	parallel?: boolean; // Execute tools in parallel
+	maxTokens?: number; // Max tokens for context (for compression)
 }
 
 export interface ToolExecutionResult {
@@ -38,6 +51,7 @@ export class ToolExecutionOrchestrator {
 		private permissionHandler: IToolPermissionHandler,
 		private apiClient: IApiClient,
 		private historyRepo: IHistoryRepository,
+		private contextService: any, // ConversationContextService
 		private config: ToolExecutionConfig = {},
 	) {
 		this.handleToolCalls = new HandleToolCalls(
@@ -56,13 +70,16 @@ export class ToolExecutionOrchestrator {
 	 * Orchestrate complete tool execution pipeline with agentic loop
 	 * Returns final Turn after all tool executions and LLM continuations
 	 * @param onStreamChunk Optional callback for streaming LLM responses during tool continuation
+	 * @param onProgress Optional callback for tool execution progress updates
 	 */
 	async orchestrate(
 		initialTurn: Turn,
 		conversationContext?: string,
 		onStreamChunk?: (chunk: string) => void,
+		onProgress?: (event: ToolExecutionProgressEvent) => void,
 	): Promise<ToolExecutionResult> {
 		const maxIterations = this.config.maxIterations || 5;
+		const maxTokens = this.config.maxTokens || 64000;
 		let currentTurn = initialTurn;
 		const allExecutionContexts: ToolExecutionContext[] = [];
 		let iterations = 0;
@@ -74,6 +91,13 @@ export class ToolExecutionOrchestrator {
 		while (iterations < maxIterations) {
 			iterations++;
 			console.log(`\n📍 Iteration ${iterations}/${maxIterations}`);
+
+			// Emit iteration start event
+			onProgress?.({
+				type: 'iteration_start',
+				iteration: iterations,
+				maxIterations,
+			});
 
 			// Check if current turn has tool calls
 			const toolCalls = currentTurn.response?.toolCalls;
@@ -87,13 +111,62 @@ export class ToolExecutionOrchestrator {
 
 			console.log(`🔍 Detected ${toolCalls.length} tool call(s)`);
 
+			// Emit tools detected event
+			onProgress?.({
+				type: 'tools_detected',
+				totalTools: toolCalls.length,
+				iteration: iterations,
+			});
+
 			// Execute tools with permission handling
 			console.log('⚙️  Executing tools...');
+
+			// Emit tool execution events for each tool
+			for (let i = 0; i < toolCalls.length; i++) {
+				onProgress?.({
+					type: 'tool_executing',
+					toolName: toolCalls[i].name,
+					toolArguments: toolCalls[i].arguments,
+					toolIndex: i + 1,
+					totalTools: toolCalls.length,
+					iteration: iterations,
+				});
+			}
+
 			const handleResult = await this.executeTools(
 				toolCalls,
 				conversationContext,
 			);
 			allExecutionContexts.push(...handleResult.contexts);
+
+			// Emit completion/failure events for each tool
+			for (let i = 0; i < handleResult.contexts.length; i++) {
+				const ctx = handleResult.contexts[i];
+				if (ctx.isCompleted()) {
+					// Emit completion với output
+					const output = ctx.result?.output || '';
+					onProgress?.({
+						type: 'tool_completed',
+						toolName: ctx.toolCall.name,
+						toolArguments: ctx.toolCall.arguments,
+						toolOutput: output,
+						toolIndex: i + 1,
+						totalTools: handleResult.contexts.length,
+						iteration: iterations,
+					});
+				} else if (ctx.isFailed()) {
+					onProgress?.({
+						type: 'tool_failed',
+						toolName: ctx.toolCall.name,
+						toolArguments: ctx.toolCall.arguments,
+						toolOutput: ctx.error || '',
+						toolIndex: i + 1,
+						totalTools: handleResult.contexts.length,
+						iteration: iterations,
+						message: ctx.error,
+					});
+				}
+			}
 
 			// Check if all approved
 			if (!handleResult.allApproved) {
@@ -110,6 +183,7 @@ export class ToolExecutionOrchestrator {
 					currentTurn,
 					rejectionMessages,
 					onStreamChunk,
+					maxTokens,
 				);
 
 				console.log(
@@ -131,6 +205,7 @@ export class ToolExecutionOrchestrator {
 				currentTurn,
 				toolResultMessages,
 				onStreamChunk,
+				maxTokens,
 			);
 
 			console.log('📨 Received LLM response');
@@ -157,6 +232,13 @@ export class ToolExecutionOrchestrator {
 		console.log(
 			`   - Final response length: ${currentTurn.response?.content.length || 0} chars\n`,
 		);
+
+		// Emit orchestration complete event
+		onProgress?.({
+			type: 'orchestration_complete',
+			iteration: iterations,
+			message: `Completed ${allExecutionContexts.length} tool executions in ${iterations} iterations`,
+		});
 
 		return {
 			finalTurn: currentTurn,
@@ -257,22 +339,25 @@ export class ToolExecutionOrchestrator {
 		previousTurn: Turn,
 		toolResultMessages: Message[],
 		onStreamChunk?: (chunk: string) => void,
+		maxTokens: number = 64000,
 	): Promise<Turn> {
-		// Get recent conversation history
-		const recentMessages = await this.historyRepo.getRecentMessages(10);
+		// Get conversation history with automatic compression
+		const contextMessages = await this.contextService.getMessagesForLLM({
+			maxTokens,
+		});
 
 		// Get tool definitions
 		const tools = ToolDefinitionConverter.toApiFormatBatch(
 			this.toolRegistry.getDefinitions(),
 		);
 
-		// Build messages array: history + tool results
+		// Build messages array: context + tool results
 		const messages = [
-			...recentMessages.map(m => ({
+			...contextMessages.map((m: Message) => ({
 				role: m.role,
 				content: m.content,
 			})),
-			...toolResultMessages.map(m => ({
+			...toolResultMessages.map((m: Message) => ({
 				role: m.role,
 				content: m.content,
 			})),
@@ -287,7 +372,7 @@ export class ToolExecutionOrchestrator {
 
         console.log('🔥 [TOOL CONTINUATION] Tool result messages count:', toolResultMessages.length);
 
-        console.log('🔥 [TOOL CONTINUATION] Recent messages count:', recentMessages.length);
+        console.log('🔥 [TOOL CONTINUATION] Context messages count:', contextMessages.length);
 
 		// Call LLM with tool results and tool definitions
 		// Use streaming if callback provided for better UX

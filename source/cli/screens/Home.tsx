@@ -10,6 +10,7 @@ import {SlashSuggestions} from '../components/organisms/SlashSuggestions.js';
 import {SessionSelector} from '../components/organisms/SessionSelector.js';
 import {Footer} from '../components/organisms/Footer.js';
 import {TodosDisplay} from '../components/organisms/TodosDisplay.js';
+import {ToolExecutionProgress} from '../components/molecules/ToolExecutionProgress.js';
 import {useShortcut} from '../../core/input/index.js';
 import type {PermissionModeManager} from '../../infrastructure/permissions/PermissionModeManager.js';
 import type {PermissionMode} from '../../infrastructure/permissions/PermissionModeManager.js';
@@ -208,6 +209,11 @@ export default function Home({container, exitConfirmation = false}: HomeProps) {
 				streamingMessageId={presenter.streamingMessageId}
 			/>
 
+			{/* Tool Execution Progress (show during and after tool execution) */}
+			{(presenter.toolExecutionProgress.isExecuting || presenter.toolExecutionProgress.toolOutput) && (
+				<ToolExecutionProgress {...presenter.toolExecutionProgress} />
+			)}
+
 			{/* Todos Display (show when there are todos) */}
 			{presenter.todos.length > 0 && <TodosDisplay todos={presenter.todos} />}
 
@@ -246,12 +252,11 @@ export default function Home({container, exitConfirmation = false}: HomeProps) {
 			{/* Footer with Stats */}
 			<Footer
 				model={presenter.model}
-				messageCount={presenter.messageCount}
-				totalTokens={presenter.totalTokens}
-				estimatedCost={presenter.estimatedCost}
+				directory ={presenter.directory}
 				sessionDuration={presenter.sessionDuration}
 				gitBranch={presenter.gitBranch}
 				permissionMode={permissionMode}
+				sandboxEnabled={presenter.sandboxEnabled}
 			/>
 
 			{/* Help Hint */}

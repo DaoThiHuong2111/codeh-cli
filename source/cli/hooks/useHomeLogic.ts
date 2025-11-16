@@ -35,15 +35,9 @@ export function useHomeLogic(container: Container): UseHomeLogicReturn {
 
 				// Initialize client if needed
 				const initializedClient = await initializeClient();
-				console.log(
-					'[DEBUG useHomeLogic] Initialized client:',
-					initializedClient,
-				);
-				console.log('[DEBUG useHomeLogic] clientError:', clientError);
 
 				if (!initializedClient) {
 					const errorMsg = clientError || 'Failed to initialize API client';
-					console.error('[ERROR] API client initialization failed:', errorMsg);
 					setError(errorMsg);
 					return;
 				}
@@ -71,6 +65,14 @@ export function useHomeLogic(container: Container): UseHomeLogicReturn {
 				const workflowManager =
 					container.resolve<WorkflowManager>('WorkflowManager');
 
+				// Resolve SandboxModeManager from container
+				const {SandboxModeManager} = await import(
+					'../../infrastructure/process/SandboxModeManager.js'
+				);
+				const sandboxModeManager = container.resolve<InstanceType<typeof SandboxModeManager>>(
+					'SandboxModeManager',
+				);
+
 				// Create presenter
 				const newPresenter = new HomePresenter(
 					initializedClient,
@@ -79,6 +81,7 @@ export function useHomeLogic(container: Container): UseHomeLogicReturn {
 					config,
 					inputHistory,
 					workflowManager,
+					sandboxModeManager,
 				);
 
 				// Setup view callback for reactive updates

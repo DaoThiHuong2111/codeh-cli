@@ -238,7 +238,7 @@ export class OpenAISDKAdapter implements IApiClient {
 							toolCalls.set(index, {
 								id: toolCall.id || '',
 								name: toolCall.function?.name || '',
-								arguments: {},
+								arguments: '' as any, // Initialize as empty string for streaming accumulation
 							});
 						}
 
@@ -246,11 +246,8 @@ export class OpenAISDKAdapter implements IApiClient {
 						if (toolCall.function?.arguments) {
 							const current = toolCalls.get(index);
 							if (current) {
-								const argsStr =
-									(typeof current.arguments === 'string'
-										? current.arguments
-										: JSON.stringify(current.arguments)) +
-									toolCall.function.arguments;
+								// Accumulate as string (current.arguments is initialized as '')
+								const argsStr = (current.arguments as unknown as string) + toolCall.function.arguments;
 								current.arguments = argsStr as any; // Store as string temporarily
 							}
 						}
@@ -280,6 +277,13 @@ export class OpenAISDKAdapter implements IApiClient {
 			const finalToolCalls: ToolCall[] = [];
 			for (const [_, toolCall] of toolCalls) {
 				try {
+					logger.debug('OpenAISDKAdapter', 'streamChat', 'Parsing tool call arguments', {
+						tool_name: toolCall.name,
+						tool_id: toolCall.id,
+						arguments_type: typeof toolCall.arguments,
+						arguments_value: toolCall.arguments,
+					});
+
 					const args =
 						typeof toolCall.arguments === 'string'
 							? JSON.parse(toolCall.arguments)
@@ -292,11 +296,13 @@ export class OpenAISDKAdapter implements IApiClient {
 					logger.debug('OpenAISDKAdapter', 'streamChat', 'Tool call parsed successfully', {
 						tool_name: toolCall.name,
 						tool_id: toolCall.id,
+						parsed_args: args,
 					});
 				} catch (error) {
-					logger.warn('OpenAISDKAdapter', 'streamChat', 'Failed to parse tool call arguments', {
+					logger.warn('OpenAISDKAdapter', 'streamChat', 'Failed to parse tool call arguments - using empty object', {
 						tool_name: toolCall.name,
 						tool_id: toolCall.id,
+						arguments_raw: toolCall.arguments,
 						error: error instanceof Error ? error.message : String(error),
 					});
 					// If JSON parse fails, use empty object
@@ -510,17 +516,27 @@ export class OpenAISDKAdapter implements IApiClient {
 			for (const toolCall of message.tool_calls) {
 				if (toolCall.type === 'function') {
 					try {
+						logger.debug('OpenAISDKAdapter', 'normalizeResponse', 'Parsing tool call arguments', {
+							tool_name: toolCall.function.name,
+							tool_id: toolCall.id,
+							arguments_raw: toolCall.function.arguments,
+						});
+
+						const parsedArgs = JSON.parse(toolCall.function.arguments);
 						toolCalls.push({
 							id: toolCall.id,
 							name: toolCall.function.name,
-							arguments: JSON.parse(toolCall.function.arguments),
+							arguments: parsedArgs,
 						});
-						logger.debug('OpenAISDKAdapter', 'normalizeResponse', 'Tool call parsed', {
+						logger.debug('OpenAISDKAdapter', 'normalizeResponse', 'Tool call parsed successfully', {
 							tool_name: toolCall.function.name,
+							parsed_args: parsedArgs,
 						});
 					} catch (error) {
-						logger.warn('OpenAISDKAdapter', 'normalizeResponse', 'Failed to parse tool call', {
+						logger.warn('OpenAISDKAdapter', 'normalizeResponse', 'Failed to parse tool call arguments - using empty object', {
 							tool_name: toolCall.function.name,
+							tool_id: toolCall.id,
+							arguments_raw: toolCall.function.arguments,
 							error: error instanceof Error ? error.message : String(error),
 						});
 						toolCalls.push({

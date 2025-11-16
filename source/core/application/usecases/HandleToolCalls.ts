@@ -126,13 +126,30 @@ export class HandleToolCalls {
 
 				// Update context: permission granted
 				context = context.withPermissionGranted();
+				contexts[contexts.length - 1] = context;
 			} else {
 				// Pre-approved, mark as approved immediately
 				console.log(`  ✅ Pre-approved: ${toolCall.name}`);
 				context = context.withPermissionGranted();
+				contexts.push(context);
 			}
 
-			// Step 3: Execute tool with timeout and retry
+			// Step 3: Validate tool arguments before execution
+			if (!toolCall.arguments || Object.keys(toolCall.arguments).length === 0) {
+				console.log(`  ⚠️  No arguments provided for ${toolCall.name}`);
+				console.log(`     This indicates LLM called tool without proper parameters`);
+				context = context.withError(
+					'LLM called tool without arguments. This may indicate:\n' +
+					'  • Invalid or unsupported model name\n' +
+					'  • Model does not support tool calling properly\n' +
+					'  • API communication issue\n' +
+					'Please check your model configuration.'
+				);
+				contexts[contexts.length - 1] = context;
+				continue; // Skip to next tool
+			}
+
+			// Step 4: Execute tool with timeout and retry
 			console.log(`  ⚙️  Executing ${toolCall.name}...`);
 			context = context.withExecutionStarted();
 			contexts[contexts.length - 1] = context;
@@ -243,6 +260,17 @@ export class HandleToolCalls {
 				context = context.withPermissionGranted();
 			} else {
 				context = context.withPermissionGranted();
+			}
+
+			// Validate tool arguments before execution
+			if (!toolCall.arguments || Object.keys(toolCall.arguments).length === 0) {
+				return context.withError(
+					'LLM called tool without arguments. This may indicate:\n' +
+					'  • Invalid or unsupported model name\n' +
+					'  • Model does not support tool calling properly\n' +
+					'  • API communication issue\n' +
+					'Please check your model configuration.'
+				);
 			}
 
 			// Execute tool
