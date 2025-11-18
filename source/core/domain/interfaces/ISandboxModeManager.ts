@@ -45,6 +45,13 @@ export interface ISandboxModeManager {
 	isEnabled(): boolean;
 
 	/**
+	 * Check if sandbox is available (synchronous, uses cached value)
+	 *
+	 * @returns True if sandbox is available (Dockerfile exists and Docker installed)
+	 */
+	isSandboxAvailable(): boolean;
+
+	/**
 	 * Enable sandbox mode (async - builds and starts Docker container)
 	 *
 	 * @returns Promise with success status and error message if failed
