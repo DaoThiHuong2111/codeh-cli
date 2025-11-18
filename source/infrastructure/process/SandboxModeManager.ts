@@ -1,6 +1,11 @@
 /**
  * Sandbox Mode Manager
- * Manages sandbox mode state across the application
+ * Manages Docker-based sandbox mode state across the application
+ *
+ * New approach:
+ * - Sandbox = Docker container isolation (not whitelist validation)
+ * - Requires Dockerfile in project directory
+ * - Manages container lifecycle (build, start, stop, cleanup)
  */
 
 import {
@@ -8,15 +13,58 @@ import {
 	SandboxMode,
 	SandboxModeChangeListener,
 } from '../../core/domain/interfaces/ISandboxModeManager.js';
+import {DockerfileManager} from './DockerfileManager.js';
 
 /**
- * Singleton manager for sandbox mode
+ * Sandbox Mode Manager with Docker container support
  *
  * @implements {ISandboxModeManager}
  */
 export class SandboxModeManager implements ISandboxModeManager {
-	private mode: SandboxMode = SandboxMode.ENABLED; // Default: enabled for safety
+	private mode: SandboxMode = SandboxMode.DISABLED; // Default: disabled
 	private listeners: SandboxModeChangeListener[] = [];
+	private dockerfileManager: DockerfileManager;
+
+	// Sandbox availability and state
+	private sandboxAvailable: boolean = false;
+	private currentWorkingDir: string = process.cwd();
+	private containerId: string | null = null;
+	private imageTag: string | null = null;
+
+	constructor(dockerfileManager?: DockerfileManager) {
+		this.dockerfileManager = dockerfileManager || new DockerfileManager();
+	}
+
+	/**
+	 * Check if sandbox is available (Dockerfile exists)
+	 */
+	async checkAvailability(cwd?: string): Promise<boolean> {
+		const workDir = cwd || this.currentWorkingDir;
+		this.currentWorkingDir = workDir;
+
+		// Check Dockerfile existence
+		const hasDockerfile = this.dockerfileManager.hasDockerfile(workDir);
+
+		// Check Docker availability
+		const dockerAvailable = await this.dockerfileManager.isDockerAvailable();
+
+		this.sandboxAvailable = hasDockerfile && dockerAvailable;
+
+		if (!dockerAvailable && hasDockerfile) {
+			console.warn(
+				'⚠️  Dockerfile found but Docker is not installed or not running',
+			);
+		}
+
+		return this.sandboxAvailable;
+	}
+
+	/**
+	 * Check if sandbox is available (synchronous, uses cached value)
+	 */
+	isSandboxAvailable(): boolean {
+		return this.sandboxAvailable;
+	}
 
 	/**
 	 * Get current sandbox mode
@@ -33,42 +81,130 @@ export class SandboxModeManager implements ISandboxModeManager {
 	}
 
 	/**
-	 * Enable sandbox mode
+	 * Enable sandbox mode with Docker container
+	 * Builds image and starts container
 	 */
-	enable(): void {
-		if (this.mode !== SandboxMode.ENABLED) {
-			const oldMode = this.mode;
-			this.mode = SandboxMode.ENABLED;
-			console.log('🔒 Sandbox mode ENABLED - Commands are restricted for safety');
-			this.notifyListeners(this.mode, oldMode);
+	async enable(): Promise<{success: boolean; error?: string}> {
+		if (!this.sandboxAvailable) {
+			return {
+				success: false,
+				error: 'Không tìm thấy Dockerfile trong thư mục hiện tại',
+			};
 		}
+
+		if (this.mode === SandboxMode.ENABLED) {
+			return {success: true}; // Already enabled
+		}
+
+		console.log('🔒 Enabling Docker sandbox mode...');
+
+		// Step 1: Build image from Dockerfile
+		const buildResult = await this.dockerfileManager.buildImage(
+			this.currentWorkingDir,
+		);
+		if (!buildResult.success) {
+			return {
+				success: false,
+				error: `Failed to build Docker image: ${buildResult.error}`,
+			};
+		}
+
+		this.imageTag = buildResult.imageTag;
+
+		// Step 2: Start container
+		const startResult = await this.dockerfileManager.startContainer(
+			this.imageTag,
+			this.currentWorkingDir,
+		);
+		if (!startResult.success) {
+			return {
+				success: false,
+				error: `Failed to start container: ${startResult.error}`,
+			};
+		}
+
+		this.containerId = startResult.containerId!;
+
+		// Update mode
+		const oldMode = this.mode;
+		this.mode = SandboxMode.ENABLED;
+
+		console.log('✅ Docker sandbox mode ENABLED - Commands run in isolated container');
+
+		this.notifyListeners(this.mode, oldMode);
+
+		return {success: true};
 	}
 
 	/**
-	 * Disable sandbox mode (use with caution!)
+	 * Disable sandbox mode
+	 * Stops and removes container
 	 */
-	disable(): void {
-		if (this.mode !== SandboxMode.DISABLED) {
-			const oldMode = this.mode;
-			this.mode = SandboxMode.DISABLED;
-			console.log(
-				'⚠️  Sandbox mode DISABLED - All commands are allowed (use with caution!)',
-			);
-			this.notifyListeners(this.mode, oldMode);
+	async disable(): Promise<{success: boolean; error?: string}> {
+		if (this.mode === SandboxMode.DISABLED) {
+			return {success: true}; // Already disabled
 		}
+
+		console.log('⚠️  Disabling Docker sandbox mode...');
+
+		// Cleanup container
+		const cleaned = await this.dockerfileManager.cleanup(
+			this.currentWorkingDir,
+		);
+
+		// Update mode
+		const oldMode = this.mode;
+		this.mode = SandboxMode.DISABLED;
+		this.containerId = null;
+		this.imageTag = null;
+
+		console.log('✅ Docker sandbox mode DISABLED - Commands run on host');
+
+		this.notifyListeners(this.mode, oldMode);
+
+		return {success: cleaned};
 	}
 
 	/**
 	 * Toggle sandbox mode
 	 */
-	toggle(): SandboxMode {
+	async toggle(): Promise<{success: boolean; mode: SandboxMode; error?: string}> {
 		if (this.isEnabled()) {
-			this.disable();
+			const result = await this.disable();
+			return {
+				success: result.success,
+				mode: this.mode,
+				error: result.error,
+			};
 		} else {
-			this.enable();
+			const result = await this.enable();
+			return {
+				success: result.success,
+				mode: this.mode,
+				error: result.error,
+			};
 		}
+	}
 
-		return this.mode;
+	/**
+	 * Get container ID (if running)
+	 */
+	getContainerId(): string | null {
+		return this.containerId;
+	}
+
+	/**
+	 * Get image tag
+	 */
+	getImageTag(): string | null {
+		return this.imageTag;
+	}
+
+	/**
+	 * Get current working directory
+	 */
+	getCurrentWorkingDir(): string {
+		return this.currentWorkingDir;
 	}
 
 	/**
@@ -102,11 +238,24 @@ export class SandboxModeManager implements ISandboxModeManager {
 	 * Get mode description
 	 */
 	getModeDescription(): string {
-		if (this.isEnabled()) {
-			return '🔒 Sandbox ENABLED - Commands are restricted to safe whitelist';
+		if (!this.sandboxAvailable) {
+			return '⚠️  Sandbox unavailable - No Dockerfile found';
 		}
 
-		return '⚠️  Sandbox DISABLED - All commands allowed (use with caution!)';
+		if (this.isEnabled()) {
+			return '🐳 Sandbox ENABLED - Commands run in Docker container';
+		}
+
+		return '💻 Sandbox DISABLED - Commands run on host system';
+	}
+
+	/**
+	 * Cleanup on app exit
+	 */
+	async cleanup(): Promise<void> {
+		if (this.isEnabled()) {
+			await this.disable();
+		}
 	}
 }
 

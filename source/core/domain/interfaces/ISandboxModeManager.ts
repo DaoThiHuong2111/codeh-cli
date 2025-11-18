@@ -25,7 +25,8 @@ export interface SandboxModeChangeListener {
 /**
  * Sandbox mode manager interface
  *
- * Manages the global sandbox security state.
+ * Manages Docker-based sandbox state.
+ * Sandbox = Docker container isolation (not whitelist validation)
  */
 export interface ISandboxModeManager {
 	/**
@@ -36,25 +37,25 @@ export interface ISandboxModeManager {
 	isEnabled(): boolean;
 
 	/**
-	 * Enable sandbox mode
+	 * Enable sandbox mode (async - builds and starts Docker container)
 	 *
-	 * Restricts shell commands to whitelist.
+	 * @returns Promise with success status and error message if failed
 	 */
-	enable(): void;
+	enable(): Promise<{success: boolean; error?: string}>;
 
 	/**
-	 * Disable sandbox mode
+	 * Disable sandbox mode (async - stops and removes Docker container)
 	 *
-	 * Allows all shell commands (use with caution).
+	 * @returns Promise with success status and error message if failed
 	 */
-	disable(): void;
+	disable(): Promise<{success: boolean; error?: string}>;
 
 	/**
-	 * Toggle between enabled and disabled
+	 * Toggle between enabled and disabled (async)
 	 *
-	 * @returns New mode after toggle
+	 * @returns Promise with success status, new mode, and error message if failed
 	 */
-	toggle(): SandboxMode;
+	toggle(): Promise<{success: boolean; mode: SandboxMode; error?: string}>;
 
 	/**
 	 * Get current mode
