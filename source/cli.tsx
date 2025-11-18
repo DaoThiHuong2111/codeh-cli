@@ -9,6 +9,7 @@ import {existsSync} from 'fs';
 import App from './cli/app.js';
 import {setupContainer} from './core/di/setup.js';
 import {getLogger, cleanupOldLogs, generateRequestId} from './infrastructure/logging/Logger.js';
+import {globalSandboxModeManager} from './infrastructure/process/SandboxModeManager.js';
 
 // Load .env file from multiple locations (in priority order)
 // 1. Package root (for development)
@@ -94,9 +95,39 @@ async function main() {
 }
 
 // Cleanup on exit
-process.on('beforeExit', () => {
+process.on('beforeExit', async () => {
 	logger.info('CLI', 'process', 'Application exiting');
+
+	// Cleanup Docker sandbox container if running
+	try {
+		await globalSandboxModeManager.cleanup();
+	} catch (error) {
+		logger.error('CLI', 'process', 'Failed to cleanup sandbox container', {
+			error: error instanceof Error ? error.message : String(error),
+		});
+	}
+
 	logger.flush();
 });
+
+// Handle SIGINT (Ctrl+C) and SIGTERM
+const handleExit = async (signal: string) => {
+	logger.info('CLI', 'process', `Received ${signal}, cleaning up...`);
+
+	// Cleanup Docker sandbox container
+	try {
+		await globalSandboxModeManager.cleanup();
+	} catch (error) {
+		logger.error('CLI', 'process', 'Failed to cleanup sandbox container', {
+			error: error instanceof Error ? error.message : String(error),
+		});
+	}
+
+	logger.flush();
+	process.exit(0);
+};
+
+process.on('SIGINT', () => handleExit('SIGINT'));
+process.on('SIGTERM', () => handleExit('SIGTERM'));
 
 main();

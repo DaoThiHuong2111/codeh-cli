@@ -30,6 +30,14 @@ export interface SandboxModeChangeListener {
  */
 export interface ISandboxModeManager {
 	/**
+	 * Check if sandbox is available (Dockerfile exists and Docker installed)
+	 *
+	 * @param cwd - Current working directory to check for Dockerfile
+	 * @returns Promise<boolean> - True if sandbox is available
+	 */
+	checkAvailability(cwd?: string): Promise<boolean>;
+
+	/**
 	 * Check if sandbox mode is enabled
 	 *
 	 * @returns True if sandbox is enabled

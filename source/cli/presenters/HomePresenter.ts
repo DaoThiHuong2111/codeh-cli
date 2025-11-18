@@ -125,6 +125,31 @@ export class HomePresenter {
 
 		// Start duration timer (update every second)
 		this.startDurationTimer();
+
+		// Check sandbox availability (Dockerfile detection)
+		this.checkSandboxAvailability();
+	}
+
+	/**
+	 * Check if sandbox (Docker) is available in current directory
+	 * This checks for Dockerfile existence and Docker availability
+	 */
+	private async checkSandboxAvailability(): Promise<void> {
+		if (!this.sandboxModeManager) {
+			return;
+		}
+
+		try {
+			const available = await this.sandboxModeManager.checkAvailability(process.cwd());
+			this.logger.info('HomePresenter', 'checkSandboxAvailability', 'Sandbox availability checked', {
+				available,
+				cwd: process.cwd(),
+			});
+		} catch (error) {
+			this.logger.error('HomePresenter', 'checkSandboxAvailability', 'Failed to check sandbox availability', {
+				error: error instanceof Error ? error.message : String(error),
+			});
+		}
 	}
 
 	// === View Management ===
