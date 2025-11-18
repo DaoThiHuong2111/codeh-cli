@@ -6,3 +6,6 @@ dist
 .codeh-config.json
 .DS_Store
 *.log
+
+# Test Dockerfile (copy from Dockerfile.test for testing)
+Dockerfile
