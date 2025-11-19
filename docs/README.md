@@ -48,6 +48,8 @@ Tài liệu dự án CODEH CLI - Terminal UI cho AI chat với 3-layer architect
 
 ### 📝 [Special Documents](.)
 
+- [Project Review](./PROJECT_REVIEW.md) - Comprehensive project review and analysis
+- [Test Scenarios](./TEST_SCENARIOS.md) - Complete test scenarios for 95% coverage
 - [System Prompt Guide](./SYSTEM_PROMPT_GUIDE.md) - Guide for creating AI system prompts
 - [Documentation Consolidation Plan](./DOCUMENTATION_CONSOLIDATION_PLAN.md) - Plan for organizing all docs
 

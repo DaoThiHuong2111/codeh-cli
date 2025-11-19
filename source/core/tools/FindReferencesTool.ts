@@ -14,11 +14,15 @@ import {TypeScriptSymbolAnalyzer} from '../../infrastructure/typescript/TypeScri
 export class FindReferencesTool extends Tool {
 	private analyzer?: ISymbolAnalyzer;
 
-	constructor(private projectRoot: string) {
+	constructor(
+		private projectRoot: string,
+		analyzer?: ISymbolAnalyzer,
+	) {
 		super(
 			'find_references',
 			'Find all references to a symbol (who is calling this function/using this class)',
 		);
+		this.analyzer = analyzer;
 	}
 
 	/**
