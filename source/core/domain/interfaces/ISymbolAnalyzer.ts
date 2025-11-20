@@ -106,4 +106,12 @@ export interface ISymbolAnalyzer {
 	 * @returns Array of symbols in hierarchical structure
 	 */
 	getSymbolHierarchy(filePath: string): Symbol[];
+
+	/**
+	 * Get diagnostics (errors/warnings) for the project or specific files
+	 * 
+	 * @param files - Optional list of files to check
+	 * @returns Array of diagnostics
+	 */
+	getDiagnostics(files?: string[]): any[];
 }

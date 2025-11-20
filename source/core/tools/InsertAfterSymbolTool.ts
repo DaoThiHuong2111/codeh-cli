@@ -22,11 +22,15 @@ export interface InsertAfterSymbolOptions {
 export class InsertAfterSymbolTool extends Tool {
 	private analyzer?: ISymbolAnalyzer;
 
-	constructor(private projectRoot: string) {
+	constructor(
+		private projectRoot: string,
+		analyzer?: ISymbolAnalyzer,
+	) {
 		super(
 			'insert_after_symbol',
 			'Insert content after a symbol (methods, properties, etc.)',
 		);
+		this.analyzer = analyzer;
 	}
 
 	getDefinition(): ToolDefinition {

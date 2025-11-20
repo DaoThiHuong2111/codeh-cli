@@ -54,18 +54,8 @@ export class ValidateCodeChangesTool extends Tool {
 			// Invalidate cache to force re-analysis
 			this.analyzer.invalidateAll();
 
-			// Get all diagnostics from TypeScript program
-			const program = (this.analyzer as any).program as ts.Program;
-			const allDiagnostics = ts.getPreEmitDiagnostics(program);
-
-			// Filter by files if specified
-			let diagnostics = allDiagnostics;
-			if (args.files && args.files.length > 0) {
-				diagnostics = allDiagnostics.filter(diag => {
-					if (!diag.file) return false;
-					return args.files!.some(file => diag.file!.fileName.includes(file));
-				});
-			}
+			// Get diagnostics from analyzer
+			const diagnostics = this.analyzer.getDiagnostics(args.files);
 
 			// Categorize diagnostics
 			const errors = diagnostics.filter(

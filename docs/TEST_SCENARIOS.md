@@ -691,12 +691,12 @@ Hiện có 19+ tools, cần tests cho mỗi tool:
 #### 8.3 Code Navigation Tools Tests
 
 **Files**:
-- `test/core/tools/FindImplementations.test.ts` ✅ (exists)
-- `test/core/tools/GetCallHierarchy.test.ts` ✅ (exists)
-- `test/core/tools/GetTypeInformation.test.ts` ✅ (exists)
-- `test/core/tools/DependencyGraph.test.ts` ✅ (exists)
-- `test/core/tools/SmartContextExtractor.test.ts` ✅ (exists)
-- `test/core/tools/ValidateCodeChanges.test.ts` ✅ (exists)
+- `test/core/tools/FindImplementations.test.ts` ✅ (Done)
+- `test/core/tools/GetCallHierarchy.test.ts` ✅ (Done)
+- `test/core/tools/GetTypeInformation.test.ts` ✅ (Done)
+- `test/core/tools/DependencyGraph.test.ts` ✅ (Done)
+- `test/core/tools/SmartContextExtractor.test.ts` ✅ (Done)
+- `test/core/tools/ValidateCodeChanges.test.ts` ✅ (Done)
 
 **Additional Test Cases per Tool** (5-10 tests each):
 
@@ -716,17 +716,17 @@ Hiện có 19+ tools, cần tests cho mỗi tool:
 
 **Cần tạo tests cho các tools sau**:
 
-1. **FindFileTool.test.ts** (10+ tests)
-2. **FindReferencesTool.test.ts** (10+ tests)
-3. **GetSymbolsOverviewTool.test.ts** (10+ tests)
-4. **InsertAfterSymbolTool.test.ts** (10+ tests)
-5. **InsertBeforeSymbolTool.test.ts** (10+ tests)
-6. **RenameSymbolTool.test.ts** (10+ tests)
-7. **ReplaceRegexTool.test.ts** (10+ tests)
-8. **ReplaceSymbolBodyTool.test.ts** (10+ tests)
-9. **SearchForPatternTool.test.ts** (10+ tests)
-10. **SymbolSearchTool.test.ts** (10+ tests)
-11. **WorkflowTools.test.ts** (15+ tests)
+1. **FindFileTool.test.ts** ✅ (Done)
+2. **FindReferencesTool.test.ts** ✅ (Done)
+3. **GetSymbolsOverviewTool.test.ts** ✅ (Done)
+4. **InsertAfterSymbolTool.test.ts** ✅ (Done)
+5. **InsertBeforeSymbolTool.test.ts** ✅ (Done)
+6. **RenameSymbolTool.test.ts** ✅ (Done)
+7. **ReplaceRegexTool.test.ts** ✅ (Done)
+8. **ReplaceSymbolBodyTool.test.ts** ✅ (Done)
+9. **SearchForPatternTool.test.ts** ✅ (Done)
+10. **SymbolSearchTool.test.ts** ✅ (Done)
+11. **WorkflowTools.test.ts** ✅ (Done)
 
 ---
 
