@@ -1,0 +1,69 @@
+File Path,Symbol Name,Type,Layer,Status,Risk Level,Notes
+source/core/domain/valueObjects/ModelInfo.ts,ModelRegistry,class,CORE,Unused - Never instantiated,Low,Safe to remove
+source/core/di/setup.ts,createContainer,function,CORE,Unused - Exported but never called,Low,Empty factory function
+source/core/di/setupLazy.ts,setupContainerWithLazyLoading,function,CORE,Unused - Never imported,Low,Redundant DI setup
+source/core/di/setupLazy.ts,createContainer,function,CORE,Unused - Never imported,Low,Duplicate export
+source/core/domain/errors/CodehErrors.ts,isCodehError,function,CORE,Unused - Type guard never used,Low,Dead code
+source/core/domain/errors/CodehErrors.ts,isToolExecutionError,function,CORE,Unused - Type guard never used,Low,Dead code
+source/core/domain/errors/CodehErrors.ts,isApiClientError,function,CORE,Unused - Type guard never used,Low,Dead code
+source/core/domain/errors/CodehErrors.ts,isConfigurationError,function,CORE,Unused - Type guard never used,Low,Dead code
+source/core/domain/errors/CodehErrors.ts,isSymbolNotFoundError,function,CORE,Unused - Type guard never used,Low,Dead code
+source/core/domain/errors/CodehErrors.ts,isFileOperationError,function,CORE,Unused - Type guard never used,Low,Dead code
+source/core/domain/errors/CodehErrors.ts,isValidationError,function,CORE,Unused - Type guard never used,Low,Dead code
+source/core/domain/errors/CodehErrors.ts,isSecurityError,function,CORE,Unused - Type guard never used,Low,Dead code
+source/core/domain/errors/CodehErrors.ts,isRateLimitError,function,CORE,Unused - Type guard never used,Low,Dead code
+source/core/domain/errors/CodehErrors.ts,isTimeoutError,function,CORE,Unused - Type guard never used,Low,Dead code
+source/core/application/services/CodeNavigator.ts,CodeNavigator,class,CORE,Unused - Never instantiated,Medium,Abandoned navigation service
+source/core/application/services/TypeScriptCodeNavigator.ts,TypeScriptCodeNavigator,class,CORE,Unused - Never instantiated,Medium,Abandoned navigation service
+source/core/application/services/InputHistoryService.ts,NavigationResult,type,CORE,Unused - Type never imported,Low,Dead type definition
+source/core/application/strategies/RetryStrategy.ts,RetryPresets,const,CORE,Unused - Configuration never referenced,Low,Dead configuration
+source/core/application/usecases/ExecuteTool.ts,ExecuteTool,class,CORE,Unused - Never imported,Medium,May be abandoned DDD pattern
+source/core/application/usecases/LoadSession.ts,LoadSession,class,CORE,Unused - Never imported,Medium,May be abandoned DDD pattern
+source/core/application/usecases/ManageHistory.ts,ManageHistory,class,CORE,Unused - Never imported,Medium,May be abandoned DDD pattern
+source/core/application/usecases/ProcessUserInput.ts,ProcessUserInput,class,CORE,Unused - Never imported,Medium,May be abandoned DDD pattern
+source/core/application/usecases/SaveSession.ts,SaveSession,class,CORE,Unused - Never imported,Medium,May be abandoned DDD pattern
+source/core/application/usecases/StreamResponse.ts,StreamResponse,class,CORE,Unused - Never imported,Medium,May be abandoned DDD pattern
+source/core/tools/schemas/ToolSchemas.ts,GetCallHierarchyArgsSchema,const,CORE,Unused - Schema never referenced,Low,Duplicate schema definition
+source/core/tools/schemas/ToolSchemas.ts,DependencyGraphArgsSchema,const,CORE,Unused - Schema never referenced,Low,Duplicate schema definition
+source/cli/hooks/useConfigKeyboard.ts,useConfigKeyboard,function,CLI,Unused - Never imported,Low,Dead hook code
+source/cli/hooks/useConfigWizard.ts,UseConfigWizardReturn,type,CLI,Unused - Type never imported,Low,Dead type definition
+source/cli/hooks/useHomeLogic.ts,UseHomeLogicReturn,type,CLI,Unused - Type never imported,Low,Dead type definition
+source/cli/hooks/useHomeLogic.ts,useHomeLogic,function,CLI,Unused - Never imported,Low,Dead hook code
+source/cli/presenters/types.ts,ViewModel,type,CLI,Unused - Type never imported,Low,Dead type definition
+source/cli/presenters/types.ts,ConversationViewModel,type,CLI,Unused - Type never imported,Low,Dead type definition
+source/cli/presenters/types.ts,ExecutionResult,type,CLI,Unused - Type never imported,Low,Dead type definition
+source/infrastructure/api/HttpClient.ts,HttpClient,class,INFRASTRUCTURE,Unused - Never instantiated,Low,Use ApiClientFactory instead
+source/infrastructure/api/HttpClient.ts,HttpRequestOptions,interface,INFRASTRUCTURE,Unused - Type never imported,Low,Dead type definition
+source/infrastructure/api/HttpClient.ts,HttpResponse,interface,INFRASTRUCTURE,Unused - Type never imported,Low,Dead type definition
+source/infrastructure/logging/Logger.ts,generateRequestId,function,INFRASTRUCTURE,Unused - Never called,Low,Dead utility function
+source/infrastructure/logging/Logger.ts,NullLogger,class,INFRASTRUCTURE,Unused - Never instantiated,Low,Dead logger implementation
+source/infrastructure/logging/Logger.ts,createLogger,function,INFRASTRUCTURE,Unused - Never called,Low,Dead logger factory
+source/infrastructure/logging/Logger.ts,withLogging,function,INFRASTRUCTURE,Unused - Never called,Low,Dead decorator function
+source/infrastructure/logging/Logger.ts,withLoggingSync,function,INFRASTRUCTURE,Unused - Never called,Low,Dead decorator function
+source/infrastructure/logging/Logger.ts,cleanupOldLogs,function,INFRASTRUCTURE,Unused - Never called,Low,Dead cleanup function
+source/infrastructure/process/SandboxModeManager.ts,globalSandboxModeManager,const,INFRASTRUCTURE,Unused - Never referenced,Low,Dead singleton export
+source/infrastructure/resilience/CircuitBreaker.ts,CircuitBreakerPresets,const,INFRASTRUCTURE,Unused - Configuration never referenced,Low,Dead configuration
+source/infrastructure/integrations/a2a/A2AServer.ts,A2AServer,class,INFRASTRUCTURE,Unused - Never instantiated,Medium,Incomplete feature
+source/presentation/screens/HomeScreen/hooks/useHistory.ts,UseHistoryOptions,type,PRESENTATION,Unused - Type never imported,Low,Dead type definition
+source/presentation/screens/HomeScreen/hooks/useHistory.ts,UseHistoryReturn,type,PRESENTATION,Unused - Type never imported,Low,Dead type definition
+source/presentation/screens/HomeScreen/types/streaming.ts,StreamState,type,PRESENTATION,Unused - Type never imported,Low,Dead type definition
+source/presentation/screens/HomeScreen/types/streaming.ts,StreamingOptions,type,PRESENTATION,Unused - Type never imported,Low,Dead type definition
+source/presentation/screens/HomeScreen/types/streaming.ts,StreamControl,type,PRESENTATION,Unused - Type never imported,Low,Dead type definition
+source/presentation/screens/HomeScreen/utils/colors.ts,getProviderColor,function,PRESENTATION,Unused - Never called,Low,Dead utility function
+source/presentation/screens/HomeScreen/utils/colors.ts,getProviderIcon,function,PRESENTATION,Unused - Never called,Low,Dead utility function
+source/presentation/screens/HomeScreen/utils/colors.ts,getSyntaxColor,function,PRESENTATION,Unused - Never called,Low,Dead utility function
+source/presentation/screens/HomeScreen/utils/colors.ts,getStreamingCursorFrame,function,PRESENTATION,Unused - Never called,Low,Dead utility function
+source/presentation/screens/HomeScreen/utils/highlighter.ts,highlightCode,function,PRESENTATION,Unused - Never called,Low,Dead utility function
+source/presentation/screens/HomeScreen/utils/highlighter.ts,isLanguageSupported,function,PRESENTATION,Unused - Never called,Low,Dead utility function
+source/presentation/screens/HomeScreen/utils/highlighter.ts,getSupportedLanguages,function,PRESENTATION,Unused - Never called,Low,Dead utility function
+source/presentation/screens/HomeScreen/utils/inlineParser.ts,parseInlineTokens,function,PRESENTATION,Unused - Never called,Low,Dead utility function
+source/presentation/screens/HomeScreen/utils/inlineParser.ts,hasInlineMarkdown,function,PRESENTATION,Unused - Never called,Low,Dead utility function
+source/presentation/screens/HomeScreen/utils/inlineParser.ts,stripInlineMarkdown,function,PRESENTATION,Unused - Never called,Low,Dead utility function
+source/presentation/screens/HomeScreen/utils/markdownParser.ts,parseMarkdown,function,PRESENTATION,Unused - Never called,Low,Dead utility function
+source/presentation/screens/HomeScreen/utils/storage.ts,listHistoryFiles,function,PRESENTATION,Unused - Never called,Low,Dead utility function
+source/presentation/screens/HomeScreen/utils/storage.ts,getHistoryFileInfo,function,PRESENTATION,Unused - Never called,Low,Dead utility function
+source/presentation/screens/HomeScreen/utils/textUtils.ts,truncateText,function,PRESENTATION,Unused - Never called,Low,Dead utility function
+source/presentation/screens/HomeScreen/utils/textUtils.ts,padText,function,PRESENTATION,Unused - Never called,Low,Dead utility function
+source/presentation/screens/HomeScreen/utils/textUtils.ts,stripAnsi,function,PRESENTATION,Unused - Never called,Low,Dead utility function
+source/presentation/screens/HomeScreen/utils/textUtils.ts,calculateLineCount,function,PRESENTATION,Unused - Never called,Low,Dead utility function
+source/utils/timeFormat.ts,formatDuration,function,OTHER,Unused - Never called,Low,Dead utility function

@@ -51,35 +51,102 @@ Các scripts trong `scripts/` folder có thể không còn sử dụng:
 
 ---
 
-## 4. Code Thừa / Redundant
+## 4. Code Thừa / Redundant (CHI TIẾT)
 
-### 4.1 Potential Duplicate Exports
-Không phát hiện duplicate exports nghiêm trọng.
+### ⚠️ PHÁT HIỆN: 66 UNUSED EXPORTS (~500-600 dòng code)
 
-### 4.2 Mock Server
-- Thư mục `mock-server/` có cấu trúc riêng
-- Có thể cân nhắc đưa vào `test/` hoặc giữ riêng tuỳ mục đích
+Chi tiết đầy đủ tại: `.codeh-analysis/`
 
-### 4.3 Documentation
-- **38 files** trong `docs/`
-- **49 files** tổng cộng .md files
-- Có thể có một số docs overlapping cần review
+### 4.1 🔴 CRITICAL - Xoá ngay (An toàn)
+
+| Hạng mục | Số lượng | File | Dòng code |
+|----------|----------|------|-----------|
+| Error Type Guards | 10 | `CodehErrors.ts` | ~30 |
+| Logging Utilities | 6 | `Logger.ts` | ~50 |
+| HttpClient class | 1 | `HttpClient.ts` | ~230 |
+| ModelRegistry class | 1 | `ModelInfo.ts` | ~15 |
+| DI Factory functions | 3 | `setup.ts`, `setupLazy.ts` | ~20 |
+
+**Ví dụ cụ thể:**
+```typescript
+// KHÔNG ĐƯỢC SỬ DỤNG - CodehErrors.ts
+isCodehError, isToolExecutionError, isApiClientError,
+isConfigurationError, isSymbolNotFoundError, isFileOperationError,
+isValidationError, isSecurityError, isRateLimitError, isTimeoutError
+
+// KHÔNG ĐƯỢC SỬ DỤNG - Logger.ts
+generateRequestId, NullLogger, createLogger,
+withLogging, withLoggingSync, cleanupOldLogs
+
+// KHÔNG ĐƯỢC SỬ DỤNG - DI
+createContainer (×2), setupContainerWithLazyLoading
+```
+
+### 4.2 🟠 MEDIUM - Cần review trước khi xoá
+
+| Hạng mục | Số lượng | Ghi chú |
+|----------|----------|---------|
+| Use Case Classes | 6 | DDD pattern cũ không dùng |
+| Navigation Services | 2 | Triển khai thay thế |
+| A2AServer | 1 | Feature chưa hoàn chỉnh |
+
+**Use Cases không dùng:**
+- `ExecuteTool`, `LoadSession`, `ManageHistory`
+- `ProcessUserInput`, `SaveSession`, `StreamResponse`
+
+### 4.3 🟡 LOW - Utilities & Types
+
+| Hạng mục | Số lượng |
+|----------|----------|
+| Presentation Utils | 18+ functions |
+| Unused Types | 13+ interfaces/types |
+
+**Presentation Utils không dùng:**
+- Color/Syntax: `getProviderColor`, `getProviderIcon`, `getSyntaxColor`
+- Text: `truncateText`, `padText`, `stripAnsi`
+- Markdown: `parseMarkdown`, `parseInlineTokens`
+
+**Types không dùng:**
+- `ViewModel`, `ConversationViewModel`, `ExecutionResult`
+- `StreamState`, `StreamingOptions`, `StreamControl`
+- `NavigationResult`, `UseConfigWizardReturn`, `UseHomeLogicReturn`
+
+### 4.4 Mock Server & Documentation
+- `mock-server/` - Có thể đưa vào `test/` hoặc giữ riêng
+- **38 docs files** - Cần review overlapping content
 
 ---
 
 ## 5. Plan Đề Xuất
 
-### Phase 1: Cleanup (Priority: High)
+### Phase 1: Zero-Risk Removals (~1 giờ)
 - [ ] Xoá `ava.config.js.bak`
-- [ ] Review và quyết định giữ/xoá scripts trong `scripts/`
+- [ ] Xoá 10 error type guards trong `CodehErrors.ts`
+- [ ] Xoá 6 logging utilities trong `Logger.ts`
+- [ ] Xoá `ModelRegistry` class
+- [ ] Xoá 3 DI factory functions
+- [ ] Xoá `RetryPresets` & `CircuitBreakerPresets`
 
-### Phase 2: Code Review (Priority: Medium)
-- [ ] Review `mock-server/` - quyết định vị trí phù hợp
-- [ ] Audit documentation - check for duplicates/outdated content
+### Phase 2: Safe Removals (~2 giờ)
+- [ ] Xoá `HttpClient` class (~230 dòng)
+- [ ] Xoá unused CLI hooks (3)
+- [ ] Xoá unused CLI types (3)
+- [ ] Xoá `globalSandboxModeManager`
+- [ ] Xoá tool schemas không dùng
 
-### Phase 3: Optimization (Priority: Low)
-- [ ] Check for unused npm dependencies
-- [ ] Review test coverage gaps
+### Phase 3: Review & Remove (~3 giờ)
+- [ ] Review navigation services trước khi xoá
+- [ ] Review use case classes trước khi xoá
+- [ ] Review A2AServer integration
+- [ ] Xoá presentation utilities không dùng
+- [ ] Xoá unused types
+
+### Phase 4: Consolidation (~4 giờ)
+- [ ] Review scripts trong `scripts/`
+- [ ] Consolidate remaining utility functions
+- [ ] Update module exports
+- [ ] Review `mock-server/` placement
+- [ ] Audit documentation
 
 ---
 
@@ -88,10 +155,12 @@ Không phát hiện duplicate exports nghiêm trọng.
 | Hạng mục | Trạng thái | Hành động |
 |----------|------------|-----------|
 | TODO comments | ✅ Clean | Không cần |
-| Unused declarations | ✅ Clean | Không cần |
+| Unused exports | 🔴 **66 items** | Xoá ~500-600 dòng code |
 | Backup files | ⚠️ Found 1 | Xoá `ava.config.js.bak` |
 | Debug scripts | ⚠️ Review needed | Xem xét 8 files |
-| Redundant code | ✅ OK | Không cần |
+| Code thừa | 🔴 **Critical** | Xem Phase 1-4 |
+
+### Ước tính tổng effort: 8-10 giờ (4 phases)
 
 ---
 
