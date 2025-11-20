@@ -250,28 +250,3 @@ export class CircuitBreaker {
 	}
 }
 
-/**
- * Common circuit breaker configurations
- */
-export const CircuitBreakerPresets = {
-	/** Fast failing for quick operations */
-	FAST: {
-		failureThreshold: 3,
-		resetTimeoutMs: 10000, // 10 seconds
-		successThreshold: 1,
-	},
-
-	/** Standard configuration for most services */
-	STANDARD: {
-		failureThreshold: 5,
-		resetTimeoutMs: 60000, // 1 minute
-		successThreshold: 2,
-	},
-
-	/** Tolerant configuration for flaky services */
-	TOLERANT: {
-		failureThreshold: 10,
-		resetTimeoutMs: 120000, // 2 minutes
-		successThreshold: 3,
-	},
-} as const;

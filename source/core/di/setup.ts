@@ -260,9 +260,3 @@ export async function createCodehClient(
 	);
 }
 
-/**
- * Create a new container instance
- */
-export function createContainer(): Container {
-	return new Container();
-}

@@ -327,23 +327,6 @@ export class EnhancedLogger implements ILogger {
 }
 
 /**
- * Null logger (does nothing)
- */
-export class NullLogger implements ILogger {
-	debug(): void {}
-	info(): void {}
-	warn(): void {}
-	error(): void {}
-	setRequestId(): void {}
-	getRequestId(): string | undefined {
-		return undefined;
-	}
-	flush(): void {}
-	logFunctionEntry(): void {}
-	logFunctionExit(): void {}
-}
-
-/**
  * Singleton logger instance
  */
 let globalLogger: ILogger | null = null;
@@ -358,77 +341,6 @@ export function getLogger(): ILogger {
 		globalLogger = new EnhancedLogger();
 	}
 	return globalLogger;
-}
-
-/**
- * Create a new logger instance (for testing)
- * Always returns EnhancedLogger - it will check isLoggingEnabled() at runtime
- */
-export function createLogger(): ILogger {
-	// Always create EnhancedLogger - it checks isLoggingEnabled() lazily
-	return new EnhancedLogger();
-}
-
-/**
- * Helper function to wrap async function with logging
- */
-export function withLogging<T extends (...args: any[]) => Promise<any>>(
-	component: string,
-	funcName: string,
-	fn: T,
-): T {
-	return (async (...args: any[]) => {
-		const logger = getLogger();
-		const start = Date.now();
-
-		logger.logFunctionEntry(component, funcName, args);
-
-		try {
-			const result = await fn(...args);
-			const duration = Date.now() - start;
-			logger.logFunctionExit(component, funcName, duration, true);
-			return result;
-		} catch (error) {
-			const duration = Date.now() - start;
-			logger.logFunctionExit(component, funcName, duration, false);
-			logger.error(component, funcName, 'Function failed', {
-				error: error instanceof Error ? error.message : String(error),
-				stack: error instanceof Error ? error.stack : undefined,
-			});
-			throw error;
-		}
-	}) as T;
-}
-
-/**
- * Helper function to wrap sync function with logging
- */
-export function withLoggingSync<T extends (...args: any[]) => any>(
-	component: string,
-	funcName: string,
-	fn: T,
-): T {
-	return ((...args: any[]) => {
-		const logger = getLogger();
-		const start = Date.now();
-
-		logger.logFunctionEntry(component, funcName, args);
-
-		try {
-			const result = fn(...args);
-			const duration = Date.now() - start;
-			logger.logFunctionExit(component, funcName, duration, true);
-			return result;
-		} catch (error) {
-			const duration = Date.now() - start;
-			logger.logFunctionExit(component, funcName, duration, false);
-			logger.error(component, funcName, 'Function failed', {
-				error: error instanceof Error ? error.message : String(error),
-				stack: error instanceof Error ? error.stack : undefined,
-			});
-			throw error;
-		}
-	}) as T;
 }
 
 /**
@@ -465,3 +377,4 @@ export function cleanupOldLogs(maxFiles: number = 7): void {
 		// Ignore errors
 	}
 }
+

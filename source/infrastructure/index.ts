@@ -4,7 +4,6 @@
  */
 
 // API Clients
-export {HttpClient} from './api/HttpClient';
 export {ApiClientFactory} from './api/ApiClientFactory';
 
 // SDK Adapters (Official SDKs)

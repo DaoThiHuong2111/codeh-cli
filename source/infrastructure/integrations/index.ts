@@ -15,11 +15,3 @@ export type {
 	MCPTool,
 	MCPPrompt,
 } from './mcp/MCPClient.js';
-
-// Agent-to-Agent (A2A) Integration
-export {A2AServer} from './a2a/A2AServer.js';
-export type {
-	A2ARequest,
-	A2AResponse,
-	A2AServerConfig,
-} from './a2a/A2AServer.js';

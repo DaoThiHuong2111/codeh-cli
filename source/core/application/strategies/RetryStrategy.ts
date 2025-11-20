@@ -167,32 +167,6 @@ export class RetryStrategy {
 }
 
 /**
- * Common retry configurations
- */
-export const RetryPresets = {
-	/** Quick retry for fast operations */
-	FAST: {
-		maxRetries: 2,
-		initialBackoffMs: 100,
-		maxBackoffMs: 1000,
-	},
-
-	/** Standard retry for most operations */
-	STANDARD: {
-		maxRetries: 3,
-		initialBackoffMs: 1000,
-		maxBackoffMs: 10000,
-	},
-
-	/** Aggressive retry for critical operations */
-	AGGRESSIVE: {
-		maxRetries: 5,
-		initialBackoffMs: 2000,
-		maxBackoffMs: 30000,
-	},
-} as const;
-
-/**
  * Common retry predicates
  */
 export const RetryPredicates = {
