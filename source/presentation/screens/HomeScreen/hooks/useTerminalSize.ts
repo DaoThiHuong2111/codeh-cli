@@ -38,7 +38,6 @@ export function useTerminalSize(): TerminalSize {
 	useEffect(() => {
 		if (!stdout) return;
 
-		// Update size when terminal resizes
 		const handleResize = () => {
 			setSize({
 				width: stdout.columns || 80,
@@ -46,13 +45,10 @@ export function useTerminalSize(): TerminalSize {
 			});
 		};
 
-		// Listen to resize events
 		stdout.on('resize', handleResize);
 
-		// Initial size check
 		handleResize();
 
-		// Cleanup
 		return () => {
 			stdout.off('resize', handleResize);
 		};

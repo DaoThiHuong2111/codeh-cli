@@ -61,25 +61,17 @@ import {Configuration} from '../domain/models/Configuration';
 export async function setupContainer(): Promise<Container> {
 	const container = new Container();
 
-	// ==================================================
-	// LAYER 3: Infrastructure
-	// ==================================================
-
-	// Config
 	container.register('ConfigLoader', () => new ConfigLoader(), true);
 	container.register('ApiClientFactory', () => new ApiClientFactory(), true);
 
-	// History
 	container.register(
 		'HistoryRepository',
 		() => new InMemoryHistoryRepository(),
 		true,
 	);
 
-	// File Operations
 	container.register('FileOperations', () => new FileOperations(), true);
 
-	// Shell Executor & Docker Sandbox Mode
 	container.register('ShellExecutor', () => new ShellExecutor(), true);
 	container.register(
 		'DockerfileManager',
@@ -114,14 +106,12 @@ export async function setupContainer(): Promise<Container> {
 	);
 	container.register('CommandValidator', () => new CommandValidator(), true);
 
-	// Permission Mode Manager (singleton shared across app)
 	container.register(
 		'PermissionModeManager',
 		() => new PermissionModeManager(),
 		true,
 	);
 
-	// Permission Handler (hybrid - switches between MVP and Interactive)
 	container.register(
 		'PermissionHandler',
 		() => {
@@ -133,16 +123,10 @@ export async function setupContainer(): Promise<Container> {
 		true,
 	);
 
-	// ==================================================
-	// LAYER 2: Core / Application
-	// ==================================================
-
-	// Services
 	container.register('InputClassifier', () => new InputClassifier(), true);
 	container.register('OutputFormatter', () => new OutputFormatter(), true);
 	container.register('WorkflowManager', () => new WorkflowManager(), true);
 
-	// Tool Registry
 	container.register(
 		'ToolRegistry',
 		() => {
@@ -158,7 +142,6 @@ export async function setupContainer(): Promise<Container> {
 			const workflowManager =
 				container.resolve<WorkflowManager>('WorkflowManager');
 
-			// Register basic tools
 			registry.register(
 				new ShellTool(
 					hostExecutor,
@@ -168,27 +151,21 @@ export async function setupContainer(): Promise<Container> {
 			);
 			registry.register(new FileOpsTool(fileOps));
 
-			// Register TypeScript symbol tools
-			// Get project root from environment or use current working directory
 			const projectRoot = process.env.CODEH_PROJECT_ROOT || process.cwd();
 
-			// Symbol analysis tools
 			registry.register(new SymbolSearchTool(projectRoot));
 			registry.register(new FindReferencesTool(projectRoot));
 			registry.register(new GetSymbolsOverviewTool(projectRoot));
 
-			// Refactoring & editing tools
 			registry.register(new RenameSymbolTool(projectRoot));
 			registry.register(new ReplaceSymbolBodyTool(projectRoot));
 			registry.register(new InsertBeforeSymbolTool(projectRoot));
 			registry.register(new InsertAfterSymbolTool(projectRoot));
 
-			// File operations tools
 			registry.register(new ReplaceRegexTool(projectRoot));
 			registry.register(new FindFileTool(projectRoot));
 			registry.register(new SearchForPatternTool(projectRoot));
 
-			// Advanced code intelligence tools (require TypeScript analyzer)
 			const analyzer: ISymbolAnalyzer = new TypeScriptSymbolAnalyzer(projectRoot);
 			registry.register(new GetTypeInformationTool(projectRoot, analyzer));
 			registry.register(new GetCallHierarchyTool(projectRoot, analyzer));
@@ -197,7 +174,6 @@ export async function setupContainer(): Promise<Container> {
 			registry.register(new SmartContextExtractorTool(projectRoot, analyzer));
 			registry.register(new DependencyGraphTool(projectRoot));
 
-			// Workflow management tools (AI plan/todo management)
 			registry.register(new CreatePlanTool(workflowManager));
 			registry.register(new AddTodoTool(workflowManager));
 			registry.register(new UpdateTodoStatusTool(workflowManager));
@@ -209,7 +185,6 @@ export async function setupContainer(): Promise<Container> {
 		true,
 	);
 
-	// Orchestrators (CodehChat only - CodehClient is lazy loaded)
 	container.register(
 		'CodehChat',
 		async () => {

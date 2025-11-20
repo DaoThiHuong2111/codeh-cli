@@ -49,25 +49,22 @@ const AssistantMessageComponent: React.FC<AssistantMessageProps> = ({
 
 	return (
 		<Box flexDirection="column" marginY={1}>
-			{/* Provider header */}
 			<Box marginBottom={1}>
 				<Text color={color} bold>
 					{icon} {providerName}
 				</Text>
 			</Box>
 
-			{/* Message content */}
 			<Box paddingLeft={2}>
 				<MarkdownDisplay
 					text={message}
 					isPending={isPending}
-					terminalWidth={terminalWidth - 2} // Account for padding
+					terminalWidth={terminalWidth - 2}
 					availableHeight={availableHeight}
 					renderMarkdown={renderMarkdown}
 				/>
 			</Box>
 
-			{/* Streaming indicator */}
 			{isPending && (
 				<Box paddingLeft={2} marginTop={1}>
 					<Text color={THEME_COLORS.ui.cursor} dimColor>
@@ -76,7 +73,6 @@ const AssistantMessageComponent: React.FC<AssistantMessageProps> = ({
 				</Box>
 			)}
 
-			{/* Usage statistics */}
 			{usage && !isPending && (
 				<Box paddingLeft={2} marginTop={1}>
 					<UsageDisplay usage={usage} />

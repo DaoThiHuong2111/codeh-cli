@@ -28,7 +28,7 @@ export interface WorkflowProgress {
 export class WorkflowManager {
 	private plans: Map<string, Plan> = new Map();
 	private currentPlanId?: string;
-	private history: Plan[] = []; // Completed plans
+	private history: Plan[] = [];
 
 	constructor() {}
 
@@ -60,7 +60,6 @@ export class WorkflowManager {
 
 		this.plans.set(plan.id, plan);
 
-		// Auto-set as current plan if no current plan exists
 		if (!this.currentPlanId) {
 			this.setCurrentPlan(plan.id);
 		}
@@ -79,7 +78,6 @@ export class WorkflowManager {
 		this.currentPlanId = planId;
 		const plan = this.plans.get(planId)!;
 
-		// Auto-start the plan if it's pending
 		if (plan.status === PlanStatus.Pending) {
 			plan.start();
 		}
@@ -171,7 +169,6 @@ export class WorkflowManager {
 	 * Update todo status
 	 */
 	updateTodoStatus(todoId: string, status: TodoStatus): boolean {
-		// Find todo in current plan
 		const plan = this.getCurrentPlan();
 		if (!plan) {
 			return false;
@@ -182,11 +179,9 @@ export class WorkflowManager {
 			return false;
 		}
 
-		// Remove old todo and add updated one
 		plan.removeTodo(todoId);
 		plan.addTodo(todo.withStatus(status));
 
-		// Check if plan is completed
 		this.checkPlanCompletion(plan);
 
 		return true;
@@ -234,15 +229,12 @@ export class WorkflowManager {
 
 		plan.complete();
 
-		// Move to history
 		this.history.push(plan);
 		this.plans.delete(targetPlanId);
 
-		// Clear current plan if it's the one being completed
 		if (this.currentPlanId === targetPlanId) {
 			this.currentPlanId = undefined;
 
-			// Auto-select next pending/in-progress plan
 			const nextPlan = this.getActivePlans()[0];
 			if (nextPlan) {
 				this.setCurrentPlan(nextPlan.id);
@@ -263,11 +255,9 @@ export class WorkflowManager {
 
 		plan.fail(reason);
 
-		// Move to history
 		this.history.push(plan);
 		this.plans.delete(planId);
 
-		// Clear current plan if it's the one being failed
 		if (this.currentPlanId === planId) {
 			this.currentPlanId = undefined;
 		}
@@ -286,11 +276,9 @@ export class WorkflowManager {
 
 		plan.cancel(reason);
 
-		// Move to history
 		this.history.push(plan);
 		this.plans.delete(planId);
 
-		// Clear current plan if it's the one being cancelled
 		if (this.currentPlanId === planId) {
 			this.currentPlanId = undefined;
 		}
@@ -320,7 +308,6 @@ export class WorkflowManager {
 		let activeTodos = 0;
 		let completedTodos = 0;
 
-		// Count todos across all active plans
 		for (const plan of activePlans) {
 			activeTodos += plan.getPendingCount() + plan.getInProgressCount();
 			completedTodos += plan.getCompletedCount();

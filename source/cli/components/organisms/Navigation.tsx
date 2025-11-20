@@ -8,6 +8,5 @@ interface NavigationProps {
 }
 
 export default function Navigation({container, exitConfirmation}: NavigationProps) {
-	// NavigationProvider handles all navigation logic
 	return <NavigationProvider container={container} exitConfirmation={exitConfirmation} />;
 }

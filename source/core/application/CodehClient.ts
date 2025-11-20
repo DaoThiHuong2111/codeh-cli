@@ -38,12 +38,10 @@ export class CodehClient {
 		this.outputFormatter = new OutputFormatter();
 		this.contextService = new ConversationContextService(historyRepo, apiClient);
 
-		// Combine system prompts
 		this.systemPrompt = `${PLANNING_SYSTEM_PROMPT}
 
 ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 
-		// Create tool orchestrator if tools are enabled
 		if (toolRegistry && permissionHandler) {
 			this.toolOrchestrator = new ToolExecutionOrchestrator(
 				toolRegistry,
@@ -65,7 +63,6 @@ ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 	async execute(input: string, onToolProgress?: (event: ToolExecutionProgressEvent) => void): Promise<Turn> {
 		const startTime = Date.now();
 
-		// Validate input
 		const validation = this.inputClassifier.validate(input);
 		if (!validation.valid) {
 			const errorMessage = validation.errors.join('\n');
@@ -79,22 +76,18 @@ ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 				.withMetadata({duration: Date.now() - startTime});
 		}
 
-		// Create request message
 		const requestMsg = Message.user(input);
 
-		// Get history for context with automatic compression
 		const contextMessages = await this.contextService.getMessagesForLLM({
 			maxTokens: this.config.maxTokens,
 		});
 
-		// Get tool definitions if available
 		const tools = this.toolRegistry
 			? ToolDefinitionConverter.toApiFormatBatch(
 					this.toolRegistry.getDefinitions(),
 				)
 			: undefined;
 
-		// Call AI API
 		try {
 			const apiResponse = await this.apiClient.chat({
 				messages: [
@@ -111,17 +104,14 @@ ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 				systemPrompt: this.systemPrompt,
 			});
 
-			// Create response message with tool calls
 			const responseMsg = Message.assistant(
 				apiResponse.content,
 				apiResponse.toolCalls,
 			);
 
-			// Save to history
 			await this.historyRepo.addMessage(requestMsg);
 			await this.historyRepo.addMessage(responseMsg);
 
-			// Create turn with metadata
 			let turn = Turn.create(requestMsg)
 				.withResponse(responseMsg)
 				.withMetadata({
@@ -137,17 +127,15 @@ ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 					finishReason: apiResponse.finishReason,
 				});
 
-			// Add tool calls and execute if present
 			if (apiResponse.toolCalls && apiResponse.toolCalls.length > 0) {
 				turn = turn.withToolCalls(apiResponse.toolCalls);
 
-				// Execute tools if orchestrator is available
 				if (this.toolOrchestrator) {
 					const orchestrateResult = await this.toolOrchestrator.orchestrate(
 						turn,
 						input,
-						undefined, // No streaming callback for non-streaming execute
-						onToolProgress, // Tool execution progress
+						undefined,
+						onToolProgress,
 					);
 					turn = orchestrateResult.finalTurn;
 				}
@@ -177,7 +165,6 @@ ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 	): Promise<Turn> {
 		const startTime = Date.now();
 
-		// Validate input
 		const validation = this.inputClassifier.validate(input);
 		if (!validation.valid) {
 			const errorMessage = validation.errors.join('\n');
@@ -191,15 +178,12 @@ ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 				.withMetadata({duration: Date.now() - startTime});
 		}
 
-		// Create request message
 		const requestMsg = Message.user(input);
 
-		// Get history for context with automatic compression
 		const contextMessages = await this.contextService.getMessagesForLLM({
 			maxTokens: this.config.maxTokens,
 		});
 
-		// Get tool definitions if available
 		const tools = this.toolRegistry
 			? ToolDefinitionConverter.toApiFormatBatch(
 					this.toolRegistry.getDefinitions(),
@@ -236,17 +220,14 @@ ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 				},
 			);
 
-			// Create response message with full content and tool calls
 			const responseMsg = Message.assistant(
 				fullResponse,
 				apiResponse.toolCalls,
 			);
 
-			// Save to history
 			await this.historyRepo.addMessage(requestMsg);
 			await this.historyRepo.addMessage(responseMsg);
 
-			// Create turn with tool calls if present
 			let turn = Turn.create(requestMsg)
 				.withResponse(responseMsg)
 				.withMetadata({
@@ -262,18 +243,15 @@ ${CODE_NAVIGATION_SYSTEM_PROMPT}`;
 					finishReason: apiResponse.finishReason,
 				});
 
-			// Add tool calls to turn if present
 			if (apiResponse.toolCalls && apiResponse.toolCalls.length > 0) {
 				turn = turn.withToolCalls(apiResponse.toolCalls);
 
-				// Execute tools if orchestrator is available
 				if (this.toolOrchestrator) {
-					// Stream tool continuation to user for better UX
 					const orchestrateResult = await this.toolOrchestrator.orchestrate(
 						turn,
 						input,
-						onChunk, // Stream LLM responses during tool execution
-						onToolProgress, // Stream tool execution progress
+						onChunk,
+						onToolProgress,
 					);
 					turn = orchestrateResult.finalTurn;
 				}

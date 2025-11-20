@@ -104,7 +104,6 @@ export class Configuration {
 			baseUrl: this.baseUrl,
 			maxTokens: this.maxTokens,
 			temperature: this.temperature,
-			// Don't include API key in JSON
 		};
 	}
 }

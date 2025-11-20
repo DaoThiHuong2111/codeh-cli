@@ -41,22 +41,18 @@ export class ToolResultFormatter {
 
 		markdown += '\n\n';
 
-		// Summary
 		markdown += `### Summary\n${standardized.summary}\n\n`;
 
-		// Data (if available)
 		if (standardized.data) {
 			markdown += `### Results\n`;
 			markdown += this.formatData(standardized.data);
 			markdown += '\n';
 		}
 
-		// Error (if any)
 		if (standardized.error) {
 			markdown += `### Error\n\`\`\`\n${standardized.error}\n\`\`\`\n`;
 		}
 
-		// Metadata (if available)
 		if (
 			standardized.metadata &&
 			Object.keys(standardized.metadata).length > 0
@@ -111,20 +107,17 @@ export class ToolResultFormatter {
 			summary: this.generateSummary(context),
 		};
 
-		// Add duration if available
 		if (context.executionStartedAt && context.executionCompletedAt) {
 			result.duration =
 				context.executionCompletedAt.getTime() -
 				context.executionStartedAt.getTime();
 		}
 
-		// Add result data if successful
 		if (context.result?.success) {
 			result.data = this.parseResultData(context.result);
 			result.metadata = context.result.metadata;
 		}
 
-		// Add error if failed
 		if (context.isFailed()) {
 			result.error = context.error || context.result?.error || 'Unknown error';
 		}
@@ -139,7 +132,6 @@ export class ToolResultFormatter {
 		const toolName = context.toolCall.name;
 
 		if (context.isCompleted() && context.result?.success) {
-			// Success summary
 			switch (toolName) {
 				case 'symbol_search':
 					return this.summarizeSymbolSearch(context.result);
@@ -165,12 +157,10 @@ export class ToolResultFormatter {
 	 * Parse result data from tool execution result
 	 */
 	private parseResultData(result: ToolExecutionResult): any {
-		// Try to parse metadata first
 		if (result.metadata) {
 			return result.metadata;
 		}
 
-		// Try to parse output as JSON
 		try {
 			return JSON.parse(result.output);
 		} catch {
@@ -204,10 +194,6 @@ export class ToolResultFormatter {
 
 		return String(data);
 	}
-
-	// ============================================
-	// Tool-specific summary generators
-	// ============================================
 
 	private summarizeSymbolSearch(result: ToolExecutionResult): string {
 		const metadata = result.metadata;

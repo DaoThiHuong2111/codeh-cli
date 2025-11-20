@@ -55,7 +55,6 @@ export class ShortcutManager {
 			);
 		}
 
-		// Detect conflicts (only warn if more than 1 shortcut with same key)
 		if (this.config.detectConflicts) {
 			const conflicts = this.detectConflictsForKey(
 				normalizedKey,
@@ -121,28 +120,24 @@ export class ShortcutManager {
 			console.log(`[ShortcutManager] Input: "${keyCombo}"`);
 		}
 
-		// Get matching shortcuts
 		const matchingShortcuts = this.getMatchingShortcuts(keyCombo);
 
 		if (matchingShortcuts.length === 0) {
 			return false;
 		}
 
-		// Sort by layer priority (highest first) and then by shortcut priority
 		const sorted = matchingShortcuts.sort((a, b) => {
 			const layerDiff = LAYER_PRIORITY[b.layer] - LAYER_PRIORITY[a.layer];
 			if (layerDiff !== 0) return layerDiff;
 			return (b.priority ?? 0) - (a.priority ?? 0);
 		});
 
-		// Execute shortcuts by layer
 		let handled = false;
 		const activePriority = LAYER_PRIORITY[this.activeLayer];
 
 		for (const shortcut of sorted) {
 			const shortcutPriority = LAYER_PRIORITY[shortcut.layer];
 
-			// Global layer always executes (if globalAlwaysActive)
 			const shouldExecute =
 				(this.config.globalAlwaysActive && shortcut.layer === 'global') ||
 				shortcutPriority >= activePriority;
@@ -156,7 +151,6 @@ export class ShortcutManager {
 				continue;
 			}
 
-			// Check enabled condition
 			if (shortcut.enabled && !shortcut.enabled()) {
 				if (this.config.debug) {
 					console.log(
@@ -166,7 +160,6 @@ export class ShortcutManager {
 				continue;
 			}
 
-			// Execute handler
 			if (this.config.debug) {
 				console.log(
 					`[ShortcutManager] Executing: ${shortcut.id} - ${shortcut.key} (${shortcut.layer})`,
@@ -175,7 +168,6 @@ export class ShortcutManager {
 
 			try {
 				const result = shortcut.handler();
-				// If handler returns true, stop propagation within same layer
 				if (result === true) {
 					handled = true;
 					break;
@@ -244,7 +236,6 @@ export class ShortcutManager {
 			conflictMap.get(key)!.shortcuts.push(shortcut);
 		}
 
-		// Filter to only actual conflicts (more than 1 shortcut)
 		return Array.from(conflictMap.values()).filter(
 			conflict => conflict.shortcuts.length > 1,
 		);
@@ -260,9 +251,7 @@ export class ShortcutManager {
 		for (const shortcut of this.shortcuts.values()) {
 			const shortcutPriority = LAYER_PRIORITY[shortcut.layer];
 
-			// Include global layer and current/higher layers
 			if (shortcut.layer === 'global' || shortcutPriority >= activePriority) {
-				// Check enabled condition
 				if (!shortcut.enabled || shortcut.enabled()) {
 					active.push(shortcut);
 				}

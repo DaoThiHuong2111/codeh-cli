@@ -95,13 +95,11 @@ export class HandleToolCalls {
 
 			let context = ToolExecutionContext.create(toolCall);
 
-			// Step 1: Check pre-approval
 			const hasPreApproval = this.permissionHandler.hasPreApproval(
 				toolCall.name,
 			);
 
 			if (!hasPreApproval) {
-				// Step 2: Request permission
 				context = context.withStatus('awaiting_permission');
 				contexts.push(context);
 
@@ -117,24 +115,20 @@ export class HandleToolCalls {
 					await this.permissionHandler.requestPermission(permissionContext);
 
 				if (!permissionResult.approved) {
-					// User rejected
 					console.log(`   Permission denied for ${toolCall.name}`);
 					context = context.withPermissionRejected();
 					contexts[contexts.length - 1] = context;
-					continue; // Skip to next tool
+					continue;
 				}
 
-				// Update context: permission granted
 				context = context.withPermissionGranted();
 				contexts[contexts.length - 1] = context;
 			} else {
-				// Pre-approved, mark as approved immediately
 				console.log(`  ✅ Pre-approved: ${toolCall.name}`);
 				context = context.withPermissionGranted();
 				contexts.push(context);
 			}
 
-			// Step 3: Validate tool arguments before execution
 			if (!toolCall.arguments || Object.keys(toolCall.arguments).length === 0) {
 				console.log(`  ⚠️  No arguments provided for ${toolCall.name}`);
 				console.log(`     This indicates LLM called tool without proper parameters`);
@@ -146,10 +140,9 @@ export class HandleToolCalls {
 					'Please check your model configuration.'
 				);
 				contexts[contexts.length - 1] = context;
-				continue; // Skip to next tool
+				continue;
 			}
 
-			// Step 4: Execute tool with timeout and retry
 			console.log(`  ⚙️  Executing ${toolCall.name}...`);
 			context = context.withExecutionStarted();
 			contexts[contexts.length - 1] = context;
@@ -157,14 +150,12 @@ export class HandleToolCalls {
 			try {
 				const startTime = Date.now();
 
-				// Execute with retry and timeout
 				const executeFn = async () => {
 					const execution = this.toolRegistry.execute(
 						toolCall.name,
 						toolCall.arguments,
 					);
 
-					// Apply timeout if configured
 					if (this.config.timeout) {
 						return await this.executeWithTimeout(
 							execution,
@@ -175,7 +166,6 @@ export class HandleToolCalls {
 					return await execution;
 				};
 
-				// Apply retry logic if configured
 				const maxRetries = this.config.maxRetries || 0;
 				const retryDelay = this.config.retryDelay || 1000;
 
@@ -229,17 +219,14 @@ export class HandleToolCalls {
 	): Promise<HandleToolCallsResponse> {
 		const {toolCalls, conversationContext} = request;
 
-		// Execute all tool calls concurrently
 		const contextPromises = toolCalls.map(async toolCall => {
 			let context = ToolExecutionContext.create(toolCall);
 
-			// Check pre-approval
 			const hasPreApproval = this.permissionHandler.hasPreApproval(
 				toolCall.name,
 			);
 
 			if (!hasPreApproval) {
-				// Request permission
 				context = context.withStatus('awaiting_permission');
 
 				const tool = this.toolRegistry.get(toolCall.name);
@@ -262,7 +249,6 @@ export class HandleToolCalls {
 				context = context.withPermissionGranted();
 			}
 
-			// Validate tool arguments before execution
 			if (!toolCall.arguments || Object.keys(toolCall.arguments).length === 0) {
 				return context.withError(
 					'LLM called tool without arguments. This may indicate:\n' +
@@ -273,7 +259,6 @@ export class HandleToolCalls {
 				);
 			}
 
-			// Execute tool
 			context = context.withExecutionStarted();
 
 			try {

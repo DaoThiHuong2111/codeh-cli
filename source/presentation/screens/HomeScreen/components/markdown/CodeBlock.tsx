@@ -27,24 +27,19 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
 }) => {
 	if (!code) return null;
 
-	// Highlight code
 	const highlighted = highlightCode(code, language);
 
-	// Split into lines
 	const lines = code.split('\n');
 	const totalLines = lines.length;
 
-	// Calculate line number width
 	const lineNumberWidth = calculateLineNumberWidth(totalLines);
 
-	// Determine if we need to truncate for height
 	const maxLines = availableHeight ? Math.floor(availableHeight) : totalLines;
 	const displayLines = lines.slice(0, maxLines);
 	const isTruncated = displayLines.length < totalLines;
 
 	return (
 		<Box flexDirection="column" paddingY={1}>
-			{/* Language label */}
 			{language && (
 				<Box marginBottom={1}>
 					<Text color={THEME_COLORS.text.muted} dimColor>
@@ -53,7 +48,6 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
 				</Box>
 			)}
 
-			{/* Code lines */}
 			<Box
 				flexDirection="column"
 				borderStyle="single"
@@ -61,7 +55,6 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
 				paddingX={1}
 			>
 				{highlighted ? (
-					// With syntax highlighting
 					<RenderHighlightedLines
 						lines={displayLines}
 						lineNumberWidth={lineNumberWidth}
@@ -69,7 +62,6 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
 						highlighted={highlighted}
 					/>
 				) : (
-					// Plain text (no highlighting)
 					<RenderPlainLines
 						lines={displayLines}
 						lineNumberWidth={lineNumberWidth}
@@ -77,7 +69,6 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
 					/>
 				)}
 
-				{/* Truncation indicator */}
 				{isTruncated && (
 					<Box marginTop={1}>
 						<Text color={THEME_COLORS.text.muted} dimColor>
@@ -99,8 +90,6 @@ const RenderHighlightedLines: React.FC<{
 	showLineNumbers: boolean;
 	highlighted: any;
 }> = ({lines, lineNumberWidth, showLineNumbers}) => {
-	// For now, render without per-line highlighting
-	// TODO: Implement proper per-line highlighted rendering
 	return (
 		<>
 			{lines.map((line, index) => (

@@ -38,7 +38,6 @@ export function ShortcutProvider({
 }: ShortcutProviderProps) {
   const managerRef = useRef<ShortcutManager | null>(null);
 
-  // Initialize manager once
   if (!managerRef.current) {
     managerRef.current = new ShortcutManager({
       debug,
@@ -48,7 +47,6 @@ export function ShortcutProvider({
 
   const manager = managerRef.current;
 
-  // Global input handler - connects Ink's useInput to ShortcutManager
   useInput((input, key) => {
     manager.handleInput(input, key);
   });
@@ -98,23 +96,19 @@ export function useShortcut(definition: ShortcutDefinition): void {
   const {manager} = useShortcutManager();
   const definitionRef = useRef(definition);
 
-  // Update ref when definition changes
   useEffect(() => {
     definitionRef.current = definition;
   }, [definition]);
 
   useEffect(() => {
-    // Register shortcut
     const id = manager.register({
       ...definitionRef.current,
-      // Wrap handler to always use latest version
       handler: () => definitionRef.current.handler(),
       enabled: definitionRef.current.enabled
         ? () => definitionRef.current.enabled!()
         : undefined,
     });
 
-    // Cleanup on unmount
     return () => {
       manager.unregister(id);
     };
@@ -136,13 +130,11 @@ export function useShortcuts(definitions: ShortcutDefinition[]): void {
   useEffect(() => {
     const ids: string[] = [];
 
-    // Register all shortcuts
     for (const def of definitions) {
       const id = manager.register(def);
       ids.push(id);
     }
 
-    // Cleanup all on unmount
     return () => {
       for (const id of ids) {
         manager.unregister(id);

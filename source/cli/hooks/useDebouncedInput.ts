@@ -91,22 +91,18 @@ export function useDebouncedInput(
 ) {
 	const {keyDebounce = {}, globalDebounceMs = 0, disabled = false} = options;
 
-	// Track last press time for each key
 	const lastPressTimeRef = useRef<Record<string, number>>({});
 
 	useInput((input: string, key: any) => {
 		if (disabled) return;
 
-		// Find which key was pressed and get its debounce config
 		let pressedKey = '';
 		let debounceTime = globalDebounceMs;
 
-		// Check all key properties
 		for (const keyName in key) {
 			if (key[keyName] === true) {
 				pressedKey = keyName;
 
-				// Check if this key has specific debounce config
 				if (keyDebounce[keyName]) {
 					debounceTime = keyDebounce[keyName].debounceMs;
 				}
@@ -114,19 +110,17 @@ export function useDebouncedInput(
 			}
 		}
 
-		// Apply debounce if configured (either specific or global)
 		if (debounceTime > 0 && pressedKey) {
 			const now = Date.now();
 			const lastPressTime = lastPressTimeRef.current[pressedKey] || 0;
 
 			if (now - lastPressTime < debounceTime) {
-				return; // Ignore this key press
+				return;
 			}
 
 			lastPressTimeRef.current[pressedKey] = now;
 		}
 
-		// Call the original handler
 		handler(input, key);
 	});
 }

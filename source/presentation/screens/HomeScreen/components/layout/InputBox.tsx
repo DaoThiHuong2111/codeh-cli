@@ -53,7 +53,6 @@ export const InputBox: React.FC<InputBoxProps> = ({
 			borderColor={disabled ? THEME_COLORS.ui.border : providerColor}
 			paddingX={1}
 		>
-			{/* Provider indicator */}
 			<Box marginBottom={1}>
 				<Text color={providerColor} bold>
 					{providerIcon} {getProviderName(currentProvider)}
@@ -66,7 +65,6 @@ export const InputBox: React.FC<InputBoxProps> = ({
 				)}
 			</Box>
 
-			{/* Input field */}
 			<Box>
 				<Text color={THEME_COLORS.text.muted}>{'› '}</Text>
 				{disabled ? (

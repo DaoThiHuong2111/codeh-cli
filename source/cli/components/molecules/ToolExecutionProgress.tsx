@@ -33,20 +33,17 @@ export const ToolExecutionProgress: React.FC<ToolExecutionProgressProps> = ({
 		return null;
 	}
 
-	// Format tool arguments cho dễ đọc
 	const getFormattedCommand = () => {
 		if (!toolArguments) {
 			return null;
 		}
-		// Nếu là shell tool, hiển thị command
 		if (currentTool === 'shell' && toolArguments.command) {
 			return toolArguments.command;
 		}
 
-		// Với các tools khác, hiển thị các arguments chính
 		const mainArgs = Object.entries(toolArguments)
 			.filter(([key]) => !key.startsWith('_'))
-			.slice(0, 3) // Chỉ hiển thị 3 arguments đầu tiên
+			.slice(0, 3)
 			.map(([key, value]) => `${key}: ${JSON.stringify(value).slice(0, 50)}`)
 			.join(', ');
 
@@ -55,7 +52,6 @@ export const ToolExecutionProgress: React.FC<ToolExecutionProgressProps> = ({
 
 	const formattedCommand = getFormattedCommand();
 
-	// Truncate output nếu quá dài
 	const getDisplayOutput = () => {
 		if (!toolOutput) return null;
 
@@ -81,7 +77,6 @@ export const ToolExecutionProgress: React.FC<ToolExecutionProgressProps> = ({
 
 	return (
 		<Box flexDirection="column" marginY={0}>
-			{/* Tool execution line */}
 			{currentTool && (
 				<Box>
 					<Text dimColor wrap="wrap">
@@ -93,7 +88,6 @@ export const ToolExecutionProgress: React.FC<ToolExecutionProgressProps> = ({
 				</Box>
 			)}
 
-			{/* Tool Output - compact */}
 			{displayOutput && (
 				<Box marginLeft={2} flexDirection="column">
 					<Text dimColor wrap="wrap">{displayOutput.content}</Text>
@@ -105,7 +99,6 @@ export const ToolExecutionProgress: React.FC<ToolExecutionProgressProps> = ({
 				</Box>
 			)}
 
-			{/* Status Message - simple */}
 			{message && !toolOutput && (
 				<Box>
 					<Text dimColor wrap="wrap">{message}</Text>

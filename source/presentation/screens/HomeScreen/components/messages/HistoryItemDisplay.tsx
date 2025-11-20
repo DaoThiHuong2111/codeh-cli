@@ -31,7 +31,6 @@ export const HistoryItemDisplay: React.FC<HistoryItemDisplayProps> = ({
 
 	return (
 		<Box flexDirection="column">
-			{/* User message */}
 			{item.userMessage && (
 				<UserMessage
 					message={item.userMessage}
@@ -40,9 +39,7 @@ export const HistoryItemDisplay: React.FC<HistoryItemDisplayProps> = ({
 				/>
 			)}
 
-			{/* Assistant message */}
 			{isPending ? (
-				// Streaming assistant message
 				item.streamingContent && (
 					<AssistantMessage
 						message={item.streamingContent}
@@ -53,7 +50,6 @@ export const HistoryItemDisplay: React.FC<HistoryItemDisplayProps> = ({
 					/>
 				)
 			) : (
-				// Completed assistant message
 				item.assistantMessage && (
 					<AssistantMessage
 						message={item.assistantMessage}
@@ -66,7 +62,6 @@ export const HistoryItemDisplay: React.FC<HistoryItemDisplayProps> = ({
 				)
 			)}
 
-			{/* System message */}
 			{item.systemMessage && (
 				<SystemMessage
 					message={item.systemMessage}

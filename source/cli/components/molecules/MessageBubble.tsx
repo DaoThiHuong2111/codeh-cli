@@ -46,7 +46,6 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 
 	return (
 		<Box flexDirection="column" marginY={0}>
-			{/* Header: Role + Timestamp */}
 			<Box>
 				<Text color={config.color} bold wrap="wrap">
 					{config.prefix}
@@ -57,9 +56,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 				</Text>
 			</Box>
 
-			{/* Content */}
 			<Box marginLeft={2} flexDirection="column">
-				{/* Use markdown rendering for assistant messages */}
 				{message.role === 'assistant' ? (
 					<Box flexDirection="column">
 						<MarkdownText content={message.content} />
@@ -73,7 +70,6 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 				)}
 			</Box>
 
-			{/* Tool Calls (if present) */}
 			{message.toolCalls && message.toolCalls.length > 0 && (
 				<Box marginLeft={2} marginTop={1}>
 					<ToolCallDisplay
@@ -83,7 +79,6 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 				</Box>
 			)}
 
-			{/* Metadata (tokens) */}
 			{message.metadata?.usage && (
 				<Box marginLeft={2}>
 					<Text color="gray" dimColor wrap="wrap">

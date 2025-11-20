@@ -17,7 +17,6 @@ export const ConversationArea: React.FC<ConversationAreaProps> = ({
 }) => {
 	return (
 		<Box flexDirection="column" >
-			{/* Render all messages */}
 			{messages.map(message => (
 				<MessageBubble
 					key={message.id}
@@ -26,7 +25,6 @@ export const ConversationArea: React.FC<ConversationAreaProps> = ({
 				/>
 			))}
 
-			{/* Loading indicator (when not streaming) */}
 			{isLoading && !streamingMessageId && (
 				<Box marginTop={1}>
 					<LoadingText text="Thinking..." />

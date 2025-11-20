@@ -83,18 +83,15 @@ export class InputClassifier {
 		const warnings: string[] = [];
 		const errors: string[] = [];
 
-		// Check length
 		if (input.length > this.maxInputLength) {
 			errors.push(`Input too long (max ${this.maxInputLength} characters)`);
 		}
 
-		// Check blocked keywords
 		const blocked = this.findBlockedKeywords(input);
 		if (blocked.length > 0) {
 			errors.push(`Input contains blocked keywords: ${blocked.join(', ')}`);
 		}
 
-		// Validate command
 		if (classification.isCommand()) {
 			const baseCommand = this.extractBaseCommand(input);
 			if (!this.allowedCommands.includes(baseCommand)) {

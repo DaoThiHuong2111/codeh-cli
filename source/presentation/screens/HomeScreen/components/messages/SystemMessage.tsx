@@ -32,8 +32,7 @@ export const SystemMessage: React.FC<SystemMessageProps> = ({
 }) => {
 	const config = getSystemMessageConfig(type);
 
-	// Wrap text if needed
-	const contentWidth = terminalWidth - 4; // Account for icon and padding
+	const contentWidth = terminalWidth - 4;
 	const lines = wrapText(message, contentWidth);
 
 	return (
@@ -45,14 +44,12 @@ export const SystemMessage: React.FC<SystemMessageProps> = ({
 			borderStyle="round"
 			borderColor={config.color}
 		>
-			{/* Header */}
 			<Box marginBottom={lines.length > 1 ? 1 : 0}>
 				<Text color={config.color} bold>
 					{config.icon} {title || config.label}
 				</Text>
 			</Box>
 
-			{/* Message content */}
 			<Box flexDirection="column">
 				{lines.map((line, index) => (
 					<Text key={index} color={config.textColor}>

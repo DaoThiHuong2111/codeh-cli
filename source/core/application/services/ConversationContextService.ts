@@ -46,7 +46,6 @@ export class ConversationContextService {
 			},
 		);
 
-		// Get current session from history
 		const session = await this.historyRepo.getCurrentSession();
 		if (!session) {
 			logger.warn(
@@ -57,7 +56,6 @@ export class ConversationContextService {
 			return [];
 		}
 
-		// Get messages (with compression if already exists)
 		const messages = session.getMessagesForLLM();
 		const estimatedTokens = this.estimateTokenCount(messages);
 
@@ -73,7 +71,6 @@ export class ConversationContextService {
 			},
 		);
 
-		// Check if compression is needed
 		const needsCompression = estimatedTokens > maxTokens * compressionThreshold;
 
 		if (!needsCompression) {
@@ -109,8 +106,6 @@ export class ConversationContextService {
 		const allMessages = session.getMessages();
 		const lastCompressedIndex = session.metadata.lastCompressedIndex ?? -1;
 
-		// Determine which messages to compress
-		// Strategy: Compress all but the last 3 messages to keep recent context
 		const keepRecentCount = 3;
 		const startIndex = lastCompressedIndex + 1; // Start after last compression
 		const endIndex = Math.max(
@@ -129,11 +124,9 @@ export class ConversationContextService {
 					total_messages: allMessages.length,
 				},
 			);
-			// Return current messages without compression
 			return Array.from(session.getMessagesForLLM());
 		}
 
-		// Get messages to compress
 		const messagesToCompress = allMessages.slice(startIndex, endIndex);
 
 		logger.info(
@@ -149,19 +142,16 @@ export class ConversationContextService {
 		);
 
 		try {
-			// Compress messages
 			const compressionResult = await this.compressionService.compressMessages(
 				messagesToCompress,
-				Math.floor(maxTokens * 0.3), // Use max 30% of tokens for summary
+				Math.floor(maxTokens * 0.3),
 			);
 
-			// Update session with compressed message
 			session.setCompressedMessage(
 				compressionResult.compressedMessage,
-				endIndex - 1, // Last compressed message index
+				endIndex - 1,
 			);
 
-			// Save updated session
 			await this.historyRepo.saveSession(session);
 
 			logger.info(
@@ -180,7 +170,6 @@ export class ConversationContextService {
 				},
 			);
 
-			// Return updated messages for LLM
 			return Array.from(session.getMessagesForLLM());
 		} catch (error: any) {
 			logger.error(
@@ -191,7 +180,6 @@ export class ConversationContextService {
 					error: error.message,
 				},
 			);
-			// On error, return current messages without compression
 			return Array.from(session.getMessagesForLLM());
 		}
 	}

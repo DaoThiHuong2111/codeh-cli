@@ -41,7 +41,6 @@ export default function ToolResultDisplay({
 					padding={1}
 					marginTop={index > 0 ? 1 : 0}
 				>
-					{/* Header */}
 					<Box justifyContent="space-between">
 						<Box>
 							<Text color={result.success ? 'green' : 'red'} bold>
@@ -53,7 +52,6 @@ export default function ToolResultDisplay({
 						)}
 					</Box>
 
-					{/* Output/Error */}
 					{expanded && (
 						<Box flexDirection="column" marginTop={1}>
 							{result.success ? (

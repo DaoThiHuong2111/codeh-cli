@@ -31,22 +31,18 @@ export function useWelcomeLogic({
 	useEffect(() => {
 		const initializeScreen = async () => {
 			try {
-				// Fetch upgrade info from API
 				const fetchedUpgradeInfo = await presenter.fetchUpgradeInfo();
 				setUpgradeInfo(fetchedUpgradeInfo);
 
-				// Check if upgrade info has valid content
 				const hasValidContent =
 					presenter.hasValidUpgradeInfo(fetchedUpgradeInfo);
 				setShouldShowWelcome(hasValidContent);
 
-				// If no valid upgrade info, skip welcome screen
 				if (!hasValidContent) {
 					await checkConfigurationAndNavigate();
 				}
 			} catch (error) {
 				console.error('Failed to initialize welcome screen:', error);
-				// If API fails, skip welcome screen
 				await checkConfigurationAndNavigate();
 			} finally {
 				setLoading(false);
@@ -75,8 +71,6 @@ export function useWelcomeLogic({
 		}
 	};
 
-	// Register screen shortcuts for Welcome screen
-	// Enter: Navigate to Home
 	useShortcut({
 		key: 'enter',
 		handler: () => {
@@ -88,7 +82,6 @@ export function useWelcomeLogic({
 		source: 'useWelcomeLogic',
 	});
 
-	// C: Navigate to Config
 	useShortcut({
 		key: 'c',
 		handler: () => {

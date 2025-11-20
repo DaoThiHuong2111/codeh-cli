@@ -33,13 +33,11 @@ export function useConfigKeyboard({
 }: UseConfigKeyboardProps) {
 	useDebouncedInput(
 		(_input: string, key: any) => {
-			// ESC - go back to previous step
 			if (key.escape) {
 				onGoBack();
 				return;
 			}
 
-			// Arrow key navigation
 			if (key.upArrow) {
 				if (currentStep === ConfigStep.PROVIDER) {
 					onProviderIndexChange(Math.max(0, providerIndex - 1));
@@ -61,9 +59,8 @@ export function useConfigKeyboard({
 			}
 		},
 		{
-			// Per-key debounce configuration
 			keyDebounce: {
-				return: {debounceMs: 1500}, // Enter needs strong debounce
+				return: {debounceMs: 1500},
 			},
 			disabled: saving,
 		},

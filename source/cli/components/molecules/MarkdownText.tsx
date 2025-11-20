@@ -38,7 +38,6 @@ const CodeBlock: React.FC<{content: string; language?: string}> = ({
 	);
 };
 
-// Heading Component
 const Heading: React.FC<{content: string; level: number}> = ({
 	content,
 	level,
@@ -63,7 +62,6 @@ const Heading: React.FC<{content: string; level: number}> = ({
 	);
 };
 
-// List Component
 const ListBlock: React.FC<{items: string[]}> = ({items}) => {
 	return (
 		<Box flexDirection="column" marginY={1}>
@@ -77,7 +75,6 @@ const ListBlock: React.FC<{items: string[]}> = ({items}) => {
 	);
 };
 
-// Blockquote Component
 const Blockquote: React.FC<{content: string}> = ({content}) => {
 	return (
 		<Box marginY={1} marginLeft={2} borderStyle="single" borderColor="gray">
@@ -88,7 +85,6 @@ const Blockquote: React.FC<{content: string}> = ({content}) => {
 	);
 };
 
-// Inline Text Component (handles bold, italic, code)
 const InlineText: React.FC<{content: string}> = ({content}) => {
 	const service = useMemo(() => new MarkdownService(), []);
 	const tokens = useMemo(() => service.parseInline(content), [content]);
@@ -123,7 +119,6 @@ const InlineText: React.FC<{content: string}> = ({content}) => {
 	);
 };
 
-// Paragraph Component
 const Paragraph: React.FC<{content: string}> = ({content}) => {
 	return (
 		<Box marginY={1}>
@@ -132,12 +127,10 @@ const Paragraph: React.FC<{content: string}> = ({content}) => {
 	);
 };
 
-// Main MarkdownText Component
 export const MarkdownText: React.FC<MarkdownTextProps> = ({content}) => {
 	const service = useMemo(() => new MarkdownService(), []);
 	const blocks = useMemo(() => service.parse(content), [content]);
 
-	// If no markdown detected, render as plain text
 	if (
 		blocks.length === 0 ||
 		(blocks.length === 1 &&

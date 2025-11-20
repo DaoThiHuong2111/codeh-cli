@@ -3,7 +3,6 @@
  * Manages conversation flow and context
  */
 
-// Conversation has been replaced by Session
 import {Session} from '../domain/models/Session.js';
 import {Message} from '../domain/models/Message';
 import {IHistoryRepository} from '../domain/interfaces/IHistoryRepository';
@@ -21,8 +20,6 @@ export class CodehChat {
 	async sendMessage(content: string): Promise<Message> {
 		const userMessage = Message.user(content);
 		this.session.addMessage(userMessage);
-
-		// Save to history
 		await this.historyRepo.addMessage(userMessage);
 
 		return userMessage;
@@ -34,8 +31,6 @@ export class CodehChat {
 	async addResponse(content: string): Promise<Message> {
 		const assistantMessage = Message.assistant(content);
 		this.session.addMessage(assistantMessage);
-
-		// Save to history
 		await this.historyRepo.addMessage(assistantMessage);
 
 		return assistantMessage;
@@ -87,8 +82,7 @@ export class CodehChat {
 						new Date(m.timestamp || Date.now()),
 					),
 			);
-			
-			// Use fromData to restore session with correct ID
+
 			this.session = Session.fromData({
 				id: history.id,
 				name: history.metadata?.name || `Session ${history.id}`,

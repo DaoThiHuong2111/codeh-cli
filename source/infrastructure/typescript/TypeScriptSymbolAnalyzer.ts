@@ -78,13 +78,11 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 	constructor(projectRoot: string, tsConfigPath?: string) {
 		this.projectRoot = projectRoot;
 
-		// Find tsconfig.json
 		this.configPath =
 			tsConfigPath ||
 			this.findTsConfig() ||
 			path.join(projectRoot, 'tsconfig.json');
 
-		// Parse tsconfig
 		const configFile = ts.readConfigFile(this.configPath, ts.sys.readFile);
 		this.parsedConfig = ts.parseJsonConfigFileContent(
 			configFile.config,
@@ -92,7 +90,6 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 			path.dirname(this.configPath),
 		);
 
-		// Create program
 		this.program = ts.createProgram({
 			rootNames: this.parsedConfig.fileNames,
 			options: this.parsedConfig.options,
@@ -100,7 +97,6 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 
 		this.checker = this.program.getTypeChecker();
 
-		// Create Language Service for advanced features like findReferences
 		const servicesHost: ts.LanguageServiceHost = {
 			getScriptFileNames: () => this.parsedConfig.fileNames,
 			getScriptVersion: (fileName: string) => {
@@ -127,7 +123,6 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 			ts.createDocumentRegistry(),
 		);
 
-		// Initialize result cache (default: 500 entries)
 		this.resultCache = new ResultCache(500);
 	}
 
@@ -157,14 +152,11 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 			? filePath
 			: path.join(this.projectRoot, filePath);
 
-		// Increment version to invalidate Language Service cache
 		const currentVersion = this.fileVersions.get(absolutePath) || 0;
 		this.fileVersions.set(absolutePath, currentVersion + 1);
 
-		// Remove from files cache
 		this.files.delete(absolutePath);
 
-		// Invalidate result cache for this file
 		this.resultCache.invalidateFile(absolutePath);
 	}
 
@@ -173,11 +165,9 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 	 * Call this when project structure changes
 	 */
 	invalidateAll(): void {
-		// Clear all caches
 		this.files.clear();
 		this.fileVersions.clear();
 
-		// Recreate program
 		this.program = ts.createProgram({
 			rootNames: this.parsedConfig.fileNames,
 			options: this.parsedConfig.options,
@@ -185,7 +175,6 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 
 		this.checker = this.program.getTypeChecker();
 
-		// Clear all result caches
 		this.resultCache.clearAll();
 	}
 
@@ -219,7 +208,7 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 
 		return {
 			relativePath: this.getRelativePath(sourceFile.fileName),
-			startLine: start.line + 1, // Convert to 1-based
+			startLine: start.line + 1,
 			endLine: end.line + 1,
 			startColumn: start.character,
 			endColumn: end.character,
@@ -267,7 +256,6 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 
 			current = current.parent;
 
-			// Stop at file level
 			if (!current || ts.isSourceFile(current)) {
 				break;
 			}
@@ -293,7 +281,6 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 
 		const symbol = new Symbol(name, namePath, kind, location, body);
 
-		// Add children if requested
 		if (includeChildren) {
 			symbol.children = this.getChildSymbols(node, sourceFile, includeBody);
 		}
@@ -378,14 +365,12 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 			substringMatching = false,
 		} = options;
 
-		// Get source files to search
 		const sourceFiles = filePath
 			? [this.getSourceFile(filePath)].filter(
 					(f): f is ts.SourceFile => f !== undefined,
 				)
 			: this.program.getSourceFiles().filter(sf => !sf.isDeclarationFile);
 
-		// Parse name pattern (e.g., "ClassName/methodName")
 		const parts = namePattern.split('/').filter(p => p.length > 0);
 		const targetName = parts[parts.length - 1] || '';
 		const parentPath = parts.slice(0, -1);
@@ -394,7 +379,6 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 			this.visitNode(sourceFile, (node, currentPath) => {
 				const nodeName = this.getSymbolName(node);
 
-				// Check if name matches
 				const nameMatches = substringMatching
 					? nodeName.toLowerCase().includes(targetName.toLowerCase())
 					: nodeName === targetName || targetName === '';
@@ -403,12 +387,10 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 					return;
 				}
 
-				// Check if parent path matches
 				if (parentPath.length > 0) {
 					const pathParts = currentPath.split('/');
 					const nodeParentPath = pathParts.slice(0, -1);
 
-					// Check if parent path matches (suffix matching)
 					let matches = true;
 					for (let i = 0; i < parentPath.length; i++) {
 						const expectedPart = parentPath[parentPath.length - 1 - i];
@@ -425,7 +407,6 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 					}
 				}
 
-				// Create symbol
 				const symbol = this.nodeToSymbol(
 					node,
 					sourceFile,
@@ -453,12 +434,10 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 			const newPath = currentPath ? `${currentPath}/${name}` : name;
 			callback(node, newPath);
 
-			// Visit children
 			node.forEachChild(child => {
 				this.visitNode(child, callback, newPath);
 			});
 		} else {
-			// Continue visiting
 			node.forEachChild(child => {
 				this.visitNode(child, callback, currentPath);
 			});
@@ -469,7 +448,6 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 	 * Find references to a symbol
 	 */
 	findReferences(namePath: string, filePath: string): Reference[] {
-		// Check cache first
 		const cached = this.resultCache.getReferences(namePath, filePath);
 		if (cached) {
 			return cached;
@@ -480,7 +458,6 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 			throw new Error(`File not found: ${filePath}`);
 		}
 
-		// Find the symbol node
 		const symbolNodes = this.findSymbol(namePath, {
 			filePath,
 			includeBody: false,
@@ -492,12 +469,10 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 		const symbolNode = symbolNodes[0];
 		const references: Reference[] = [];
 
-		// Use TypeScript's findReferences API via LanguageService
 		const absolutePath = path.isAbsolute(filePath)
 			? filePath
 			: path.join(this.projectRoot, filePath);
 
-		// Get exact position of symbol from source file
 		const symbolPosition = sourceFile.getPositionOfLineAndCharacter(
 			symbolNode.location.startLine - 1,
 			symbolNode.location.startColumn ?? 0,
@@ -518,14 +493,12 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 						ref.textSpan.start,
 					);
 
-					// Get context around reference
 					const contextLines = this.getContextLines(
 						refSourceFile,
 						lineAndChar.line,
 						2,
 					);
 
-					// Find containing symbol
 					const containingNode = this.findContainingSymbol(
 						refSourceFile,
 						ref.textSpan.start,
@@ -551,7 +524,6 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 			}
 		}
 
-		// Store in cache
 		this.resultCache.setReferences(namePath, filePath, references);
 
 		return references;
@@ -601,20 +573,17 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 	 * Get symbol hierarchy for a file
 	 */
 	getSymbolHierarchy(filePath: string): Symbol[] {
-		// Check cache first
 		const cached = this.resultCache.getHierarchy(filePath);
 		if (cached) {
 			return cached;
 		}
 
-		// Compute hierarchy
 		const hierarchy = this.findSymbol('', {
 			filePath,
 			depth: 1,
 			substringMatching: true,
 		});
 
-		// Store in cache
 		this.resultCache.setHierarchy(filePath, hierarchy);
 
 		return hierarchy;
@@ -634,7 +603,6 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 			throw new Error(`File not found: ${filePath}`);
 		}
 
-		// Find the symbol
 		const symbols = this.findSymbol(namePath, {filePath, includeBody: false});
 		if (symbols.length === 0) {
 			throw new Error(`Symbol not found: ${namePath}`);
@@ -642,30 +610,26 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 
 		const symbol = symbols[0];
 
-		// Get absolute path
 		const absolutePath = path.isAbsolute(filePath)
 			? filePath
 			: path.join(this.projectRoot, filePath);
 
-		// Get exact position
 		const symbolPosition = sourceFile.getPositionOfLineAndCharacter(
 			symbol.location.startLine - 1,
 			symbol.location.startColumn ?? 0,
 		);
 
-		// Find rename locations using Language Service
 		const renameLocations = this.languageService.findRenameLocations(
 			absolutePath,
 			symbolPosition,
-			false, // findInStrings
-			false, // findInComments
+			false,
+			false,
 		);
 
 		if (!renameLocations) {
 			return [];
 		}
 
-		// Map to our format with context
 		const results: Array<{
 			fileName: string;
 			textSpan: any;
@@ -680,7 +644,6 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 				loc.textSpan.start,
 			);
 
-			// Get context line
 			const lines = locSourceFile.text.split('\n');
 			const contextSnippet = lines[lineAndChar.line]?.trim() || '';
 
@@ -727,15 +690,12 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 			return null;
 		}
 
-		// Find symbol at specific line or by name
 		let targetNode: ts.Node | undefined;
 
 		if (line !== undefined) {
-			// Find symbol at specific line
 			const position = sourceFile.getPositionOfLineAndCharacter(line - 1, 0);
 			targetNode = this.findNodeAtPosition(sourceFile, position, symbolName);
 		} else {
-			// Find symbol by name
 			const symbols = this.findSymbol(symbolName, {
 				filePath,
 				includeBody: false,
@@ -744,7 +704,6 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 				return null;
 			}
 
-			// Get node from first symbol
 			const symbol = symbols[0];
 			const symbolPosition = sourceFile.getPositionOfLineAndCharacter(
 				symbol.location.startLine - 1,
@@ -761,25 +720,20 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 			return null;
 		}
 
-		// Get type from TypeChecker
 		const type = this.checker.getTypeAtLocation(targetNode);
 		const typeString = this.checker.typeToString(type);
 
-		// Get symbol info
 		const tsSymbol = this.checker.getSymbolAtLocation(targetNode);
 		const documentation = tsSymbol
 			? ts.displayPartsToString(tsSymbol.getDocumentationComment(this.checker))
 			: '';
 
-		// Check if async
 		const isAsync = !!(targetNode as any).modifiers?.some(
 			(mod: any) => mod.kind === ts.SyntaxKind.AsyncKeyword,
 		);
 
-		// Check if optional
 		const isOptional = !!(targetNode as any).questionToken;
 
-		// Get signature for functions
 		let signature: string | undefined;
 		if (
 			ts.isFunctionDeclaration(targetNode) ||
@@ -830,7 +784,6 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 
 		const visit = (node: ts.Node) => {
 			if (node.getStart() <= position && node.getEnd() >= position) {
-				// Check if this node has the matching name
 				if (
 					(ts.isVariableDeclaration(node) ||
 						ts.isFunctionDeclaration(node) ||
@@ -858,10 +811,10 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
  * Type information for a symbol
  */
 export interface TypeInformation {
-	typeString: string; // e.g., "string", "Promise<number>", "User | null"
-	kind: string; // e.g., "VariableDeclaration", "FunctionDeclaration"
+	typeString: string;
+	kind: string;
 	isOptional: boolean;
 	isAsync: boolean;
 	documentation: string;
-	signature?: string; // For functions: full signature
+	signature?: string;
 }

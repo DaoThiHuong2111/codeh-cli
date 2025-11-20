@@ -74,25 +74,17 @@ import {Configuration} from '../domain/models/Configuration';
 export async function setupContainerWithLazyLoading(): Promise<Container> {
 	const container = new Container();
 
-	// ==================================================
-	// LAYER 3: Infrastructure
-	// ==================================================
-
-	// Config
 	container.register('ConfigLoader', () => new ConfigLoader(), true);
 	container.register('ApiClientFactory', () => new ApiClientFactory(), true);
 
-	// History
 	container.register(
 		'HistoryRepository',
 		() => new InMemoryHistoryRepository(),
 		true,
 	);
 
-	// File Operations
 	container.register('FileOperations', () => new FileOperations(), true);
 
-	// Shell Executor & Docker Sandbox Mode
 	container.register('ShellExecutor', () => new ShellExecutor(), true);
 	container.register(
 		'DockerfileManager',
@@ -127,14 +119,12 @@ export async function setupContainerWithLazyLoading(): Promise<Container> {
 	);
 	container.register('CommandValidator', () => new CommandValidator(), true);
 
-	// Permission Mode Manager (singleton shared across app)
 	container.register(
 		'PermissionModeManager',
 		() => new PermissionModeManager(),
 		true,
 	);
 
-	// Permission Handler (hybrid - switches between MVP and Interactive)
 	container.register(
 		'PermissionHandler',
 		() => {
@@ -146,23 +136,16 @@ export async function setupContainerWithLazyLoading(): Promise<Container> {
 		true,
 	);
 
-	// ==================================================
-	// LAYER 2: Core / Application
-	// ==================================================
-
-	// Services
 	container.register('InputClassifier', () => new InputClassifier(), true);
 	container.register('OutputFormatter', () => new OutputFormatter(), true);
 	container.register('WorkflowManager', () => new WorkflowManager(), true);
 
-	// Lazy Tool Registry
 	container.register(
 		'ToolRegistry',
 		() => {
 			const registry = new LazyToolRegistry();
 			const projectRoot = process.env.CODEH_PROJECT_ROOT || process.cwd();
 
-			// Lazy analyzer (instantiated only when needed)
 			let analyzerInstance: ISymbolAnalyzer | null = null;
 			const getAnalyzer = (): ISymbolAnalyzer => {
 				if (!analyzerInstance) {
@@ -171,7 +154,6 @@ export async function setupContainerWithLazyLoading(): Promise<Container> {
 				return analyzerInstance;
 			};
 
-			// Resolve dependencies for lazy factories
 			const hostExecutor = container.resolve<ShellExecutor>('ShellExecutor');
 			const dockerExecutor = container.resolve<DockerShellExecutor>(
 				'DockerShellExecutor',
@@ -183,8 +165,6 @@ export async function setupContainerWithLazyLoading(): Promise<Container> {
 			const workflowManager =
 				container.resolve<WorkflowManager>('WorkflowManager');
 
-			// Register tools with lazy loading
-			// Group 1: Basic tools (commonly used - preload these)
 			registry.registerLazy('shell', () =>
 				new ShellTool(
 					hostExecutor,
@@ -194,7 +174,6 @@ export async function setupContainerWithLazyLoading(): Promise<Container> {
 			);
 			registry.registerLazy('file_ops', () => new FileOpsTool(fileOps));
 
-			// Group 2: Symbol analysis tools (moderate usage)
 			registry.registerLazy(
 				'symbol_search',
 				() => new SymbolSearchTool(projectRoot),
@@ -208,7 +187,6 @@ export async function setupContainerWithLazyLoading(): Promise<Container> {
 				() => new GetSymbolsOverviewTool(projectRoot),
 			);
 
-			// Group 3: Refactoring tools (less common)
 			registry.registerLazy(
 				'rename_symbol',
 				() => new RenameSymbolTool(projectRoot),
@@ -226,7 +204,6 @@ export async function setupContainerWithLazyLoading(): Promise<Container> {
 				() => new InsertAfterSymbolTool(projectRoot),
 			);
 
-			// Group 4: File operation tools
 			registry.registerLazy(
 				'replace_regex',
 				() => new ReplaceRegexTool(projectRoot),
@@ -237,7 +214,6 @@ export async function setupContainerWithLazyLoading(): Promise<Container> {
 				() => new SearchForPatternTool(projectRoot),
 			);
 
-			// Group 5: Advanced code intelligence (heavy - lazy load with analyzer)
 			registry.registerLazy(
 				'get_type_information',
 				() => new GetTypeInformationTool(projectRoot, getAnalyzer()),
@@ -263,7 +239,6 @@ export async function setupContainerWithLazyLoading(): Promise<Container> {
 				() => new DependencyGraphTool(projectRoot),
 			);
 
-			// Group 6: Workflow tools (commonly used - consider preload)
 			registry.registerLazy(
 				'create_plan',
 				() => new CreatePlanTool(workflowManager),
@@ -282,8 +257,6 @@ export async function setupContainerWithLazyLoading(): Promise<Container> {
 				() => new GetCurrentPlanTool(workflowManager),
 			);
 
-			// Preload commonly used tools for better UX
-			// (shell, file_ops are the most frequently used)
 			registry.preload(['shell', 'file_ops']);
 
 			return registry;
@@ -291,7 +264,6 @@ export async function setupContainerWithLazyLoading(): Promise<Container> {
 		true,
 	);
 
-	// Orchestrators (CodehChat only - CodehClient is lazy loaded)
 	container.register(
 		'CodehChat',
 		async () => {

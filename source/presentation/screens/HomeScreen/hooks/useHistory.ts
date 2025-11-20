@@ -65,14 +65,12 @@ export function useHistory(options: UseHistoryOptions = {}): UseHistoryReturn {
 	const [pendingItem, setPendingItemState] = useState<PendingItem | null>(null);
 	const [nextId, setNextId] = useState(1);
 
-	// Load history from storage on mount
 	useEffect(() => {
 		if (enablePersistence) {
 			loadHistory();
 		}
 	}, [enablePersistence]);
 
-	// Save history to storage when it changes
 	useEffect(() => {
 		if (enablePersistence && history.length > 0) {
 			saveHistory();
@@ -205,7 +203,6 @@ export function useHistory(options: UseHistoryOptions = {}): UseHistoryReturn {
 			const loaded = loadHistoryFromFile(storageKey);
 			if (loaded.length > 0) {
 				setHistory(limitHistory(loaded));
-				// Update nextId based on loaded history
 				const maxId = Math.max(...loaded.map(item => item.id), 0);
 				setNextId(maxId + 1);
 			}

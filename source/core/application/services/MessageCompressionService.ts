@@ -60,10 +60,8 @@ Format the summary as:
 			throw new Error('Cannot compress empty message array');
 		}
 
-		// Calculate original token count
 		const originalTokens = this.estimateTokenCount(messages);
 
-		// Build conversation text for compression
 		const conversationText = this.buildConversationText(messages);
 
 		logger.debug(
@@ -76,7 +74,6 @@ Format the summary as:
 			},
 		);
 
-		// Call LLM to compress
 		try {
 			const response = await this.apiClient.chat({
 				messages: [
@@ -108,7 +105,6 @@ Format the summary as:
 				},
 			);
 
-			// Create compressed message with metadata
 			const compressedMessage = Message.create('system', compressedContent, {
 				metadata: {
 					isCompressed: true,
@@ -116,7 +112,6 @@ Format the summary as:
 					originalTokens,
 					compressedTokens,
 					compressedAt: new Date().toISOString(),
-					// Store IDs of compressed messages for tracking
 					compressedMessageIds: messages.map(m => m.id),
 				},
 			});

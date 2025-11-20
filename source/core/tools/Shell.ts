@@ -16,7 +16,6 @@ export class ShellTool extends Tool {
 		private dockerExecutor: any,
 		private sandboxModeManager?: ISandboxModeManager,
 	) {
-		// Executors: hostExecutor (direct), dockerExecutor (Docker container)
 		super('shell', 'Execute shell commands');
 	}
 
@@ -50,9 +49,6 @@ export class ShellTool extends Tool {
 	async execute(parameters: Record<string, any>): Promise<ToolExecutionResult> {
 		const {command, cwd} = parameters;
 
-		// Select executor based on sandbox mode
-		// ENABLED: Run in Docker container (isolated)
-		// DISABLED: Run on host system (direct)
 		const executor =
 			this.sandboxModeManager?.isEnabled() ?? false
 				? this.dockerExecutor

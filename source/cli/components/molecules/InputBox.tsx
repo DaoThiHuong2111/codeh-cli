@@ -40,8 +40,6 @@ export default function InputBox({
 		}
 	}, [value]);
 
-	// Switch to input layer when this component is active
-	// This blocks screen-level shortcuts when typing
 	useLayerSwitch('input', enabled && isFocused, 'screen');
 
 	useInput(
@@ -78,26 +76,22 @@ export default function InputBox({
 	const borderChar = '─';
 	const border = borderChar.repeat(terminalWidth - 2);
 
-	// Calculate character counter display
 	const charCount = input.length;
 	const charPercentage = maxLength ? (charCount / maxLength) * 100 : 0;
 
-	// Determine counter color based on usage
 	let counterColor = 'gray';
 	if (charPercentage > 95) {
-		counterColor = 'red'; // Danger: >95%
+		counterColor = 'red';
 	} else if (charPercentage > 80) {
-		counterColor = 'yellow'; // Warning: >80%
+		counterColor = 'yellow';
 	}
 
 	return (
 		<Box flexDirection="column" marginTop={1}>
-			{/* Top border */}
 			<Box>
 				<Text dimColor>{border}</Text>
 			</Box>
 
-			{/* Input area */}
 			<Box paddingLeft={1}>
 				<Text color={prefixColor}>{prefix}</Text>
 				{input ? (
@@ -115,12 +109,10 @@ export default function InputBox({
 				)}
 			</Box>
 
-			{/* Bottom border */}
 			<Box>
 				<Text dimColor>{border}</Text>
 			</Box>
 
-			{/* Character counter */}
 			{showCounter && (
 				<Box paddingLeft={1} marginTop={0}>
 					<Text color={counterColor} dimColor={charPercentage <= 80}>

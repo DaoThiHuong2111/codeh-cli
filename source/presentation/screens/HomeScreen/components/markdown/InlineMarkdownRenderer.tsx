@@ -22,7 +22,6 @@ export const RenderInline: React.FC<RenderInlineProps> = ({
 }) => {
 	if (!text) return null;
 
-	// Parse inline tokens
 	const tokens = parseInlineTokens(text);
 
 	if (tokens.length === 0) {

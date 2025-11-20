@@ -3,7 +3,6 @@
  * Export all public APIs
  */
 
-// Core
 export {ShortcutManager} from './ShortcutManager';
 export {
 	ShortcutProvider,
@@ -14,7 +13,6 @@ export {
 	useShortcutDebug,
 } from './ShortcutContext';
 
-// Types
 export type {
 	ShortcutLayer,
 	KeyCombo,
@@ -29,7 +27,6 @@ export type {
 	ParsedKeyCombo,
 } from './types';
 
-// Utilities
 export {
 	parseKeyCombo,
 	parseKeyComboString,

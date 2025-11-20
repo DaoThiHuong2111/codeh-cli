@@ -8,7 +8,6 @@ import type {Provider} from '../types';
  * Theme color palette
  */
 export const THEME_COLORS = {
-	// Text colors
 	text: {
 		primary: '#FFFFFF',
 		secondary: '#E0E0E0',
@@ -19,33 +18,30 @@ export const THEME_COLORS = {
 		success: '#00FF00',
 	},
 
-	// Provider colors
 	provider: {
-		anthropic: '#00FFFF', // Cyan for Claude
-		openai: '#74AA9C', // Teal for OpenAI
-		ollama: '#FF6B6B', // Red for Ollama
-		generic: '#888888', // Gray for generic
+		anthropic: '#00FFFF',
+		openai: '#74AA9C',
+		ollama: '#FF6B6B',
+		generic: '#888888',
 	},
 
-	// Syntax highlighting colors
 	syntax: {
-		keyword: '#C792EA', // Purple
-		string: '#C3E88D', // Green
-		number: '#F78C6C', // Orange
-		comment: '#546E7A', // Gray
-		function: '#82AAFF', // Blue
-		variable: '#FFCB6B', // Yellow
-		operator: '#89DDFF', // Cyan
-		class: '#FFCB6B', // Yellow
-		constant: '#F78C6C', // Orange
-		type: '#FFCB6B', // Yellow
-		parameter: '#EEFFFF', // White
-		property: '#EEFFFF', // White
-		tag: '#F07178', // Red
-		attribute: '#C792EA', // Purple
+		keyword: '#C792EA',
+		string: '#C3E88D',
+		number: '#F78C6C',
+		comment: '#546E7A',
+		function: '#82AAFF',
+		variable: '#FFCB6B',
+		operator: '#89DDFF',
+		class: '#FFCB6B',
+		constant: '#F78C6C',
+		type: '#FFCB6B',
+		parameter: '#EEFFFF',
+		property: '#EEFFFF',
+		tag: '#F07178',
+		attribute: '#C792EA',
 	},
 
-	// UI element colors
 	ui: {
 		border: '#404040',
 		background: '#1E1E1E',
@@ -85,7 +81,6 @@ export function getProviderIcon(provider: Provider): string {
 export function getSyntaxColor(tokenType: string): string {
 	const normalized = tokenType.toLowerCase();
 
-	// Map common token types
 	if (normalized.includes('keyword')) return THEME_COLORS.syntax.keyword;
 	if (normalized.includes('string')) return THEME_COLORS.syntax.string;
 	if (normalized.includes('number')) return THEME_COLORS.syntax.number;
@@ -101,7 +96,6 @@ export function getSyntaxColor(tokenType: string): string {
 	if (normalized.includes('tag')) return THEME_COLORS.syntax.tag;
 	if (normalized.includes('attribute')) return THEME_COLORS.syntax.attribute;
 
-	// Default color
 	return THEME_COLORS.text.primary;
 }
 

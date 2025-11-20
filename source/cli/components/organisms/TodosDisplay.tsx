@@ -24,7 +24,6 @@ const STATUS_CONFIG: Record<
 	completed: {icon: '●', color: 'green', label: 'Completed'},
 };
 
-// Single todo item component
 const TodoItem: React.FC<{todo: Todo}> = ({todo}) => {
 	const config = STATUS_CONFIG[todo.status];
 
@@ -45,17 +44,15 @@ export const TodosDisplay: React.FC<TodosDisplayProps> = ({
 	showProgress = true,
 	maxHeight,
 }) => {
-	// Calculate statistics
 	const total = todos.length;
 	const completed = todos.filter(t => t.isCompleted()).length;
 	const inProgress = todos.filter(t => t.isInProgress()).length;
 	const pending = todos.filter(t => t.isPending()).length;
 
 	if (total === 0) {
-		return null; // Don't show if no todos
+		return null;
 	}
 
-	// Group todos by status
 	const inProgressTodos = todos.filter(t => t.isInProgress());
 	const pendingTodos = todos.filter(t => t.isPending());
 	const completedTodos = todos.filter(t => t.isCompleted());
@@ -68,7 +65,6 @@ export const TodosDisplay: React.FC<TodosDisplayProps> = ({
 			paddingX={1}
 			marginY={1}
 		>
-			{/* Header */}
 			<Box>
 				<Text bold color="blue">
 					📋 Tasks
@@ -80,7 +76,6 @@ export const TodosDisplay: React.FC<TodosDisplayProps> = ({
 				</Box>
 			</Box>
 
-			{/* Progress Bar */}
 			{showProgress && total > 0 && (
 				<Box marginTop={1}>
 					<ProgressBar
@@ -93,9 +88,7 @@ export const TodosDisplay: React.FC<TodosDisplayProps> = ({
 				</Box>
 			)}
 
-			{/* Todos List */}
 			<Box flexDirection="column" marginTop={1}>
-				{/* In Progress */}
 				{inProgressTodos.length > 0 && (
 					<Box flexDirection="column">
 						<Text bold color="yellow">
@@ -109,7 +102,6 @@ export const TodosDisplay: React.FC<TodosDisplayProps> = ({
 					</Box>
 				)}
 
-				{/* Pending */}
 				{pendingTodos.length > 0 && (
 					<Box
 						flexDirection="column"
@@ -126,7 +118,6 @@ export const TodosDisplay: React.FC<TodosDisplayProps> = ({
 					</Box>
 				)}
 
-				{/* Completed */}
 				{completedTodos.length > 0 && (
 					<Box flexDirection="column" marginTop={1}>
 						<Text bold color="green" dimColor>

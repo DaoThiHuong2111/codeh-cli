@@ -28,13 +28,11 @@ export function parseMarkdown(text: string): AnyMarkdownBlock[] {
 	while (i < lines.length) {
 		const line = lines[i];
 
-		// Skip empty lines
 		if (line.trim() === '') {
 			i++;
 			continue;
 		}
 
-		// Try to parse heading
 		const heading = parseHeading(line);
 		if (heading) {
 			blocks.push(heading);
@@ -42,7 +40,6 @@ export function parseMarkdown(text: string): AnyMarkdownBlock[] {
 			continue;
 		}
 
-		// Try to parse code fence
 		const codeFence = extractCodeFence(line);
 		if (codeFence) {
 			const codeBlock = parseCodeBlock(lines, i);
@@ -53,14 +50,12 @@ export function parseMarkdown(text: string): AnyMarkdownBlock[] {
 			}
 		}
 
-		// Try to parse horizontal rule
 		if (isHorizontalRule(line)) {
 			blocks.push({type: 'hr', content: line});
 			i++;
 			continue;
 		}
 
-		// Try to parse list
 		if (isListItem(line)) {
 			const listBlock = parseList(lines, i);
 			if (listBlock) {
@@ -70,7 +65,6 @@ export function parseMarkdown(text: string): AnyMarkdownBlock[] {
 			}
 		}
 
-		// Try to parse table
 		if (
 			isTableRow(line) &&
 			i + 1 < lines.length &&
@@ -84,7 +78,6 @@ export function parseMarkdown(text: string): AnyMarkdownBlock[] {
 			}
 		}
 
-		// Try to parse blockquote
 		if (line.trim().startsWith('>')) {
 			const blockquote = parseBlockquote(lines, i);
 			if (blockquote) {
@@ -94,7 +87,6 @@ export function parseMarkdown(text: string): AnyMarkdownBlock[] {
 			}
 		}
 
-		// Default: paragraph
 		const paragraph = parseParagraph(lines, i);
 		blocks.push(paragraph.block);
 		i = paragraph.nextIndex;
@@ -147,7 +139,6 @@ function parseCodeBlock(
 	const codeLines: string[] = [];
 	let i = startIndex + 1;
 
-	// Find closing fence
 	while (i < lines.length) {
 		const line = lines[i];
 		const closingFence = extractCodeFence(line);
@@ -157,7 +148,6 @@ function parseCodeBlock(
 			closingFence.fence[0] === fenceInfo.fence[0] &&
 			closingFence.fence.length >= fenceInfo.fence.length
 		) {
-			// Found closing fence
 			break;
 		}
 
@@ -269,7 +259,6 @@ function parseTable(
 		return null;
 	}
 
-	// Parse headers
 	const headerMatch = headerLine.match(/^\s*\|(.+)\|\s*$/);
 	if (!headerMatch) return null;
 
@@ -278,7 +267,6 @@ function parseTable(
 		.map(cell => cell.trim())
 		.filter(cell => cell.length > 0);
 
-	// Parse rows
 	const rows: string[][] = [];
 	let i = startIndex + 2;
 
@@ -349,7 +337,6 @@ function parseParagraph(
 	while (i < lines.length) {
 		const line = lines[i];
 
-		// Stop at empty line or special markers
 		if (
 			line.trim() === '' ||
 			parseHeading(line) ||

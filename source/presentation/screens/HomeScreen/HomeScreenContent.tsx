@@ -47,7 +47,6 @@ export const HomeScreenContent: React.FC = () => {
 			? 'streaming'
 			: 'connected';
 
-	// Esc: Cancel streaming
 	useShortcut({
 		key: 'escape',
 		handler: () => {
@@ -67,7 +66,6 @@ export const HomeScreenContent: React.FC = () => {
 
 	return (
 		<Box flexDirection="column" height={height}>
-			{/* Main content area - chat history */}
 			<MainContent
 				history={history}
 				pendingItem={pendingItem}
@@ -76,7 +74,6 @@ export const HomeScreenContent: React.FC = () => {
 				reservedHeight={reservedHeight}
 			/>
 
-			{/* Input box */}
 			<InputBox
 				onSubmit={sendMessage}
 				disabled={isStreaming}
@@ -84,7 +81,6 @@ export const HomeScreenContent: React.FC = () => {
 				placeholder="Type your message... (Esc: cancel)"
 			/>
 
-			{/* Footer - status bar */}
 			<Footer
 				status={connectionStatus}
 				model={model}

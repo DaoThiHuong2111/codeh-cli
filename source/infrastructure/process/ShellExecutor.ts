@@ -25,8 +25,8 @@ export interface CommandOptions {
 }
 
 export class ShellExecutor {
-	private defaultTimeout: number = 30000; // 30 seconds
-	private defaultMaxBuffer: number = 1024 * 1024 * 10; // 10MB
+	private defaultTimeout: number = 30000;
+	private defaultMaxBuffer: number = 1024 * 1024 * 10;
 
 	/**
 	 * Execute command asynchronously
@@ -156,14 +156,13 @@ export class ShellExecutor {
 				});
 			});
 
-			// Handle timeout
 			if (options.timeout) {
 				setTimeout(() => {
 					child.kill();
 					resolve({
 						stdout,
 						stderr: stderr + '\nCommand timed out',
-						exitCode: 124, // Timeout exit code
+						exitCode: 124,
 						success: false,
 						duration: Date.now() - startTime,
 					});

@@ -32,13 +32,11 @@ export const UserMessage: React.FC<UserMessageProps> = ({
 	const userIcon = '›';
 	const userColor = THEME_COLORS.text.accent;
 
-	// Wrap text if needed
-	const contentWidth = terminalWidth - 4; // Account for icon and padding
+	const contentWidth = terminalWidth - 4;
 	const lines = wrapText(message, contentWidth);
 
 	return (
 		<Box flexDirection="column" marginY={1}>
-			{/* User header */}
 			<Box>
 				<Text color={userColor} bold>
 					{userIcon} You
@@ -51,7 +49,6 @@ export const UserMessage: React.FC<UserMessageProps> = ({
 				)}
 			</Box>
 
-			{/* Message content */}
 			<Box paddingLeft={2} marginTop={1}>
 				<Box flexDirection="column">
 					{lines.map((line, index) => (

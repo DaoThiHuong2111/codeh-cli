@@ -14,7 +14,6 @@ export function usePresenter<T>(
 	const [presenter, setPresenter] = useState<T | null>(null);
 
 	useEffect(() => {
-		// Check if all dependencies are available
 		const allDepsReady = dependencies.every(
 			dep => dep !== null && dep !== undefined,
 		);

@@ -86,7 +86,6 @@ export class Session {
 			updatedAt: new Date(),
 		});
 
-		// Calculate metadata
 		session.updateMetadata();
 		return session;
 	}
@@ -155,14 +154,12 @@ export class Session {
 	 */
 	getMessagesForLLM(): ReadonlyArray<Message> {
 		const lastCompressedIndex = this.metadata.lastCompressedIndex ?? -1;
-		
+
 		if (lastCompressedIndex >= 0 && this.compressedMessage) {
-			// Return compressed message + messages after compression
 			const uncompressedMessages = this.messages.slice(lastCompressedIndex + 1);
 			return [this.compressedMessage, ...uncompressedMessages];
 		}
-		
-		// No compression yet, return all messages
+
 		return this.messages;
 	}
 
@@ -222,8 +219,6 @@ export class Session {
 		this.updateMetadata();
 	}
 
-	// ============ Token & Cost Management ============
-
 	/**
 	 * Estimate token count (rough: 4 chars = 1 token)
 	 */
@@ -260,13 +255,11 @@ export class Session {
 	 * Update metadata (recalculate counts, tokens, cost)
 	 */
 	updateMetadata(): void {
-		// Calculate total tokens from message metadata
 		const totalTokens = this.messages.reduce(
 			(sum, msg) => sum + (msg.metadata?.usage?.totalTokens || 0),
 			0,
 		);
 
-		// Calculate cost ($0.005 per 1K tokens)
 		const estimatedCost = (totalTokens / 1000) * 0.005;
 
 		this.metadata = {
@@ -276,8 +269,6 @@ export class Session {
 			estimatedCost,
 		};
 	}
-
-	// ============ Session Management ============
 
 	/**
 	 * Create a copy with new name (for renaming)
@@ -300,8 +291,6 @@ export class Session {
 		return this.metadata;
 	}
 
-	// ============ Serialization ============
-
 	/**
 	 * Serialize to JSON (for saving to file)
 	 */
@@ -315,8 +304,6 @@ export class Session {
 			updatedAt: this.updatedAt,
 		};
 	}
-
-	// ============ Private Utilities ============
 
 	/**
 	 * Generate unique session ID
