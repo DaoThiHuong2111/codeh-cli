@@ -1,6 +1,6 @@
 /**
  * Shell Tool
- * Executes shell commands with optional sandbox protection
+ * Executes shell commands with optional Docker sandbox isolation
  */
 
 import {Tool} from './base/Tool';
@@ -12,11 +12,11 @@ import {ISandboxModeManager} from '../domain/interfaces/ISandboxModeManager';
 
 export class ShellTool extends Tool {
 	constructor(
-		private executor: any,
-		private sandboxedExecutor: any,
+		private hostExecutor: any,
+		private dockerExecutor: any,
 		private sandboxModeManager?: ISandboxModeManager,
 	) {
-		// Executors will be injected (ShellExecutor, SandboxedShellExecutor)
+		// Executors: hostExecutor (direct), dockerExecutor (Docker container)
 		super('shell', 'Execute shell commands');
 	}
 
@@ -51,10 +51,12 @@ export class ShellTool extends Tool {
 		const {command, cwd} = parameters;
 
 		// Select executor based on sandbox mode
+		// ENABLED: Run in Docker container (isolated)
+		// DISABLED: Run on host system (direct)
 		const executor =
 			this.sandboxModeManager?.isEnabled() ?? false
-				? this.sandboxedExecutor
-				: this.executor;
+				? this.dockerExecutor
+				: this.hostExecutor;
 
 		try {
 			const result = await executor.execute(command, {cwd});

@@ -22,11 +22,15 @@ export interface InsertBeforeSymbolOptions {
 export class InsertBeforeSymbolTool extends Tool {
 	private analyzer?: ISymbolAnalyzer;
 
-	constructor(private projectRoot: string) {
+	constructor(
+		private projectRoot: string,
+		analyzer?: ISymbolAnalyzer,
+	) {
 		super(
 			'insert_before_symbol',
 			'Insert content before a symbol (imports, decorators, etc.)',
 		);
+		this.analyzer = analyzer;
 	}
 
 	getDefinition(): ToolDefinition {

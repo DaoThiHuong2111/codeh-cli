@@ -87,11 +87,22 @@ export class CodehChat {
 						new Date(m.timestamp || Date.now()),
 					),
 			);
-			this.session = Session.create(
-				history.id,
-				messages,
-				'claude-3-5-sonnet',
-			);
+			
+			// Use fromData to restore session with correct ID
+			this.session = Session.fromData({
+				id: history.id,
+				name: history.metadata?.name || `Session ${history.id}`,
+				messages: messages,
+				metadata: {
+					messageCount: messages.length,
+					totalTokens: history.metadata?.totalTokens || 0,
+					estimatedCost: history.metadata?.estimatedCost || 0,
+					model: history.metadata?.model || 'claude-3-5-sonnet',
+					...history.metadata
+				},
+				createdAt: new Date(history.createdAt || Date.now()),
+				updatedAt: new Date(history.updatedAt || Date.now())
+			});
 		}
 	}
 

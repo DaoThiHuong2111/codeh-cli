@@ -13,6 +13,7 @@ export interface FooterProps {
 	sessionDuration: number;
 	permissionMode?: 'mvp' | 'interactive';
 	sandboxEnabled?: boolean;
+	sandboxAvailable?: boolean; // Whether Dockerfile exists in current directory
 }
 
 export const Footer: React.FC<FooterProps> = ({
@@ -21,7 +22,8 @@ export const Footer: React.FC<FooterProps> = ({
 	directory,
 	gitBranch,
 	permissionMode = 'mvp',
-	sandboxEnabled = true,
+	sandboxEnabled = false,
+	sandboxAvailable = false,
 }) => {
 	// Format duration as MM:SS
 	const formatDuration = (seconds: number): string => {
@@ -66,7 +68,13 @@ export const Footer: React.FC<FooterProps> = ({
 				{/* Sandbox Status */}
 				<Text> | </Text>
 				<Box>
-					<Text wrap="wrap">{sandboxEnabled ? 'Sandbox' : 'No Sandbox'}</Text>
+					{!sandboxAvailable ? (
+						<Text dimColor>No Sandbox</Text>
+					) : sandboxEnabled ? (
+						<Text color="cyan">Docker (Isolated)</Text>
+					) : (
+						<Text>No Sandbox</Text>
+					)}
 				</Box>
 				{/* Duration */}
 				<Box>

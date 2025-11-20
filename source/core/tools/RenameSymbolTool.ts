@@ -21,11 +21,15 @@ export interface RenameSymbolOptions {
 export class RenameSymbolTool extends Tool {
 	private analyzer?: ISymbolAnalyzer;
 
-	constructor(private projectRoot: string) {
+	constructor(
+		private projectRoot: string,
+		analyzer?: ISymbolAnalyzer,
+	) {
 		super(
 			'rename_symbol',
 			'Rename symbols across the codebase using language server refactoring',
 		);
+		this.analyzer = analyzer;
 	}
 
 	getDefinition(): ToolDefinition {

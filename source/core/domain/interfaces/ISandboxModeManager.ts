@@ -25,9 +25,18 @@ export interface SandboxModeChangeListener {
 /**
  * Sandbox mode manager interface
  *
- * Manages the global sandbox security state.
+ * Manages Docker-based sandbox state.
+ * Sandbox = Docker container isolation (not whitelist validation)
  */
 export interface ISandboxModeManager {
+	/**
+	 * Check if sandbox is available (Dockerfile exists and Docker installed)
+	 *
+	 * @param cwd - Current working directory to check for Dockerfile
+	 * @returns Promise<boolean> - True if sandbox is available
+	 */
+	checkAvailability(cwd?: string): Promise<boolean>;
+
 	/**
 	 * Check if sandbox mode is enabled
 	 *
@@ -36,25 +45,32 @@ export interface ISandboxModeManager {
 	isEnabled(): boolean;
 
 	/**
-	 * Enable sandbox mode
+	 * Check if sandbox is available (synchronous, uses cached value)
 	 *
-	 * Restricts shell commands to whitelist.
+	 * @returns True if sandbox is available (Dockerfile exists and Docker installed)
 	 */
-	enable(): void;
+	isSandboxAvailable(): boolean;
 
 	/**
-	 * Disable sandbox mode
+	 * Enable sandbox mode (async - builds and starts Docker container)
 	 *
-	 * Allows all shell commands (use with caution).
+	 * @returns Promise with success status and error message if failed
 	 */
-	disable(): void;
+	enable(): Promise<{success: boolean; error?: string}>;
 
 	/**
-	 * Toggle between enabled and disabled
+	 * Disable sandbox mode (async - stops and removes Docker container)
 	 *
-	 * @returns New mode after toggle
+	 * @returns Promise with success status and error message if failed
 	 */
-	toggle(): SandboxMode;
+	disable(): Promise<{success: boolean; error?: string}>;
+
+	/**
+	 * Toggle between enabled and disabled (async)
+	 *
+	 * @returns Promise with success status, new mode, and error message if failed
+	 */
+	toggle(): Promise<{success: boolean; mode: SandboxMode; error?: string}>;
 
 	/**
 	 * Get current mode

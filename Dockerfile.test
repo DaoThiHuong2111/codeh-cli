@@ -1,0 +1,16 @@
+# Test Dockerfile for Docker Sandbox Testing
+# Simple Node.js environment for testing shell commands in isolation
+
+FROM node:20-alpine
+
+# Set working directory
+WORKDIR /workspace
+
+# Install common tools for testing
+RUN apk add --no-cache \
+    git \
+    bash \
+    curl
+
+# Default command (sleep infinity for long-running container)
+CMD ["sleep", "infinity"]

@@ -803,6 +803,22 @@ export class TypeScriptSymbolAnalyzer implements ISymbolAnalyzer {
 	}
 
 	/**
+	 * Get diagnostics (errors/warnings) for the project or specific files
+	 */
+	getDiagnostics(files?: string[]): any[] {
+		const allDiagnostics = ts.getPreEmitDiagnostics(this.program);
+
+		if (files && files.length > 0) {
+			return allDiagnostics.filter(diag => {
+				if (!diag.file) return false;
+				return files.some(file => diag.file!.fileName.includes(file));
+			});
+		}
+
+		return [...allDiagnostics];
+	}
+
+	/**
 	 * Find node at specific position with matching name
 	 */
 	private findNodeAtPosition(

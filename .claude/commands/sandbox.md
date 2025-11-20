@@ -1,67 +1,130 @@
 # Sandbox Mode Toggle Command
 
-Toggle shell command sandbox mode between ENABLED (safe, restricted) and DISABLED (unrestricted).
+Toggle Docker-based sandbox mode between ENABLED (isolated) and DISABLED (direct).
 
 ## What you should do:
 
-1. **Check current sandbox mode status** by calling the `globalSandboxModeManager.getMode()` and `getModeDescription()`
+1. **Check if Dockerfile exists** in current directory
+   - If NO Dockerfile: Show error "❌ Không tìm thấy Dockerfile trong thư mục hiện tại" using `presenter.showTempError()`
+   - If Dockerfile exists: Proceed to toggle
 
-2. **Toggle the sandbox mode** by calling `globalSandboxModeManager.toggle()`
+2. **Toggle sandbox mode** by calling `await sandboxModeManager.toggle()`
+   - This is async - builds Docker image and starts container when enabling
+   - Stops and removes container when disabling
 
 3. **Display the result** to the user:
    - Show old mode → new mode
    - Explain what the new mode means
-   - Show which commands are allowed/restricted
+   - Show any errors if toggle failed
 
 ## Sandbox Modes:
 
-### 🔒 ENABLED (Default - Safe)
-- Only whitelisted commands are allowed
-- Blocks dangerous patterns (rm -rf, curl|sh, etc.)
-- Maximum output size limit (10MB)
-- Execution timeout (30 seconds)
-- Prevents command injection
+### 🐳 ENABLED (Docker Container - Isolated)
+- Commands run inside Docker container
+- Workspace mounted at `/workspace`
+- Container filesystem isolated from host
+- Dangerous commands (rm -rf /) only affect container
+- Requires Dockerfile in project directory
 
-**Allowed commands:** ls, cat, grep, find, git, npm, node, tsc, echo, pwd, mkdir, touch, mv, cp, which, date, head, tail, wc, sort, uniq, diff
+**How it works:**
+- Builds Docker image from your Dockerfile
+- Starts long-running container with workspace mounted
+- Executes commands via `docker exec`
+- Container auto-cleanup on app exit
 
-### ⚠️  DISABLED (Unrestricted - Use with caution!)
-- All commands are allowed
-- No restrictions or safety checks
+### 💻 DISABLED (Direct - Host System)
+- Commands run directly on host system
+- Full system access
+- No isolation
 - User takes full responsibility
-- Useful for advanced operations
 
-## Example Response:
+## Example Responses:
 
+### Success - Enabling:
 ```
 Sandbox mode toggled!
 
-Old mode: 🔒 ENABLED (Commands restricted to whitelist)
-New mode: ⚠️  DISABLED (All commands allowed - use with caution!)
+Old mode: 💻 DISABLED (Commands run on host)
+New mode: 🐳 ENABLED (Commands run in Docker container)
 
-The sandbox is now DISABLED. All shell commands are allowed without restrictions.
-Be careful when running commands as they can affect your system.
+Your shell commands will now run in an isolated Docker container.
+The container is built from your Dockerfile and your workspace is mounted at /workspace.
+
+To disable sandbox mode, run /sandbox again.
+```
+
+### Success - Disabling:
+```
+Sandbox mode toggled!
+
+Old mode: 🐳 ENABLED (Commands run in Docker container)
+New mode: 💻 DISABLED (Commands run on host)
+
+Your shell commands will now run directly on your host system.
+Be careful as commands can affect your system directly.
 
 To re-enable sandbox protection, run /sandbox again.
 ```
 
-## Important:
+### Error - No Dockerfile:
+```
+❌ Không tìm thấy Dockerfile trong thư mục hiện tại
 
-- Always show both old and new modes
-- Warn users when disabling sandbox
-- Explain the security implications
-- Make it easy to toggle back
+Sandbox mode requires a Dockerfile in your project directory.
+Create a Dockerfile to enable Docker-based sandbox isolation.
+```
 
-## Access to Manager:
+### Error - Toggle Failed:
+```
+❌ Failed to enable sandbox: Docker image build failed
 
-You can access the sandbox manager through the DI container or import it directly:
+Please check:
+- Your Dockerfile syntax is correct
+- Docker is installed and running
+- You have sufficient disk space
+
+Error details: [show error from toggle result]
+```
+
+## Implementation:
 
 ```typescript
-import { globalSandboxModeManager } from '@/infrastructure/process/SandboxModeManager';
+// 1. Get sandbox mode manager from presenter
+const sandboxManager = presenter.sandboxModeManager;
 
-// Get current mode
-const mode = globalSandboxModeManager.getMode();
-const description = globalSandboxModeManager.getModeDescription();
+// 2. Check if available (Dockerfile exists)
+if (!sandboxManager.isSandboxAvailable()) {
+    presenter.showTempError('Không tìm thấy Dockerfile trong thư mục hiện tại');
+    return;
+}
 
-// Toggle mode
-const newMode = globalSandboxModeManager.toggle();
+// 3. Get current mode
+const oldMode = sandboxManager.getMode();
+const oldDescription = sandboxManager.getModeDescription();
+
+// 4. Toggle mode (async!)
+const result = await sandboxManager.toggle();
+
+// 5. Show result
+if (!result.success) {
+    // Toggle failed
+    presenter.showTempError(`Failed to toggle sandbox: ${result.error}`);
+    return;
+}
+
+// Success - show new mode
+const newMode = result.mode;
+const newDescription = sandboxManager.getModeDescription();
+
+// Display old → new mode change
+// Explain what happened
+// Give user guidance
 ```
+
+## Important:
+
+- **ALWAYS check `isSandboxAvailable()` first** before toggling
+- **Use `presenter.showTempError()`** for error messages (auto-clears after 5s)
+- **Handle async** - `toggle()` returns a Promise
+- **Check `result.success`** - toggle can fail (Docker not installed, build errors, etc.)
+- Container lifecycle is automatic - no manual cleanup needed

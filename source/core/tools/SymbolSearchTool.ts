@@ -14,11 +14,15 @@ import {TypeScriptSymbolAnalyzer} from '../../infrastructure/typescript/TypeScri
 export class SymbolSearchTool extends Tool {
 	private analyzer?: ISymbolAnalyzer;
 
-	constructor(private projectRoot: string) {
+	constructor(
+		private projectRoot: string,
+		analyzer?: ISymbolAnalyzer,
+	) {
 		super(
 			'symbol_search',
 			'Search for symbols (classes, functions, methods) in TypeScript code by name pattern',
 		);
+		this.analyzer = analyzer;
 	}
 
 	/**

@@ -249,6 +249,13 @@ export default function Home({container, exitConfirmation = false}: HomeProps) {
 				</Box>
 			)}
 
+			{/* Temporary Error Message (5s auto-clear) */}
+			{presenter.tempErrorMessage && (
+				<Box marginLeft={2}>
+					<Text color="red">❌ {presenter.tempErrorMessage}</Text>
+				</Box>
+			)}
+
 			{/* Footer with Stats */}
 			<Footer
 				model={presenter.model}
@@ -257,6 +264,7 @@ export default function Home({container, exitConfirmation = false}: HomeProps) {
 				gitBranch={presenter.gitBranch}
 				permissionMode={permissionMode}
 				sandboxEnabled={presenter.sandboxEnabled}
+				sandboxAvailable={presenter.sandboxAvailable}
 			/>
 
 			{/* Help Hint */}

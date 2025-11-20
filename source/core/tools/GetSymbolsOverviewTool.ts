@@ -14,11 +14,15 @@ import {TypeScriptSymbolAnalyzer} from '../../infrastructure/typescript/TypeScri
 export class GetSymbolsOverviewTool extends Tool {
 	private analyzer?: ISymbolAnalyzer;
 
-	constructor(private projectRoot: string) {
+	constructor(
+		private projectRoot: string,
+		analyzer?: ISymbolAnalyzer,
+	) {
 		super(
 			'get_symbols_overview',
 			'Get an overview of top-level symbols (classes, functions, interfaces) in a TypeScript file',
 		);
+		this.analyzer = analyzer;
 	}
 
 	/**

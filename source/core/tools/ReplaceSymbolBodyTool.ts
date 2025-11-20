@@ -22,11 +22,15 @@ export interface ReplaceSymbolBodyOptions {
 export class ReplaceSymbolBodyTool extends Tool {
 	private analyzer?: ISymbolAnalyzer;
 
-	constructor(private projectRoot: string) {
+	constructor(
+		private projectRoot: string,
+		analyzer?: ISymbolAnalyzer,
+	) {
 		super(
 			'replace_symbol_body',
 			'Replace the implementation/body of a function, method, or class',
 		);
+		this.analyzer = analyzer;
 	}
 
 	getDefinition(): ToolDefinition {

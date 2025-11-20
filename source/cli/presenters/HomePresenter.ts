@@ -26,6 +26,7 @@ interface ViewState {
 	// Input
 	input: string;
 	inputError: string;
+	tempErrorMessage: string; // Temporary error message (auto-clear after 5s)
 
 	// Session (replaces messages array)
 	session: Session;
@@ -92,6 +93,7 @@ export class HomePresenter {
 		this.state = {
 			input: '',
 			inputError: '',
+			tempErrorMessage: '',
 			session: initialSession,
 			streamingMessageId: null,
 			isLoading: false,
@@ -125,6 +127,31 @@ export class HomePresenter {
 
 		// Start duration timer (update every second)
 		this.startDurationTimer();
+
+		// Check sandbox availability (Dockerfile detection)
+		this.checkSandboxAvailability();
+	}
+
+	/**
+	 * Check if sandbox (Docker) is available in current directory
+	 * This checks for Dockerfile existence and Docker availability
+	 */
+	private async checkSandboxAvailability(): Promise<void> {
+		if (!this.sandboxModeManager) {
+			return;
+		}
+
+		try {
+			const available = await this.sandboxModeManager.checkAvailability(process.cwd());
+			this.logger.info('HomePresenter', 'checkSandboxAvailability', 'Sandbox availability checked', {
+				available,
+				cwd: process.cwd(),
+			});
+		} catch (error) {
+			this.logger.error('HomePresenter', 'checkSandboxAvailability', 'Failed to check sandbox availability', {
+				error: error instanceof Error ? error.message : String(error),
+			});
+		}
 	}
 
 	// === View Management ===
@@ -240,6 +267,21 @@ export class HomePresenter {
 		}
 
 		this._notifyView();
+	};
+
+	/**
+	 * Show temporary error message (auto-clears after 5 seconds)
+	 * Used for non-critical errors that don't need user action
+	 */
+	showTempError = (message: string) => {
+		this.state.tempErrorMessage = message;
+		this._notifyView();
+
+		// Auto-clear after 5 seconds
+		setTimeout(() => {
+			this.state.tempErrorMessage = '';
+			this._notifyView();
+		}, 5000);
 	};
 
 	handleSubmit = async (userInput: string) => {
@@ -795,6 +837,9 @@ export class HomePresenter {
 	get inputError() {
 		return this.state.inputError;
 	}
+	get tempErrorMessage() {
+		return this.state.tempErrorMessage;
+	}
 	get messages() {
 		return this.state.session.getMessages();
 	}
@@ -832,7 +877,10 @@ export class HomePresenter {
 		return this.state.gitBranch;
 	}
 	get sandboxEnabled() {
-		return this.sandboxModeManager?.isEnabled() ?? true; // Default: enabled for safety
+		return this.sandboxModeManager?.isEnabled() ?? false;
+	}
+	get sandboxAvailable() {
+		return this.sandboxModeManager?.isSandboxAvailable() ?? false;
 	}
 	get messageCount() {
 		return this.state.session.getMessageCount();

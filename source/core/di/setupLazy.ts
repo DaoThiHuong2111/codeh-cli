@@ -19,7 +19,8 @@ import {ConfigLoader} from '../../infrastructure/config/ConfigLoader';
 import {InMemoryHistoryRepository} from '../../infrastructure/history/InMemoryHistoryRepository';
 import {FileOperations} from '../../infrastructure/filesystem/FileOperations';
 import {ShellExecutor} from '../../infrastructure/process/ShellExecutor';
-import {SandboxedShellExecutor} from '../../infrastructure/process/SandboxedShellExecutor';
+import {DockerfileManager} from '../../infrastructure/process/DockerfileManager';
+import {DockerShellExecutor} from '../../infrastructure/process/DockerShellExecutor';
 import {SandboxModeManager} from '../../infrastructure/process/SandboxModeManager';
 import {CommandValidator} from '../../infrastructure/process/CommandValidator';
 import {SimplePermissionHandler} from '../../infrastructure/permissions/SimplePermissionHandler';
@@ -91,16 +92,37 @@ export async function setupContainerWithLazyLoading(): Promise<Container> {
 	// File Operations
 	container.register('FileOperations', () => new FileOperations(), true);
 
-	// Shell Executor & Sandbox Mode
-	container.register(
-		'SandboxModeManager',
-		() => new SandboxModeManager(),
-		true,
-	);
+	// Shell Executor & Docker Sandbox Mode
 	container.register('ShellExecutor', () => new ShellExecutor(), true);
 	container.register(
-		'SandboxedShellExecutor',
-		() => new SandboxedShellExecutor(),
+		'DockerfileManager',
+		() => new DockerfileManager(),
+		true,
+	);
+	container.register(
+		'SandboxModeManager',
+		() => {
+			const dockerfileManager = container.resolve<DockerfileManager>(
+				'DockerfileManager',
+			);
+			return new SandboxModeManager(dockerfileManager);
+		},
+		true,
+	);
+	container.register(
+		'DockerShellExecutor',
+		() => {
+			const dockerfileManager = container.resolve<DockerfileManager>(
+				'DockerfileManager',
+			);
+			const sandboxModeManager = container.resolve<SandboxModeManager>(
+				'SandboxModeManager',
+			);
+			return new DockerShellExecutor(
+				dockerfileManager,
+				() => sandboxModeManager.getContainerId(),
+			);
+		},
 		true,
 	);
 	container.register('CommandValidator', () => new CommandValidator(), true);
@@ -150,9 +172,9 @@ export async function setupContainerWithLazyLoading(): Promise<Container> {
 			};
 
 			// Resolve dependencies for lazy factories
-			const shellExecutor = container.resolve<ShellExecutor>('ShellExecutor');
-			const sandboxedShellExecutor = container.resolve<SandboxedShellExecutor>(
-				'SandboxedShellExecutor',
+			const hostExecutor = container.resolve<ShellExecutor>('ShellExecutor');
+			const dockerExecutor = container.resolve<DockerShellExecutor>(
+				'DockerShellExecutor',
 			);
 			const sandboxModeManager = container.resolve<SandboxModeManager>(
 				'SandboxModeManager',
@@ -165,8 +187,8 @@ export async function setupContainerWithLazyLoading(): Promise<Container> {
 			// Group 1: Basic tools (commonly used - preload these)
 			registry.registerLazy('shell', () =>
 				new ShellTool(
-					shellExecutor,
-					sandboxedShellExecutor,
+					hostExecutor,
+					dockerExecutor,
 					sandboxModeManager,
 				),
 			);
