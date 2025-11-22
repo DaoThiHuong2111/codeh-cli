@@ -15,7 +15,6 @@ function getStorageDir(): string {
 	const homeDir = os.homedir();
 	const storageDir = path.join(homeDir, '.codeh-cli', 'chat-history');
 
-	// Create directory if not exists
 	if (!fs.existsSync(storageDir)) {
 		fs.mkdirSync(storageDir, {recursive: true});
 	}
@@ -41,7 +40,6 @@ export function saveHistoryToFile(
 	try {
 		const filePath = getStorageFilePath(storageKey);
 
-		// Convert to JSON, handling Date serialization
 		const data = JSON.stringify(
 			history.map(item => ({
 				...item,
@@ -71,7 +69,6 @@ export function loadHistoryFromFile(storageKey: string): HistoryItem[] {
 		const data = fs.readFileSync(filePath, 'utf-8');
 		const parsed = JSON.parse(data);
 
-		// Convert ISO strings back to Date objects
 		return parsed.map((item: any) => ({
 			...item,
 			timestamp: new Date(item.timestamp),

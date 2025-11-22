@@ -88,7 +88,6 @@ export class HomePresenter {
 		this.logger = logger;
 		this.sessionStartTime = Date.now();
 
-		// Initialize state
 		const initialSession = Session.createNew(config.model || 'claude-3-5-sonnet');
 		this.state = {
 			input: '',
@@ -114,7 +113,6 @@ export class HomePresenter {
 			directory: process.cwd(),
 		};
 
-		// Set logger session ID
 		if (this.logger.setSessionId) {
 			this.logger.setSessionId(initialSession.id);
 		}
@@ -125,10 +123,8 @@ export class HomePresenter {
 			directory: this.state.directory,
 		});
 
-		// Start duration timer (update every second)
 		this.startDurationTimer();
 
-		// Check sandbox availability (Dockerfile detection)
 		this.checkSandboxAvailability();
 	}
 
@@ -166,8 +162,6 @@ export class HomePresenter {
 		this.viewUpdateCallback?.();
 	}
 
-	// === Tool Execution Progress Handlers ===
-
 	private handleToolProgress = (event: ToolExecutionProgressEvent) => {
 		this.logger.debug('HomePresenter', 'handleToolProgress', 'Tool progress event', {
 			type: event.type,
@@ -182,7 +176,6 @@ export class HomePresenter {
 					currentIteration: event.iteration,
 					maxIterations: event.maxIterations,
 					message: `Iteration ${event.iteration}/${event.maxIterations}`,
-					// Clear previous tool info when starting new iteration
 					currentTool: undefined,
 					toolArguments: undefined,
 					toolOutput: undefined,
@@ -204,7 +197,7 @@ export class HomePresenter {
 					isExecuting: true,
 					currentTool: event.toolName,
 					toolArguments: event.toolArguments,
-					toolOutput: undefined, // Clear previous output
+					toolOutput: undefined,
 					toolIndex: event.toolIndex,
 					totalTools: event.totalTools,
 					message: `Executing ${event.toolName} (${event.toolIndex}/${event.totalTools})`,
@@ -214,7 +207,7 @@ export class HomePresenter {
 			case 'tool_completed':
 				this.state.toolExecutionProgress = {
 					...this.state.toolExecutionProgress,
-					isExecuting: false, // Set to false để hiển thị completed state
+					isExecuting: false,
 					currentTool: event.toolName,
 					toolArguments: event.toolArguments,
 					toolOutput: event.toolOutput,
@@ -225,10 +218,10 @@ export class HomePresenter {
 			case 'tool_failed':
 				this.state.toolExecutionProgress = {
 					...this.state.toolExecutionProgress,
-					isExecuting: false, // Set to false để hiển thị failed state
+					isExecuting: false,
 					currentTool: event.toolName,
 					toolArguments: event.toolArguments,
-					toolOutput: event.toolOutput, // Error message as output
+					toolOutput: event.toolOutput,
 					message: `Failed ${event.toolName}: ${event.message}`,
 				};
 				break;
@@ -243,8 +236,6 @@ export class HomePresenter {
 
 		this._notifyView();
 	};
-
-	// === Input Handlers ===
 
 	handleInputChange = (value: string) => {
 		this.logger.debug('HomePresenter', 'handleInputChange', 'Input changed', {
@@ -322,20 +313,16 @@ export class HomePresenter {
 			return;
 		}
 
-		// Clear input
 		this.state.input = '';
 
-		// Add user message to session
 		const userMessage = MessageModel.user(userInput);
 		this.state.session.addMessage(userMessage);
 
 		this.logger.debug('HomePresenter', 'handleSubmit', 'User message added to session');
 
-		// Track streaming message - Create ID once for consistency
 		const assistantMessageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 		let assistantContent = '';
 
-		// Set loading
 		this.state.isLoading = true;
 		this._notifyView();
 
@@ -348,11 +335,9 @@ export class HomePresenter {
 		let firstChunkTime: number | null = null;
 
 		try {
-			// Execute AI request with streaming
 			const turn = await this.client.executeWithStreaming(
 				userInput,
 				(chunk: string) => {
-					// Log first chunk (time to first token)
 					if (chunkCount === 0) {
 						firstChunkTime = Date.now();
 						this.logger.info('HomePresenter', 'handleSubmit', 'First chunk received', {
@@ -362,30 +347,24 @@ export class HomePresenter {
 
 					chunkCount++;
 
-					// Accumulate content
 					assistantContent += chunk;
 
-					// Get messages array from session
 					const messages = this.state.session.getMessages() as Message[];
 
-					// Find existing message or create new one
 					const existingIndex = messages.findIndex(
 						m => m.id === assistantMessageId,
 					);
 
-					// Create new message with updated content using consistent ID
 					const updatedMessage = new MessageModel(
-						assistantMessageId, // Fixed ID for all chunks
+						assistantMessageId,
 						'assistant',
 						assistantContent,
 						new Date(),
 					);
 
 					if (existingIndex >= 0) {
-						// Replace existing message with same ID (direct manipulation OK for streaming)
 						(messages as any)[existingIndex] = updatedMessage;
 					} else {
-						// First chunk - add new message via session
 						this.state.streamingMessageId = assistantMessageId;
 						this.state.session.addMessage(updatedMessage);
 					}
@@ -393,7 +372,6 @@ export class HomePresenter {
 					this._notifyView();
 				},
 				(event: ToolExecutionProgressEvent) => {
-					// Handle tool execution progress events
 					this.handleToolProgress(event);
 				},
 			);
@@ -409,7 +387,6 @@ export class HomePresenter {
 					token_usage: turn.metadata?.tokenUsage,
 				});
 
-				// Create final message with metadata (no mutation!)
 				const finalMessage = MessageModel.create(
 					'assistant',
 					turn.response.content,
@@ -427,12 +404,10 @@ export class HomePresenter {
 					},
 				);
 
-				// Update token stats
 				if (turn.metadata?.tokenUsage) {
 					this.updateTokenStats(turn.metadata.tokenUsage.total);
 				}
 
-				// Replace streaming message with final message
 				const messages = this.state.session.getMessages() as Message[];
 				const index = messages.findIndex(
 					m => m.id === assistantMessageId,
@@ -456,7 +431,6 @@ export class HomePresenter {
 				stack: error instanceof Error ? error.stack : undefined,
 			});
 
-			// Remove the streaming message if exists
 			const messages = this.state.session.getMessages() as Message[];
 			const index = messages.findIndex(
 				m => m.id === assistantMessageId,
@@ -465,7 +439,6 @@ export class HomePresenter {
 				(messages as any).splice(index, 1);
 			}
 
-			// Add error message
 			const errorMessage = MessageModel.error(error);
 			this.state.session.addMessage(errorMessage);
 		} finally {
@@ -499,7 +472,6 @@ export class HomePresenter {
 			return;
 		}
 
-		// Clear input
 		this.state.input = '';
 		this.state.filteredSuggestions = [];
 
@@ -529,8 +501,6 @@ export class HomePresenter {
 
 		this._notifyView();
 	}
-
-	// === Suggestion Handlers ===
 
 	handleSuggestionNavigate = (direction: 'up' | 'down') => {
 		this.logger.debug('HomePresenter', 'handleSuggestionNavigate', 'Navigating suggestions', {
@@ -592,8 +562,6 @@ export class HomePresenter {
 		return has;
 	};
 
-	// === Session Management ===
-
 	/**
 	 * Auto-save current session with timestamp name (if not empty)
 	 * Returns the saved session name or 'empty' if skipped
@@ -637,11 +605,9 @@ export class HomePresenter {
 		const newSession = Session.createNew(this.state.model);
 		this.state.session = newSession;
 
-		// Sync with historyRepo - start fresh conversation
 		const historyRepo = this.client.getHistoryRepository();
 		await historyRepo.startNewConversation();
 
-		// Update logger session ID
 		if (this.logger && this.logger.setSessionId) {
 			this.logger.setSessionId(newSession.id);
 			this.logger.info('HomePresenter', 'startNewSession', 'New session created', {
@@ -678,14 +644,10 @@ export class HomePresenter {
 		const session = await this.sessionManager.load(name);
 		this.state.session = session;
 
-		// IMPORTANT: Sync loaded session messages to historyRepo
-		// This ensures LLM receives full conversation context
 		const historyRepo = this.client.getHistoryRepository();
-		
-		// Clear current history and start fresh conversation
+
 		await historyRepo.startNewConversation();
-		
-		// Add all messages from loaded session to history
+
 		const messages = session.getMessages();
 		for (const message of messages) {
 			await historyRepo.addMessage(message);
@@ -806,8 +768,6 @@ export class HomePresenter {
 		this._notifyView();
 	}
 
-	// === Input History ===
-
 	navigateHistory = (direction: 'up' | 'down'): void => {
 		this.logger.debug('HomePresenter', 'navigateHistory', 'Navigating history', {
 			direction,
@@ -828,8 +788,6 @@ export class HomePresenter {
 			this.logger.debug('HomePresenter', 'navigateHistory', 'No history item found');
 		}
 	};
-
-	// === Getters ===
 
 	get input() {
 		return this.state.input;
@@ -919,12 +877,9 @@ export class HomePresenter {
 		return currentPlan?.todos || [];
 	}
 
-	// === Stats Management ===
-
 	private startDurationTimer(): void {
 		this.logger.debug('HomePresenter', 'startDurationTimer', 'Starting duration timer');
 
-		// Update duration every second
 		this.durationTimer = setInterval(() => {
 			this.state.sessionDuration = Math.floor(
 				(Date.now() - this.sessionStartTime) / 1000,
@@ -941,8 +896,6 @@ export class HomePresenter {
 
 		this.state.totalTokens += tokens;
 
-		// Estimate cost based on model
-		// Simple pricing: $0.005 per 1K tokens (average)
 		this.state.estimatedCost = (this.state.totalTokens / 1000) * 0.005;
 
 		this.logger.info('HomePresenter', 'updateTokenStats', 'Token stats updated', {
@@ -976,10 +929,8 @@ export class HomePresenter {
 	async cleanup(): Promise<void> {
 		this.logger.info('HomePresenter', 'cleanup', 'Cleaning up presenter');
 
-		// Auto-save session before exit
 		await this.autoSaveCurrentSession();
 
-		// Clear timer
 		if (this.durationTimer) {
 			this.logger.debug('HomePresenter', 'cleanup', 'Clearing duration timer');
 			clearInterval(this.durationTimer);

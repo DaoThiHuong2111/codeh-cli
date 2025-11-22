@@ -12,7 +12,7 @@ export {Configuration} from './domain/models/Configuration';
 // Value Objects
 export {Provider, ProviderInfo} from './domain/valueObjects/Provider';
 export {InputType, InputClassification} from './domain/valueObjects/InputType';
-export {ModelInfo, ModelRegistry} from './domain/valueObjects/ModelInfo';
+export {ModelInfo} from './domain/valueObjects/ModelInfo';
 
 // Interfaces
 export type {
@@ -56,4 +56,4 @@ export {FileOpsTool} from './tools/FileOps';
 
 // DI Container
 export {Container} from './di/Container';
-export {setupContainer, createContainer} from './di/setup';
+export {setupContainer, createCodehClient} from './di/setup';

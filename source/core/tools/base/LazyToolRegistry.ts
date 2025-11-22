@@ -66,7 +66,6 @@ export class LazyToolRegistry {
 			factory,
 			definition,
 		});
-		// Clear cache when new tool is registered
 		this.definitionsCache = undefined;
 	}
 
@@ -83,7 +82,6 @@ export class LazyToolRegistry {
 			instance: tool,
 			definition: tool.getDefinition(),
 		});
-		// Clear cache when new tool is registered
 		this.definitionsCache = undefined;
 	}
 
@@ -99,12 +97,10 @@ export class LazyToolRegistry {
 			return undefined;
 		}
 
-		// Return cached instance if available
 		if (registration.instance) {
 			return registration.instance;
 		}
 
-		// Lazy load: instantiate tool on first access
 		try {
 			registration.instance = registration.factory();
 			return registration.instance;
@@ -144,7 +140,6 @@ export class LazyToolRegistry {
 	 * @returns {ToolDefinition[]} Array of tool definitions
 	 */
 	getAllToolDefinitions(): ToolDefinition[] {
-		// Return cached definitions if available
 		if (this.definitionsCache) {
 			return this.definitionsCache;
 		}
@@ -152,13 +147,11 @@ export class LazyToolRegistry {
 		const definitions: ToolDefinition[] = [];
 
 		for (const [name, registration] of this.tools.entries()) {
-			// Use cached definition if available
 			if (registration.definition) {
 				definitions.push(registration.definition);
 				continue;
 			}
 
-			// Use instance definition if tool is already loaded
 			if (registration.instance) {
 				const def = registration.instance.getDefinition();
 				registration.definition = def;
@@ -166,8 +159,6 @@ export class LazyToolRegistry {
 				continue;
 			}
 
-			// Last resort: instantiate to get definition
-			// This defeats lazy loading but ensures we can list all tools
 			const tool = this.getTool(name);
 			if (tool) {
 				const def = tool.getDefinition();
@@ -176,7 +167,6 @@ export class LazyToolRegistry {
 			}
 		}
 
-		// Cache definitions for future calls
 		this.definitionsCache = definitions;
 		return definitions;
 	}

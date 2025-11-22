@@ -37,22 +37,18 @@ export class Container {
 	 * Resolve a dependency
 	 */
 	resolve<T>(token: string): T {
-		// Check if instance exists (for singletons)
 		if (this.instances.has(token)) {
 			return this.instances.get(token) as T;
 		}
 
-		// Get factory
 		const factory = this.factories.get(token);
 
 		if (!factory) {
 			throw new Error(`No factory registered for token: ${token}`);
 		}
 
-		// Create instance
 		const instance = factory();
 
-		// Store if singleton
 		if (this.singletons.has(token)) {
 			this.instances.set(token, instance);
 		}

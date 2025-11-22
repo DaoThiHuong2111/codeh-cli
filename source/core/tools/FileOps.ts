@@ -11,7 +11,6 @@ import {
 
 export class FileOpsTool extends Tool {
 	constructor(private fileOps: any) {
-		// FileOperations will be injected
 		super('file_ops', 'Perform file system operations');
 	}
 

@@ -18,7 +18,6 @@ export class FileSessionManager implements ISessionManager {
 		try {
 			await fs.mkdir(this.sessionsDir, {recursive: true});
 		} catch (error) {
-			// Directory might already exist
 		}
 	}
 
@@ -28,10 +27,8 @@ export class FileSessionManager implements ISessionManager {
 		const filename = this.getFilename(session.name);
 		const filepath = path.join(this.sessionsDir, filename);
 
-		// Serialize session
 		const data = JSON.stringify(session.toJSON(), null, 2);
 
-		// Write to file
 		await fs.writeFile(filepath, data, 'utf-8');
 	}
 
@@ -39,15 +36,12 @@ export class FileSessionManager implements ISessionManager {
 		const filename = this.getFilename(name);
 		const filepath = path.join(this.sessionsDir, filename);
 
-		// Check if exists
 		if (!(await this.exists(name))) {
 			throw new Error(`Session "${name}" not found`);
 		}
 
-		// Read file
 		const data = await fs.readFile(filepath, 'utf-8');
 
-		// Parse and create session
 		const json = JSON.parse(data);
 		return Session.fromData(json);
 	}
@@ -56,20 +50,16 @@ export class FileSessionManager implements ISessionManager {
 		await this.init();
 
 		try {
-			// Read directory
 			const files = await fs.readdir(this.sessionsDir);
 
-			// Filter .json files
 			const sessionFiles = files.filter(f => f.endsWith('.json'));
 
-			// Get info for each
 			const infos: SessionInfo[] = [];
 
 			for (const file of sessionFiles) {
 				const filepath = path.join(this.sessionsDir, file);
 				const stats = await fs.stat(filepath);
 
-				// Read file to get metadata
 				const data = await fs.readFile(filepath, 'utf-8');
 				const json = JSON.parse(data);
 
@@ -82,12 +72,10 @@ export class FileSessionManager implements ISessionManager {
 				});
 			}
 
-			// Sort by updated date (newest first)
 			infos.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
 
 			return infos;
 		} catch (error) {
-			// Directory might not exist yet
 			return [];
 		}
 	}
@@ -120,7 +108,6 @@ export class FileSessionManager implements ISessionManager {
 	 * @returns The generated session name
 	 */
 	async saveWithTimestamp(session: Session): Promise<string> {
-		// Generate timestamp name: session_YYYYMMDD_HHMMSS
 		const now = new Date();
 		const year = now.getFullYear();
 		const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -131,10 +118,8 @@ export class FileSessionManager implements ISessionManager {
 
 		const timestampName = `session_${year}${month}${day}_${hours}${minutes}${seconds}`;
 
-		// Create new session with timestamp name
 		const namedSession = session.withName(timestampName);
 
-		// Save it
 		await this.save(namedSession);
 
 		return timestampName;
@@ -151,10 +136,8 @@ export class FileSessionManager implements ISessionManager {
 			return null;
 		}
 
-		// List already sorted by updatedAt descending (newest first)
 		const latestInfo = sessions[0];
 
-		// Load the session
 		return await this.load(latestInfo.name);
 	}
 
@@ -162,7 +145,6 @@ export class FileSessionManager implements ISessionManager {
 	 * Get filename for session (sanitized)
 	 */
 	private getFilename(name: string): string {
-		// Sanitize name
 		const sanitized = name.replace(/[^a-zA-Z0-9-_]/g, '_');
 		return `${sanitized}.json`;
 	}

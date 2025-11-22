@@ -33,7 +33,6 @@ export function useHomeLogic(container: Container): UseHomeLogicReturn {
 			try {
 				setLoading(true);
 
-				// Initialize client if needed
 				const initializedClient = await initializeClient();
 
 				if (!initializedClient) {
@@ -42,7 +41,6 @@ export function useHomeLogic(container: Container): UseHomeLogicReturn {
 					return;
 				}
 
-				// Load config
 				const {ConfigLoader} = await import(
 					'../../infrastructure/config/ConfigLoader.js'
 				);
@@ -54,18 +52,15 @@ export function useHomeLogic(container: Container): UseHomeLogicReturn {
 					return;
 				}
 
-				// Create dependencies
 				const commandRegistry = new CommandService();
 				const sessionManager = new FileSessionManager();
-				const inputHistory = new InputHistoryService(50); // Keep last 50 inputs
+				const inputHistory = new InputHistoryService(50);
 
 				await sessionManager.init();
 
-				// Resolve WorkflowManager from container
 				const workflowManager =
 					container.resolve<WorkflowManager>('WorkflowManager');
 
-				// Resolve SandboxModeManager from container
 				const {SandboxModeManager} = await import(
 					'../../infrastructure/process/SandboxModeManager.js'
 				);
@@ -73,7 +68,6 @@ export function useHomeLogic(container: Container): UseHomeLogicReturn {
 					'SandboxModeManager',
 				);
 
-				// Create presenter
 				const newPresenter = new HomePresenter(
 					initializedClient,
 					commandRegistry,
@@ -84,7 +78,6 @@ export function useHomeLogic(container: Container): UseHomeLogicReturn {
 					sandboxModeManager,
 				);
 
-				// Setup view callback for reactive updates
 				newPresenter.setViewUpdateCallback(() => {
 					forceUpdate({});
 				});
@@ -101,11 +94,9 @@ export function useHomeLogic(container: Container): UseHomeLogicReturn {
 		initPresenter();
 	}, [container]);
 
-	// Cleanup on unmount (auto-save session before exit)
 	useEffect(() => {
 		return () => {
 			if (presenter) {
-				// Call cleanup asynchronously (auto-save session)
 				presenter.cleanup().catch(err => {
 					console.error('Error during cleanup:', err);
 				});

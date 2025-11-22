@@ -12,7 +12,6 @@ export const SlashSuggestions: React.FC<SlashSuggestionsProps> = ({
 	commands,
 	selectedIndex,
 }) => {
-	// No commands to show
 	if (commands.length === 0) {
 		return null;
 	}

@@ -27,10 +27,8 @@ export class CommandService implements ICommandRegistry {
 			aliases_count: command.aliases.length,
 		});
 
-		// Register main command
 		this.commands.set(command.cmd, command);
 
-		// Register aliases
 		for (const alias of command.aliases) {
 			this.aliases.set(alias, command.cmd);
 		}
@@ -49,7 +47,6 @@ export class CommandService implements ICommandRegistry {
 			command: cmd,
 		});
 
-		// Check aliases first
 		const mainCmd = this.aliases.get(cmd) || cmd;
 		const command = this.commands.get(mainCmd) || null;
 
@@ -132,7 +129,6 @@ export class CommandService implements ICommandRegistry {
 	private registerDefaultCommands(): void {
 		logger.info('CommandService', 'registerDefaultCommands', 'Registering default commands');
 
-		// /help command
 		this.register(
 			new Command(
 				{
@@ -167,7 +163,6 @@ export class CommandService implements ICommandRegistry {
 			),
 		);
 
-		// /new command - Auto-save current session and start new
 		this.register(
 			new Command(
 				{
@@ -178,13 +173,10 @@ export class CommandService implements ICommandRegistry {
 				},
 				{
 					execute: async (args, presenter) => {
-						// 1. Auto-save current session (if not empty)
 						const savedName = await presenter.autoSaveCurrentSession();
 
-						// 2. Start new session
 						await presenter.startNewSession();
 
-						// 3. Show message
 						let message = 'New session started.';
 						if (savedName && savedName !== 'empty') {
 							message = `Previous session saved as "${savedName}". ${message}`;
@@ -197,7 +189,6 @@ export class CommandService implements ICommandRegistry {
 			),
 		);
 
-		// /sessions command - Interactive session browser
 		this.register(
 			new Command(
 				{
@@ -214,7 +205,6 @@ export class CommandService implements ICommandRegistry {
 			),
 		);
 
-		// /sandbox command - Toggle sandbox mode
 		this.register(
 			new Command(
 				{
@@ -226,7 +216,7 @@ export class CommandService implements ICommandRegistry {
 				{
 					execute: async (args, presenter) => {
 						const sandboxManager = (presenter as any).sandboxModeManager;
-						
+
 						if (!sandboxManager) {
 							logger.error('CommandService', 'sandbox', 'Sandbox manager not available');
 							const errorMsg = Message.system('❌ Sandbox manager not available');
@@ -234,11 +224,9 @@ export class CommandService implements ICommandRegistry {
 							return;
 						}
 
-						// Get old mode
 						const oldMode = sandboxManager.getMode();
 						const oldDescription = sandboxManager.getModeDescription();
 
-						// Toggle mode
 						const newMode = sandboxManager.toggle();
 
 						logger.info('CommandService', 'sandbox', 'Sandbox mode toggled', {
@@ -246,7 +234,6 @@ export class CommandService implements ICommandRegistry {
 							new_mode: newMode,
 						});
 
-						// Create response message
 						const message = `Sandbox mode toggled: ${newMode}`;
 
 						const systemMsg = Message.system(message);

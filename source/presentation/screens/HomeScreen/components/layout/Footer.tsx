@@ -44,7 +44,6 @@ export const Footer: React.FC<FooterProps> = ({
 			borderTop
 			borderColor={THEME_COLORS.ui.border}
 		>
-			{/* Left: Status */}
 			<Box>
 				<Text color={statusConfig.color} bold>
 					{statusConfig.icon}
@@ -52,7 +51,6 @@ export const Footer: React.FC<FooterProps> = ({
 				<Text color={THEME_COLORS.text.muted}> {statusConfig.label}</Text>
 			</Box>
 
-			{/* Center: Model info */}
 			{model && (
 				<Box>
 					<Text color={THEME_COLORS.text.muted}>Model: </Text>
@@ -60,7 +58,6 @@ export const Footer: React.FC<FooterProps> = ({
 				</Box>
 			)}
 
-			{/* Center-Right: Token count */}
 			{tokenCount !== undefined && (
 				<Box>
 					<Text color={THEME_COLORS.text.muted}>Tokens: </Text>
@@ -70,7 +67,6 @@ export const Footer: React.FC<FooterProps> = ({
 				</Box>
 			)}
 
-			{/* Right: Permission Mode */}
 			<Box>
 				<Text color={modeConfig.color} bold>
 					{modeConfig.icon}

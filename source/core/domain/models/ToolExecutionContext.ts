@@ -46,8 +46,6 @@ export class ToolExecutionContext {
 		return `tool_ctx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 	}
 
-	// Fluent API for state transitions
-
 	withStatus(status: ToolExecutionStatus): ToolExecutionContext {
 		return new ToolExecutionContext(
 			this.id,
@@ -145,8 +143,6 @@ export class ToolExecutionContext {
 			{...this.metadata, ...metadata},
 		);
 	}
-
-	// Helper methods
 
 	isPending(): boolean {
 		return this.status === 'pending';

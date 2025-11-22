@@ -35,7 +35,6 @@ export default function ToolPermissionDialog({
 }: ToolPermissionDialogProps) {
 	const [focusedButton, setFocusedButton] = useState<ButtonFocus>('allow');
 
-	// Reset focus when request changes
 	useEffect(() => {
 		if (request) {
 			logger.info('ToolPermissionDialog', 'useEffect', 'Permission dialog opened', {
@@ -48,15 +47,12 @@ export default function ToolPermissionDialog({
 		}
 	}, [request]);
 
-	// Switch to dialog layer when dialog is visible
-	// This blocks screen-level shortcuts when dialog is active
 	useLayerSwitch('dialog', !!request, 'screen');
 
 	useInput(
 		(input, key) => {
 			if (!request) return;
 
-			// Tab or arrow keys to navigate
 			if (key.tab || key.rightArrow) {
 				logger.debug('ToolPermissionDialog', 'useInput', 'Navigating right');
 
@@ -75,7 +71,6 @@ export default function ToolPermissionDialog({
 				});
 			}
 
-			// Enter to confirm
 			if (key.return) {
 				logger.info('ToolPermissionDialog', 'useInput', 'User confirmed selection', {
 					tool_name: request.toolName,
@@ -91,7 +86,6 @@ export default function ToolPermissionDialog({
 				}
 			}
 
-			// Shortcuts
 			if (input === 'y') {
 				logger.info('ToolPermissionDialog', 'useInput', 'User approved tool (shortcut Y)', {
 					tool_name: request.toolName,
@@ -124,14 +118,12 @@ export default function ToolPermissionDialog({
 			padding={1}
 			marginY={1}
 		>
-			{/* Header */}
 			<Box marginBottom={1}>
 				<Text bold color="yellow">
 					🔧 Tool Execution Permission Required
 				</Text>
 			</Box>
 
-			{/* Tool Info */}
 			<Box flexDirection="column" marginBottom={1}>
 				<Box>
 					<Text bold>Tool: </Text>
@@ -154,14 +146,12 @@ export default function ToolPermissionDialog({
 				</Box>
 			</Box>
 
-			{/* Warning */}
 			<Box marginBottom={1} paddingY={0}>
 				<Text dimColor>
 					⚠️  Only allow tools from trusted sources. Review arguments carefully.
 				</Text>
 			</Box>
 
-			{/* Buttons */}
 			<Box gap={2}>
 				<Button
 					label="✓ Allow (Y)"
@@ -189,7 +179,6 @@ export default function ToolPermissionDialog({
 				/>
 			</Box>
 
-			{/* Keyboard hint */}
 			<Box marginTop={1}>
 				<Text dimColor>
 					Navigate: Tab/Arrow Keys • Confirm: Enter • Quick: Y/N/A

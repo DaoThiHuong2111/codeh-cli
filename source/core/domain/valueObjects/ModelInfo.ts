@@ -22,19 +22,3 @@ export class ModelInfo {
 	}
 }
 
-export class ModelRegistry {
-	private static models: Record<string, ModelInfo> = {};
-	// No hardcoded models - all models come from user configuration
-
-	static get(modelName: string): ModelInfo | undefined {
-		return this.models[modelName];
-	}
-
-	static register(modelName: string, info: ModelInfo): void {
-		this.models[modelName] = info;
-	}
-
-	static getAll(): Record<string, ModelInfo> {
-		return {...this.models};
-	}
-}

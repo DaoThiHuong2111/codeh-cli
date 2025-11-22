@@ -66,7 +66,6 @@ export default function Card({
 			{renderTitle()}
 			{renderTopBorder()}
 
-			{/* Content */}
 			{React.Children.map(children, (child, index) => (
 				<Box key={index}>
 					<Text color={borderColor}>{sideBorder}</Text>
@@ -77,7 +76,6 @@ export default function Card({
 				</Box>
 			))}
 
-			{/* Bottom border */}
 			<Box>
 				<Text color={borderColor}>
 					{corners.bottomLeft}

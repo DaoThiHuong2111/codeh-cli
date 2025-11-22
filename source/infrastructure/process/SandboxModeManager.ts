@@ -21,11 +21,10 @@ import {DockerfileManager} from './DockerfileManager.js';
  * @implements {ISandboxModeManager}
  */
 export class SandboxModeManager implements ISandboxModeManager {
-	private mode: SandboxMode = SandboxMode.DISABLED; // Default: disabled
+	private mode: SandboxMode = SandboxMode.DISABLED;
 	private listeners: SandboxModeChangeListener[] = [];
 	private dockerfileManager: DockerfileManager;
 
-	// Sandbox availability and state
 	private sandboxAvailable: boolean = false;
 	private currentWorkingDir: string = process.cwd();
 	private containerId: string | null = null;
@@ -42,17 +41,15 @@ export class SandboxModeManager implements ISandboxModeManager {
 		const workDir = cwd || this.currentWorkingDir;
 		this.currentWorkingDir = workDir;
 
-		// Check Dockerfile existence
 		const hasDockerfile = this.dockerfileManager.hasDockerfile(workDir);
 
-		// Check Docker availability
 		const dockerAvailable = await this.dockerfileManager.isDockerAvailable();
 
 		this.sandboxAvailable = hasDockerfile && dockerAvailable;
 
 		if (!dockerAvailable && hasDockerfile) {
 			console.warn(
-				'⚠️  Dockerfile found but Docker is not installed or not running',
+				'Dockerfile found but Docker is not installed or not running',
 			);
 		}
 
@@ -88,17 +85,16 @@ export class SandboxModeManager implements ISandboxModeManager {
 		if (!this.sandboxAvailable) {
 			return {
 				success: false,
-				error: 'Không tìm thấy Dockerfile trong thư mục hiện tại',
+				error: 'Dockerfile not found in current directory',
 			};
 		}
 
 		if (this.mode === SandboxMode.ENABLED) {
-			return {success: true}; // Already enabled
+			return {success: true};
 		}
 
-		console.log('🔒 Enabling Docker sandbox mode...');
+		console.log('Enabling Docker sandbox mode...');
 
-		// Step 1: Build image from Dockerfile
 		const buildResult = await this.dockerfileManager.buildImage(
 			this.currentWorkingDir,
 		);
@@ -111,7 +107,6 @@ export class SandboxModeManager implements ISandboxModeManager {
 
 		this.imageTag = buildResult.imageTag;
 
-		// Step 2: Start container
 		const startResult = await this.dockerfileManager.startContainer(
 			this.imageTag,
 			this.currentWorkingDir,
@@ -125,11 +120,10 @@ export class SandboxModeManager implements ISandboxModeManager {
 
 		this.containerId = startResult.containerId!;
 
-		// Update mode
 		const oldMode = this.mode;
 		this.mode = SandboxMode.ENABLED;
 
-		console.log('✅ Docker sandbox mode ENABLED - Commands run in isolated container');
+		console.log('Docker sandbox mode ENABLED - Commands run in isolated container');
 
 		this.notifyListeners(this.mode, oldMode);
 
@@ -142,23 +136,21 @@ export class SandboxModeManager implements ISandboxModeManager {
 	 */
 	async disable(): Promise<{success: boolean; error?: string}> {
 		if (this.mode === SandboxMode.DISABLED) {
-			return {success: true}; // Already disabled
+			return {success: true};
 		}
 
-		console.log('⚠️  Disabling Docker sandbox mode...');
+		console.log('Disabling Docker sandbox mode...');
 
-		// Cleanup container
 		const cleaned = await this.dockerfileManager.cleanup(
 			this.currentWorkingDir,
 		);
 
-		// Update mode
 		const oldMode = this.mode;
 		this.mode = SandboxMode.DISABLED;
 		this.containerId = null;
 		this.imageTag = null;
 
-		console.log('✅ Docker sandbox mode DISABLED - Commands run on host');
+		console.log('Docker sandbox mode DISABLED - Commands run on host');
 
 		this.notifyListeners(this.mode, oldMode);
 
@@ -239,14 +231,14 @@ export class SandboxModeManager implements ISandboxModeManager {
 	 */
 	getModeDescription(): string {
 		if (!this.sandboxAvailable) {
-			return '⚠️  Sandbox unavailable - No Dockerfile found';
+			return 'Sandbox unavailable - No Dockerfile found';
 		}
 
 		if (this.isEnabled()) {
-			return '🐳 Sandbox ENABLED - Commands run in Docker container';
+			return 'Sandbox ENABLED - Commands run in Docker container';
 		}
 
-		return '💻 Sandbox DISABLED - Commands run on host system';
+		return 'Sandbox DISABLED - Commands run on host system';
 	}
 
 	/**
@@ -264,6 +256,5 @@ export class SandboxModeManager implements ISandboxModeManager {
  */
 export const globalSandboxModeManager = new SandboxModeManager();
 
-// Re-export types from interface for convenience
 export {SandboxMode} from '../../core/domain/interfaces/ISandboxModeManager.js';
 export type {SandboxModeChangeListener} from '../../core/domain/interfaces/ISandboxModeManager.js';

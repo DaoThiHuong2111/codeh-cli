@@ -8,14 +8,14 @@ import {MCPClient, MCPServer, MCPTool} from './MCPClient';
 
 export interface SerenaConfig {
 	projectRoot: string;
-	serverPath?: string; // Path to serena executable
-	pythonPath?: string; // Python interpreter path
+	serverPath?: string;
+	pythonPath?: string;
 }
 
 export interface SymbolInfo {
 	name: string;
 	namePath: string;
-	kind: number; // LSP SymbolKind
+	kind: number;
 	relativePath: string;
 	bodyLocation: {
 		startLine: number;
@@ -146,10 +146,6 @@ export class SerenaMCPAdapter {
 		}
 	}
 
-	// ========================================
-	// Symbol Tools - Context Management
-	// ========================================
-
 	/**
 	 * Get an overview of symbols in a file
 	 * @param relativePath - Relative path to file from project root
@@ -159,7 +155,6 @@ export class SerenaMCPAdapter {
 			relative_path: relativePath,
 		});
 
-		// Parse JSON result
 		try {
 			return JSON.parse(result);
 		} catch (error) {
@@ -281,10 +276,6 @@ export class SerenaMCPAdapter {
 		});
 	}
 
-	// ========================================
-	// File Tools
-	// ========================================
-
 	/**
 	 * List directory contents
 	 */
@@ -346,10 +337,6 @@ export class SerenaMCPAdapter {
 		}
 	}
 
-	// ========================================
-	// Memory Tools
-	// ========================================
-
 	/**
 	 * Write memory about project
 	 */
@@ -391,10 +378,6 @@ export class SerenaMCPAdapter {
 		});
 	}
 
-	// ========================================
-	// Workflow Tools
-	// ========================================
-
 	/**
 	 * Check if onboarding was performed
 	 */
@@ -434,7 +417,7 @@ export class SerenaMCPAdapter {
 		try {
 			return JSON.parse(result);
 		} catch (error) {
-			return result; // Return as string if not JSON
+			return result;
 		}
 	}
 }

@@ -20,7 +20,6 @@ export const SessionSelector: React.FC<SessionSelectorProps> = ({
 	sessions,
 	selectedIndex,
 }) => {
-	// No sessions to show
 	if (sessions.length === 0) {
 		return (
 			<Box flexDirection="column" borderStyle="round" borderColor="yellow" paddingX={1}>
@@ -36,12 +35,10 @@ export const SessionSelector: React.FC<SessionSelectorProps> = ({
 
 	return (
 		<Box flexDirection="column" borderStyle="round" borderColor="cyan" paddingX={1}>
-			{/* Header */}
 			<Text color="cyan" bold>
 				📁 Saved Sessions (↑↓ to navigate, Enter to load, ESC to cancel)
 			</Text>
 
-			{/* Session list */}
 			{sessions.map((session, index) => {
 				const isSelected = index === selectedIndex;
 

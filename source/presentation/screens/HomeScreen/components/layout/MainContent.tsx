@@ -31,12 +31,10 @@ export const MainContent: React.FC<MainContentProps> = ({
 	terminalHeight,
 	reservedHeight = 5,
 }) => {
-	// Calculate available height for content
 	const availableHeight = Math.max(terminalHeight - reservedHeight, 10);
 
 	return (
 		<Box flexDirection="column" height={availableHeight}>
-			{/* Static history items - won't re-render */}
 			{history.length > 0 && (
 				<Static items={history}>
 					{item => (
@@ -50,7 +48,6 @@ export const MainContent: React.FC<MainContentProps> = ({
 				</Static>
 			)}
 
-			{/* Pending/streaming item - updates dynamically */}
 			{pendingItem && (
 				<HistoryItemDisplay
 					item={pendingItem}
@@ -59,7 +56,6 @@ export const MainContent: React.FC<MainContentProps> = ({
 				/>
 			)}
 
-			{/* Empty state */}
 			{history.length === 0 && !pendingItem && (
 				<Box
 					flexDirection="column"

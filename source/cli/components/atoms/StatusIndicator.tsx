@@ -58,7 +58,6 @@ export default function StatusIndicator({
 	);
 }
 
-// Export predefined status components
 export const SuccessStatus: React.FC<{text?: string}> = ({text}) => (
 	<StatusIndicator status="success" text={text} />
 );

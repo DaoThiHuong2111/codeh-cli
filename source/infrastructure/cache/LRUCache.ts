@@ -11,8 +11,8 @@ interface CacheNode<K, V> {
 }
 
 export interface LRUCacheOptions {
-	maxSize: number; // Maximum number of items
-	onEvict?: (key: string, value: any) => void; // Callback when item evicted
+	maxSize: number;
+	onEvict?: (key: string, value: any) => void;
 }
 
 /**
@@ -42,7 +42,6 @@ export class LRUCache<K extends string, V> {
 			return undefined;
 		}
 
-		// Move to front (most recently used)
 		this.moveToFront(node);
 		return node.value;
 	}
@@ -56,13 +55,11 @@ export class LRUCache<K extends string, V> {
 		const existingNode = this.cache.get(key);
 
 		if (existingNode) {
-			// Update existing node
 			existingNode.value = value;
 			this.moveToFront(existingNode);
 			return;
 		}
 
-		// Create new node
 		const newNode: CacheNode<K, V> = {
 			key,
 			value,
@@ -70,7 +67,6 @@ export class LRUCache<K extends string, V> {
 			next: null,
 		};
 
-		// Add to front
 		if (!this.head) {
 			this.head = newNode;
 			this.tail = newNode;
@@ -82,7 +78,6 @@ export class LRUCache<K extends string, V> {
 
 		this.cache.set(key, newNode);
 
-		// Evict if over capacity
 		if (this.cache.size > this.maxSize) {
 			this.evictLRU();
 		}
@@ -143,13 +138,11 @@ export class LRUCache<K extends string, V> {
 	 */
 	private moveToFront(node: CacheNode<K, V>): void {
 		if (node === this.head) {
-			return; // Already at front
+			return;
 		}
 
-		// Remove from current position
 		this.removeNode(node);
 
-		// Add to front
 		node.prev = null;
 		node.next = this.head;
 		if (this.head) {
@@ -157,7 +150,6 @@ export class LRUCache<K extends string, V> {
 		}
 		this.head = node;
 
-		// Update tail if needed
 		if (!this.tail) {
 			this.tail = node;
 		}
@@ -194,7 +186,6 @@ export class LRUCache<K extends string, V> {
 		this.removeNode(this.tail);
 		this.cache.delete(evictedKey);
 
-		// Call eviction callback
 		if (this.onEvict) {
 			this.onEvict(evictedKey, evictedValue);
 		}

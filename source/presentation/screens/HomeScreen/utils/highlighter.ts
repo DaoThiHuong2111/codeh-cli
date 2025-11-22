@@ -4,7 +4,6 @@
 
 import {createLowlight} from 'lowlight';
 
-// Import common languages
 import javascript from 'highlight.js/lib/languages/javascript';
 import typescript from 'highlight.js/lib/languages/typescript';
 import python from 'highlight.js/lib/languages/python';
@@ -21,10 +20,8 @@ import rust from 'highlight.js/lib/languages/rust';
 import ruby from 'highlight.js/lib/languages/ruby';
 import php from 'highlight.js/lib/languages/php';
 
-// Create lowlight instance
 const lowlight = createLowlight();
 
-// Register languages
 lowlight.register('javascript', javascript);
 lowlight.register('js', javascript);
 lowlight.register('typescript', typescript);
@@ -63,23 +60,18 @@ export function highlightCode(code: string, language: string | null) {
 	if (!code) return null;
 
 	try {
-		// If no language specified, try auto-detect
 		if (!language) {
 			return lowlight.highlightAuto(code);
 		}
 
-		// Normalize language name
 		const lang = language.toLowerCase();
 
-		// Check if language is registered
 		if (!lowlight.registered(lang)) {
-			// Return plain text if language not supported
 			return null;
 		}
 
 		return lowlight.highlight(lang, code);
 	} catch (error) {
-		// If highlighting fails, return null (will fall back to plain text)
 		return null;
 	}
 }

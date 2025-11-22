@@ -50,7 +50,6 @@ export class Todo {
 		return `todo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 	}
 
-	// Status checkers
 	isPending(): boolean {
 		return this.status === TodoStatus.Pending;
 	}
@@ -63,7 +62,6 @@ export class Todo {
 		return this.status === TodoStatus.Completed;
 	}
 
-	// Create new instance with updated status (immutability)
 	withStatus(newStatus: TodoStatus): Todo {
 		return new Todo(
 			this.id,
@@ -74,12 +72,10 @@ export class Todo {
 		);
 	}
 
-	// Mark as completed
 	complete(): Todo {
 		return this.withStatus(TodoStatus.Completed);
 	}
 
-	// Mark as in progress
 	start(): Todo {
 		return this.withStatus(TodoStatus.InProgress);
 	}

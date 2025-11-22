@@ -15,8 +15,6 @@ export function parseInlineTokens(text: string): InlineToken[] {
 	let index = 0;
 
 	while (remaining.length > 0) {
-		// Try to match patterns in order of precedence
-		// 1. Links: [text](url)
 		const linkMatch = remaining.match(/^\[([^\]]+)\]\(([^)]+)\)/);
 		if (linkMatch) {
 			tokens.push({
@@ -29,7 +27,6 @@ export function parseInlineTokens(text: string): InlineToken[] {
 			continue;
 		}
 
-		// 2. Bold: **text** or __text__
 		const boldMatch = remaining.match(/^(\*\*|__)([^\*_]+?)\1/);
 		if (boldMatch) {
 			tokens.push({
@@ -41,7 +38,6 @@ export function parseInlineTokens(text: string): InlineToken[] {
 			continue;
 		}
 
-		// 3. Italic: *text* or _text_
 		const italicMatch = remaining.match(/^(\*|_)([^\*_]+?)\1/);
 		if (italicMatch) {
 			tokens.push({
@@ -53,7 +49,6 @@ export function parseInlineTokens(text: string): InlineToken[] {
 			continue;
 		}
 
-		// 4. Inline code: `code`
 		const codeMatch = remaining.match(/^`([^`]+)`/);
 		if (codeMatch) {
 			tokens.push({
@@ -65,10 +60,8 @@ export function parseInlineTokens(text: string): InlineToken[] {
 			continue;
 		}
 
-		// No match - take one character as plain text
 		const char = remaining[0];
 
-		// Merge with previous text token if exists
 		const lastToken = tokens[tokens.length - 1];
 		if (lastToken && lastToken.type === 'text') {
 			lastToken.content += char;
@@ -92,14 +85,13 @@ export function parseInlineTokens(text: string): InlineToken[] {
 export function hasInlineMarkdown(text: string): boolean {
 	if (!text) return false;
 
-	// Check for common inline markdown patterns
 	return (
-		/\*\*[^\*]+\*\*/.test(text) || // Bold
-		/__[^_]+__/.test(text) || // Bold
-		/\*[^\*]+\*/.test(text) || // Italic
-		/_[^_]+_/.test(text) || // Italic
-		/`[^`]+`/.test(text) || // Code
-		/\[([^\]]+)\]\(([^)]+)\)/.test(text) // Link
+		/\*\*[^\*]+\*\*/.test(text) ||
+		/__[^_]+__/.test(text) ||
+		/\*[^\*]+\*/.test(text) ||
+		/_[^_]+_/.test(text) ||
+		/`[^`]+`/.test(text) ||
+		/\[([^\]]+)\]\(([^)]+)\)/.test(text)
 	);
 }
 

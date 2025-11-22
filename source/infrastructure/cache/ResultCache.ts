@@ -40,29 +40,25 @@ export class ResultCache {
 		};
 
 		this.symbolSearchCache = new LRUCache({
-			maxSize: Math.floor(maxSize * 0.4), // 40% for symbol searches
+			maxSize: Math.floor(maxSize * 0.4),
 			onEvict,
 		});
 
 		this.referencesCache = new LRUCache({
-			maxSize: Math.floor(maxSize * 0.3), // 30% for references
+			maxSize: Math.floor(maxSize * 0.3),
 			onEvict,
 		});
 
 		this.hierarchyCache = new LRUCache({
-			maxSize: Math.floor(maxSize * 0.2), // 20% for hierarchies
+			maxSize: Math.floor(maxSize * 0.2),
 			onEvict,
 		});
 
 		this.fileMetadataCache = new LRUCache({
-			maxSize: Math.floor(maxSize * 0.1), // 10% for metadata
+			maxSize: Math.floor(maxSize * 0.1),
 			onEvict,
 		});
 	}
-
-	// ============================================
-	// Symbol Search Cache
-	// ============================================
 
 	/**
 	 * Get cached symbol search results
@@ -106,10 +102,6 @@ export class ResultCache {
 		return `search:${namePath}:${filePath}:${opts.includeBody}:${opts.depth}:${opts.substringMatching}`;
 	}
 
-	// ============================================
-	// References Cache
-	// ============================================
-
 	/**
 	 * Get cached references
 	 */
@@ -142,10 +134,6 @@ export class ResultCache {
 		return `refs:${symbolName}:${filePath}`;
 	}
 
-	// ============================================
-	// Hierarchy Cache
-	// ============================================
-
 	/**
 	 * Get cached hierarchy
 	 */
@@ -170,10 +158,6 @@ export class ResultCache {
 		this.hierarchyCache.set(key, hierarchy);
 	}
 
-	// ============================================
-	// File Metadata Cache
-	// ============================================
-
 	/**
 	 * Get cached file metadata
 	 */
@@ -188,33 +172,25 @@ export class ResultCache {
 		this.fileMetadataCache.set(`meta:${filePath}`, metadata);
 	}
 
-	// ============================================
-	// Cache Invalidation
-	// ============================================
-
 	/**
 	 * Invalidate all caches for a specific file
 	 * Called when file is modified
 	 */
 	invalidateFile(filePath: string): void {
-		// Invalidate symbol searches for this file
 		for (const key of this.symbolSearchCache.keys()) {
 			if (key.includes(filePath)) {
 				this.symbolSearchCache.delete(key);
 			}
 		}
 
-		// Invalidate references for this file
 		for (const key of this.referencesCache.keys()) {
 			if (key.includes(filePath)) {
 				this.referencesCache.delete(key);
 			}
 		}
 
-		// Invalidate hierarchy for this file
 		this.hierarchyCache.delete(`hierarchy:${filePath}`);
 
-		// Invalidate metadata for this file
 		this.fileMetadataCache.delete(`meta:${filePath}`);
 	}
 
@@ -227,10 +203,6 @@ export class ResultCache {
 		this.hierarchyCache.clear();
 		this.fileMetadataCache.clear();
 	}
-
-	// ============================================
-	// Statistics
-	// ============================================
 
 	/**
 	 * Get cache statistics
@@ -283,5 +255,5 @@ export interface FileMetadata {
 	symbolCount: number;
 	hasExports: boolean;
 	lastModified: number;
-	topLevelSymbols: string[]; // Symbol names
+	topLevelSymbols: string[];
 }

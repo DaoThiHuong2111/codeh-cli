@@ -19,12 +19,10 @@ export function useExitConfirmation(): UseExitConfirmationReturn {
 	const [exitConfirmation, setExitConfirmation] = useState(false);
 	const exitConfirmationRef = useRef(false);
 
-	// Keep ref in sync with state
 	useEffect(() => {
 		exitConfirmationRef.current = exitConfirmation;
 	}, [exitConfirmation]);
 
-	// Reset exit confirmation after 3 seconds
 	useEffect(() => {
 		if (exitConfirmation) {
 			const timer = setTimeout(() => {
@@ -34,15 +32,12 @@ export function useExitConfirmation(): UseExitConfirmationReturn {
 		}
 	}, [exitConfirmation]);
 
-	// Register Ctrl+C shortcut in global layer (always active)
 	useShortcut({
 		key: 'ctrl+c',
 		handler: () => {
 			if (exitConfirmationRef.current) {
-				// Second Ctrl+C - exit
 				exit();
 			} else {
-				// First Ctrl+C - show confirmation
 				setExitConfirmation(true);
 			}
 		},

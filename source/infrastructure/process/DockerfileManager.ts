@@ -29,8 +29,8 @@ export interface DockerContainerInfo {
  */
 export class DockerfileManager {
 	private shellExecutor: ShellExecutor;
-	private containerCache: Map<string, string> = new Map(); // projectPath → containerId
-	private imageCache: Map<string, string> = new Map(); // projectHash → imageId
+	private containerCache: Map<string, string> = new Map();
+	private imageCache: Map<string, string> = new Map();
 
 	constructor() {
 		this.shellExecutor = new ShellExecutor();
@@ -99,13 +99,12 @@ export class DockerfileManager {
 
 		const imageTag = await this.getImageTag(cwd);
 
-		// Check if image already exists
 		if (await this.imageExists(imageTag)) {
-			console.log(`📦 Docker image ${imageTag} already exists, skipping build`);
+			console.log(`Docker image ${imageTag} already exists, skipping build`);
 			return {success: true, imageTag};
 		}
 
-		console.log(`📦 Building Docker image from Dockerfile...`);
+		console.log(`Building Docker image from Dockerfile...`);
 
 		const result = await this.shellExecutor.execute(
 			`docker build -t ${imageTag} .`,
@@ -113,11 +112,11 @@ export class DockerfileManager {
 		);
 
 		if (result.success) {
-			console.log(`✅ Docker image built successfully: ${imageTag}`);
+			console.log(`Docker image built successfully: ${imageTag}`);
 			this.imageCache.set(cwd, imageTag);
 			return {success: true, imageTag};
 		} else {
-			console.error(`❌ Failed to build Docker image:\n${result.stderr}`);
+			console.error(`Failed to build Docker image:\n${result.stderr}`);
 			return {
 				success: false,
 				imageTag: '',
@@ -135,39 +134,36 @@ export class DockerfileManager {
 	): Promise<{success: boolean; containerId?: string; error?: string}> {
 		const containerName = this.getContainerName(cwd);
 
-		// Check if container already exists
 		const existingContainer = await this.getContainerStatus(containerName);
 		if (existingContainer.status === 'running') {
-			console.log(`📦 Container ${containerName} already running`);
+			console.log(`Container ${containerName} already running`);
 			return {success: true, containerId: existingContainer.containerId};
 		}
 
-		// Remove old stopped container if exists
 		if (existingContainer.status === 'stopped') {
 			await this.removeContainer(existingContainer.containerId);
 		}
 
-		console.log(`🚀 Starting Docker container...`);
+		console.log(`Starting Docker container...`);
 
-		// Start container in detached mode with workspace mounted
 		const command = [
 			'docker run -d',
 			`--name ${containerName}`,
 			`-v "${cwd}:/workspace"`,
 			'-w /workspace',
 			imageTag,
-			'sleep infinity', // Keep container running
+			'sleep infinity',
 		].join(' ');
 
 		const result = await this.shellExecutor.execute(command);
 
 		if (result.success) {
 			const containerId = result.stdout.trim();
-			console.log(`✅ Container started: ${containerId.substring(0, 12)}`);
+			console.log(`Container started: ${containerId.substring(0, 12)}`);
 			this.containerCache.set(cwd, containerId);
 			return {success: true, containerId};
 		} else {
-			console.error(`❌ Failed to start container:\n${result.stderr}`);
+			console.error(`Failed to start container:\n${result.stderr}`);
 			return {
 				success: false,
 				error: result.stderr,
@@ -210,7 +206,7 @@ export class DockerfileManager {
 	 * Stop container
 	 */
 	async stopContainer(containerNameOrId: string): Promise<boolean> {
-		console.log(`🛑 Stopping container...`);
+		console.log(`Stopping container...`);
 		const result = await this.shellExecutor.execute(
 			`docker stop ${containerNameOrId}`,
 		);
@@ -221,7 +217,7 @@ export class DockerfileManager {
 	 * Remove container
 	 */
 	async removeContainer(containerNameOrId: string): Promise<boolean> {
-		console.log(`🗑️  Removing container...`);
+		console.log(`Removing container...`);
 		const result = await this.shellExecutor.execute(
 			`docker rm -f ${containerNameOrId}`,
 		);
@@ -236,7 +232,6 @@ export class DockerfileManager {
 		command: string,
 		options?: {cwd?: string},
 	): Promise<{stdout: string; stderr: string; exitCode: number; success: boolean; duration: number}> {
-		// Build docker exec command
 		const workDir = options?.cwd ? `-w ${options.cwd}` : '';
 		const dockerCommand = `docker exec ${workDir} ${containerNameOrId} sh -c "${command.replace(/"/g, '\\"')}"`;
 
@@ -255,21 +250,18 @@ export class DockerfileManager {
 			return true;
 		}
 
-		console.log(`🧹 Cleaning up sandbox container...`);
+		console.log(`Cleaning up sandbox container...`);
 
-		// Stop if running
 		if (status.status === 'running') {
 			await this.stopContainer(containerName);
 		}
 
-		// Remove container
 		const removed = await this.removeContainer(containerName);
 
-		// Clear cache
 		this.containerCache.delete(cwd);
 
 		if (removed) {
-			console.log(`✅ Sandbox container cleaned up`);
+			console.log(`Sandbox container cleaned up`);
 		}
 
 		return removed;

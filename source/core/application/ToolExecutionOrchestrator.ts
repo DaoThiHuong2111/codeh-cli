@@ -24,16 +24,16 @@ export interface ToolExecutionProgressEvent {
 	toolName?: string;
 	toolIndex?: number;
 	totalTools?: number;
-	toolArguments?: Record<string, any>; // Arguments của tool đang execute
-	toolOutput?: string; // Output chunks từ tool execution
+	toolArguments?: Record<string, any>;
+	toolOutput?: string;
 	message?: string;
 }
 
 export interface ToolExecutionConfig {
-	maxIterations?: number; // Max agentic loop iterations
-	timeout?: number; // Timeout per tool execution (ms)
-	parallel?: boolean; // Execute tools in parallel
-	maxTokens?: number; // Max tokens for context (for compression)
+	maxIterations?: number;
+	timeout?: number;
+	parallel?: boolean;
+	maxTokens?: number;
 }
 
 export interface ToolExecutionResult {
@@ -59,8 +59,8 @@ export class ToolExecutionOrchestrator {
 			permissionHandler,
 			{
 				timeout: config.timeout,
-				maxRetries: 2, // Default: retry up to 2 times
-				retryDelay: 1000, // Default: 1 second delay
+				maxRetries: 2,
+				retryDelay: 1000,
 			},
 		);
 		this.resultFormatter = new ToolResultFormatter();
@@ -87,7 +87,6 @@ export class ToolExecutionOrchestrator {
 		console.log('\n🤖 Starting Tool Execution Orchestration');
 		console.log(`Max iterations: ${maxIterations}\n`);
 
-		// Agentic Loop: Continue while LLM requests tools and under limit
 		while (iterations < maxIterations) {
 			iterations++;
 			console.log(`\n📍 Iteration ${iterations}/${maxIterations}`);
@@ -99,10 +98,8 @@ export class ToolExecutionOrchestrator {
 				maxIterations,
 			});
 
-			// Check if current turn has tool calls
 			const toolCalls = currentTurn.response?.toolCalls;
 			if (!toolCalls || toolCalls.length === 0) {
-				// No more tools to execute, done
 				console.log(
 					'✅ No more tool calls detected. Orchestration complete.\n',
 				);
@@ -111,17 +108,14 @@ export class ToolExecutionOrchestrator {
 
 			console.log(`🔍 Detected ${toolCalls.length} tool call(s)`);
 
-			// Emit tools detected event
 			onProgress?.({
 				type: 'tools_detected',
 				totalTools: toolCalls.length,
 				iteration: iterations,
 			});
 
-			// Execute tools with permission handling
 			console.log('⚙️  Executing tools...');
 
-			// Emit tool execution events for each tool
 			for (let i = 0; i < toolCalls.length; i++) {
 				onProgress?.({
 					type: 'tool_executing',
@@ -139,11 +133,9 @@ export class ToolExecutionOrchestrator {
 			);
 			allExecutionContexts.push(...handleResult.contexts);
 
-			// Emit completion/failure events for each tool
 			for (let i = 0; i < handleResult.contexts.length; i++) {
 				const ctx = handleResult.contexts[i];
 				if (ctx.isCompleted()) {
-					// Emit completion với output
 					const output = ctx.result?.output || '';
 					onProgress?.({
 						type: 'tool_completed',
@@ -168,17 +160,13 @@ export class ToolExecutionOrchestrator {
 				}
 			}
 
-			// Check if all approved
 			if (!handleResult.allApproved) {
-				// Some tools rejected - send rejection feedback to LLM
 				console.log(
 					' Some tools were rejected. Sending rejection feedback to LLM...\n',
 				);
 
-				// Format rejection messages (formatToolResults handles rejected contexts)
 				const rejectionMessages = this.formatToolResults(handleResult.contexts);
 
-				// Send rejection feedback to LLM so it can understand and adjust
 				currentTurn = await this.continueWithToolResults(
 					currentTurn,
 					rejectionMessages,
@@ -190,17 +178,14 @@ export class ToolExecutionOrchestrator {
 					'📨 LLM received rejection feedback and can try alternative approach',
 				);
 
-				// Continue orchestration - allow LLM to try again
 				continue;
 			}
 
-			// Format tool results for LLM continuation
 			const toolResultMessages = this.formatToolResults(handleResult.contexts);
 			console.log(
 				`✅ Tools executed successfully. Sending results back to LLM...`,
 			);
 
-			// Continue conversation with tool results
 			currentTurn = await this.continueWithToolResults(
 				currentTurn,
 				toolResultMessages,
@@ -210,7 +195,6 @@ export class ToolExecutionOrchestrator {
 
 			console.log('📨 Received LLM response');
 
-			// If LLM response has no tool calls, we're done
 			if (
 				!currentTurn.response?.toolCalls ||
 				currentTurn.response.toolCalls.length === 0
@@ -233,7 +217,6 @@ export class ToolExecutionOrchestrator {
 			`   - Final response length: ${currentTurn.response?.content.length || 0} chars\n`,
 		);
 
-		// Emit orchestration complete event
 		onProgress?.({
 			type: 'orchestration_complete',
 			iteration: iterations,
@@ -276,7 +259,6 @@ export class ToolExecutionOrchestrator {
 
 		for (const context of contexts) {
 			if (context.isCompleted() && context.result) {
-				// Format successful tool result
 				const content = this.formatToolResultContent(context);
 				messages.push(
 					Message.create('user', content, {
@@ -288,7 +270,6 @@ export class ToolExecutionOrchestrator {
 					}),
 				);
 			} else if (context.isFailed()) {
-				// Format error result
 				const errorContent = `Tool "${context.toolCall.name}" failed: ${context.error}`;
 				messages.push(
 					Message.create('user', errorContent, {
@@ -301,7 +282,6 @@ export class ToolExecutionOrchestrator {
 					}),
 				);
 			} else if (context.isRejected()) {
-				// Format rejection
 				const rejectionContent = `Tool "${context.toolCall.name}" was rejected by user.`;
 				messages.push(
 					Message.create('user', rejectionContent, {
@@ -326,7 +306,6 @@ export class ToolExecutionOrchestrator {
 	private formatToolResultContent(context: ToolExecutionContext): string {
 		if (!context.result) return '';
 
-		// Use markdown formatter for rich, structured output
 		return this.resultFormatter.formatAsMarkdown(context);
 	}
 
@@ -341,17 +320,14 @@ export class ToolExecutionOrchestrator {
 		onStreamChunk?: (chunk: string) => void,
 		maxTokens: number = 64000,
 	): Promise<Turn> {
-		// Get conversation history with automatic compression
 		const contextMessages = await this.contextService.getMessagesForLLM({
 			maxTokens,
 		});
 
-		// Get tool definitions
 		const tools = ToolDefinitionConverter.toApiFormatBatch(
 			this.toolRegistry.getDefinitions(),
 		);
 
-		// Build messages array: context + tool results
 		const messages = [
 			...contextMessages.map((m: Message) => ({
 				role: m.role,
@@ -374,13 +350,10 @@ export class ToolExecutionOrchestrator {
 
         console.log('🔥 [TOOL CONTINUATION] Context messages count:', contextMessages.length);
 
-		// Call LLM with tool results and tool definitions
-		// Use streaming if callback provided for better UX
 		let apiResponse;
 		let fullContent = '';
 
 		if (onStreamChunk) {
-			// Stream LLM response to user in real-time
 			apiResponse = await this.apiClient.streamChat(
 				{messages, tools},
 				chunk => {
@@ -391,11 +364,9 @@ export class ToolExecutionOrchestrator {
 				},
 			);
 		} else {
-			// Non-streaming for backward compatibility
 			apiResponse = await this.apiClient.chat({messages, tools});
 		}
 
-		// Create new turn
 		const toolResultMsg = Message.create(
 			'user',
 			toolResultMessages.map(m => m.content).join('\n\n'),

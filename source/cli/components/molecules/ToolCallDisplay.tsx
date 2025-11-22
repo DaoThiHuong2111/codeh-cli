@@ -23,7 +23,6 @@ export default function ToolCallDisplay({
 }: ToolCallDisplayProps) {
 	const [expanded, setExpanded] = useState(false);
 
-	// Handle keyboard input to toggle expansion
 	useInput((input, key) => {
 		if (input.toLowerCase() === 'e' && key.ctrl) {
 			setExpanded(prev => !prev);
@@ -43,7 +42,6 @@ export default function ToolCallDisplay({
 
 	return (
 		<Box flexDirection="column" marginY={0}>
-			{/* Tool List - minimal */}
 			{toolCalls.map((toolCall, index) => (
 				<Box key={toolCall.id} flexDirection="column">
 					<Box>
@@ -53,7 +51,6 @@ export default function ToolCallDisplay({
 						</Text>
 					</Box>
 
-					{/* Arguments (expandable) */}
 					{expanded && (
 						<Box paddingLeft={2}>
 							<Text dimColor wrap="wrap">
@@ -64,7 +61,6 @@ export default function ToolCallDisplay({
 				</Box>
 			))}
 
-			{/* Expand hint - minimal */}
 			{!expanded && (
 				<Box>
 					<Text dimColor wrap="wrap">Ctrl+E for details</Text>

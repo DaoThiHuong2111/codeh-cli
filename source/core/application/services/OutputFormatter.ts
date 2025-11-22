@@ -207,7 +207,6 @@ export class OutputFormatter {
 	}
 
 	private formatCode(output: string): string {
-		// Basic code formatting - can be enhanced
 		return output;
 	}
 
