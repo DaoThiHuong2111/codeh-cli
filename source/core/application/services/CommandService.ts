@@ -219,25 +219,36 @@ export class CommandService implements ICommandRegistry {
 
 						if (!sandboxManager) {
 							logger.error('CommandService', 'sandbox', 'Sandbox manager not available');
-							const errorMsg = Message.system('❌ Sandbox manager not available');
+							const errorMsg = Message.system('Sandbox manager not available');
 							presenter.addSystemMessage(errorMsg);
 							return;
 						}
 
 						const oldMode = sandboxManager.getMode();
-						const oldDescription = sandboxManager.getModeDescription();
+					const oldDescription = sandboxManager.getModeDescription();
 
-						const newMode = sandboxManager.toggle();
+					const result = await sandboxManager.toggle();
 
-						logger.info('CommandService', 'sandbox', 'Sandbox mode toggled', {
-							old_mode: oldMode,
-							new_mode: newMode,
+					if (!result.success) {
+						logger.error('CommandService', 'sandbox', 'Failed to toggle sandbox mode', {
+							error: result.error,
 						});
+						const errorMsg = Message.system(`Failed to toggle sandbox: ${result.error}`);
+						presenter.addSystemMessage(errorMsg);
+						return;
+					}
 
-						const message = `Sandbox mode toggled: ${newMode}`;
+					const newMode = result.mode;
 
-						const systemMsg = Message.system(message);
-						presenter.addSystemMessage(systemMsg);
+					logger.info('CommandService', 'sandbox', 'Sandbox mode toggled', {
+						old_mode: oldMode,
+						new_mode: newMode,
+					});
+
+					const message = `Sandbox mode toggled: ${newMode}`;
+
+					const systemMsg = Message.system(message);
+					presenter.addSystemMessage(systemMsg);
 					},
 				},
 			),
