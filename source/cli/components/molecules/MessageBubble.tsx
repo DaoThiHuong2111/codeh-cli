@@ -2,6 +2,7 @@ import {Box, Text} from 'ink';
 import React from 'react';
 import type {Message} from '../../../core/domain/models/Message.js';
 import {StreamingIndicator} from '../atoms/Spinner.js';
+import {MarkdownErrorBoundary} from './MarkdownErrorBoundary.js';
 import {MarkdownText} from './MarkdownText.js';
 import ToolCallDisplay from './ToolCallDisplay.js';
 
@@ -59,7 +60,9 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 			<Box marginLeft={2} flexDirection="column">
 				{message.role === 'assistant' ? (
 					<Box flexDirection="column">
-						<MarkdownText content={message.content} />
+						<MarkdownErrorBoundary fallbackContent={message.content}>
+							<MarkdownText content={message.content} />
+						</MarkdownErrorBoundary>
 						{isStreaming && <StreamingIndicator />}
 					</Box>
 				) : (
