@@ -11,6 +11,7 @@ import {SessionSelector} from '../components/organisms/SessionSelector.js';
 import {Footer} from '../components/organisms/Footer.js';
 import {TodosDisplay} from '../components/organisms/TodosDisplay.js';
 import {ToolExecutionProgress} from '../components/molecules/ToolExecutionProgress.js';
+import ToolPermissionDialog from '../components/molecules/ToolPermissionDialog.js';
 import {useShortcut} from '../../core/input/index.js';
 import type {PermissionModeManager} from '../../infrastructure/permissions/PermissionModeManager.js';
 import type {PermissionMode} from '../../infrastructure/permissions/PermissionModeManager.js';
@@ -21,7 +22,15 @@ interface HomeProps {
 }
 
 export default function Home({container, exitConfirmation = false}: HomeProps) {
-	const {presenter, loading, error} = useHomeLogic(container);
+	const {
+		presenter,
+		loading,
+		error,
+		permissionDialog,
+		handlePermissionApprove,
+		handlePermissionDeny,
+		handlePermissionAlwaysAllow,
+	} = useHomeLogic(container);
 
 	// Permission mode state
 	const [permissionMode, setPermissionMode] = useState<PermissionMode>('mvp');
@@ -233,13 +242,23 @@ export default function Home({container, exitConfirmation = false}: HomeProps) {
 				/>
 			)}
 
-			{/* Input Area */}
+			{/* Permission Dialog (Requirement 1.1, 7.1, 7.2, 7.3, 7.4) */}
+			{permissionDialog.isOpen && (
+				<ToolPermissionDialog
+					request={permissionDialog.request}
+					onApprove={handlePermissionApprove}
+					onDeny={handlePermissionDeny}
+					onAlwaysAllow={handlePermissionAlwaysAllow}
+				/>
+			)}
+
+			{/* Input Area - disabled when permission dialog is open (Requirements 10.1, 10.2, 10.3) */}
 			<InputBox
 				value={presenter.input}
 				onChange={presenter.handleInputChange}
 				onSubmit={presenter.handleSubmit}
 				placeholder="Ask me anything... (type / for commands)"
-				enabled={!presenter.isLoading}
+				enabled={!presenter.isLoading && !permissionDialog.isOpen}
 			/>
 
 			{/* Input Error */}

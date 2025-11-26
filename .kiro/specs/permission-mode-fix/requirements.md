@@ -100,3 +100,34 @@ Hệ thống permission modes (MVP/YOLO vs Interactive/Ask-before-edits) cho ph�
 1. WHEN an option is selected THEN the Permission_System SHALL highlight it with distinct background color
 2. WHEN an option is not selected THEN the Permission_System SHALL display it in dimmed style
 3. WHEN dialog opens THEN the Permission_System SHALL focus on "Allow" option by default
+
+### Requirement 9
+
+**User Story:** As a user, I want rejected tools to be reported back to the LLM, so that the AI can try alternative approaches.
+
+#### Acceptance Criteria
+
+1. WHEN user denies a tool execution THEN the Permission_System SHALL send rejection feedback to LLM
+2. WHEN LLM receives rejection feedback THEN the Permission_System SHALL allow LLM to continue conversation with alternative approach
+3. WHEN multiple tools are requested AND some are rejected THEN the Permission_System SHALL execute approved tools and report rejected ones
+
+### Requirement 10
+
+**User Story:** As a user, I want the permission request to block UI input until I respond, so that I don't accidentally send messages while dialog is open.
+
+#### Acceptance Criteria
+
+1. WHEN ToolPermissionDialog is displayed THEN the Permission_System SHALL disable the main input box
+2. WHEN ToolPermissionDialog is closed THEN the Permission_System SHALL re-enable the main input box
+3. WHEN ToolPermissionDialog is displayed THEN the Permission_System SHALL capture all keyboard input for dialog navigation
+
+### Requirement 11
+
+**User Story:** As a developer, I want the permission flow to use Promise-based async/await pattern, so that tool execution waits for user response.
+
+#### Acceptance Criteria
+
+1. WHEN requestPermission is called THEN the Permission_System SHALL return a Promise that resolves when user responds
+2. WHEN user approves THEN the Permission_System SHALL resolve Promise with {approved: true}
+3. WHEN user denies THEN the Permission_System SHALL resolve Promise with {approved: false}
+4. WHEN user selects "Always Allow" THEN the Permission_System SHALL resolve Promise with {approved: true, rememberChoice: true}
